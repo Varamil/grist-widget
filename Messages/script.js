@@ -59,7 +59,7 @@ function makeQuill(theme){
 // Helper to show or hide panels.
 function showPanel(name) {
   document.getElementById("configuration").style.display = 'none';
-  document.getElementById("chat-container").style.display = 'none';
+  document.getElementById("chat").style.display = 'none';
   document.getElementById(name).style.display = '';
 }
 
@@ -67,7 +67,7 @@ function showPanel(name) {
 async function saveOptions() {
   const theme = document.getElementById("quillTheme").value;
   await grist.widgetApi.setOption('quillTheme', theme);
-  showPanel('chat-container');
+  showPanel('chat');
 }
 
 // Subscribe to grist data
@@ -112,7 +112,7 @@ grist.onOptions((customOptions, _) => {
   theme = customOptions.quillTheme || defaultTheme;
   document.getElementById("quillTheme").value = theme;
   quill = makeQuill(theme);
-  showPanel("chat-container");
+  showPanel("chat");
 });
 
 
