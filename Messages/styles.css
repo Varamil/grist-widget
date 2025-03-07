@@ -19,7 +19,7 @@ body {
   }
   
   .card-header {
-    background-color: #007bff;
+    background-color: #16B378;
     color: white;
     padding: 10px;
     border-top-left-radius: 8px;
@@ -61,7 +61,7 @@ body {
   }
   
   .card form button{
-     background-color:#007bff; 
+     background-color:#16B378; 
      color:white; 
      border:none; 
      padding :10px; 
@@ -71,7 +71,7 @@ body {
   }
   
   .card form button:hover{
-     background-color:#0056b3; 
+     background-color:#009058; 
   }
   
   .card{
@@ -101,7 +101,7 @@ body {
   
   .form-card form button {
     align-self: flex-end; /* Aligne le bouton à droite */
-    background-color: #007bff;
+    background-color: #16B378;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -109,10 +109,6 @@ body {
     border-radius: 5px;
   }
   
-  .form-card form button:hover {
-    background-color: #0056b3;
-  }
-
 
   /* Quill */
   .ql-toolbar.ql-snow {
@@ -130,7 +126,7 @@ body {
   
   .editor-container{
     border: 1px;
-    height: 100%;
+    height: 400px;
     display: flex;
     flex-direction: column;
     font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif,
