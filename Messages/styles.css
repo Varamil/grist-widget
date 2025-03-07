@@ -41,7 +41,7 @@ body {
     float: right;
   }
   
-  form {
+  .new-message {
     display: flex;
   }
   
@@ -54,16 +54,9 @@ body {
   button {
     padding:10px;
   }
+
   
-  .card form input[type=text], .card form textarea {
-     width:100%;
-     padding:10px; 
-     margin-top:10px; 
-     border-radius :5px; 
-     border :1px solid #ccc; 
-  }
-  
-  .card form button{
+  .card .new-message button{
      background-color:#16B378; 
      color:white; 
      border:none; 
@@ -73,7 +66,7 @@ body {
      border-radius :5px; 
   }
   
-  .card form button:hover{
+  .card .new-message button:hover{
      background-color:#009058; 
   }
   
@@ -84,14 +77,14 @@ body {
      overflow:hidden; 
   }
 
-  .form-card form {
+  .form-card .new-message {
     display: flex;
     flex-direction: column;
     padding: 0px;    
   }
   
-  .form-card form input,
-  .form-card form textarea {
+  .form-card .new-message input,
+  .form-card .new-message textarea {
     margin-bottom: 10px;
     padding: 10px;
     border-radius: 5px;
@@ -102,7 +95,7 @@ body {
                 box-sizing: border-box;
   }
   
-  .form-card form button {
+  .form-card .new-message button {
     align-self: flex-end; /* Aligne le bouton à droite */
     background-color: #16B378;
     color: white;

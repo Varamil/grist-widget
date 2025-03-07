@@ -158,6 +158,7 @@ function AddMessage() {
   const message = quill.getSemanticHTML();
   console.log(message);//DEBUG
   if (!message.trim()) return;
+  
   DisplayMessage(author, date, message);
     
   // If we are mapped.
