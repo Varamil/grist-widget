@@ -83,19 +83,7 @@ body {
     padding: 0px;    
   }
   
-  .form-card .new-message input,
-  .form-card .new-message textarea {
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    resize: vertical;
-    -webkit-box-sizing: border-box;
-           -moz-box-sizing: border-box;
-                box-sizing: border-box;
-  }
-  
-  .form-card .new-message button {
+  .form-card .card-content .new-message button {
     align-self: flex-end; /* Aligne le bouton à droite */
     background-color: #16B378;
     color: white;

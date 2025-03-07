@@ -150,20 +150,20 @@ function AddMessage() {
   console.log('clic');
   const author = 'Vous';
   let date = new Date();//.toLocaleString('fr-FR');
-  date = [(date.getFullYear(),
-              date.getMonth()+1).padLeft(),
+  date = [date.getFullYear(),
+              (date.getMonth()+1).padLeft(),
               date.getDate().padLeft()].join('/') +' ' +
             [date.getHours().padLeft(),
              date.getMinutes().padLeft()].join(':');
   const message = quill.getSemanticHTML();
   console.log(message);//DEBUG
   if (!message.trim()) return;
-  
+
   DisplayMessage(author, date, message);
     
   // If we are mapped.
   if (column && id) {    
-    if (!message.trim()) lastContent = lastContent + '\n'
+    if (!message.trim()) lastContent = lastContent + "\n"
     lastContent = lastContent + author + '###' + date + '###' + message
   }
   //const table = grist.getTable();
