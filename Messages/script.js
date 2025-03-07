@@ -89,6 +89,7 @@ grist.onRecord(function (record, mappings) {
       // Log but don't bother user - maybe we are just testing.
       console.error('Please map columns');
     } else if (lastContent !== mapped.Content) {
+      console.error('OK'); //DEBUG
       // We will remember last thing sent, to not remove progress.
       lastContent = mapped.Content;
 
@@ -96,7 +97,7 @@ grist.onRecord(function (record, mappings) {
       console.info(lastContent); //DEBUG
       LoadMesssages(lastContent.split('\n'));
     } else {
-      console.error('else');
+      console.error('else'); //DEBUG
     }
   }
 });
@@ -155,7 +156,7 @@ document.querySelector('form').addEventListener('submit', function(event) {
             [date.getHours().padLeft(),
              date.getMinutes().padLeft()].join(':');
   const message = quill.getSemanticHTML();
-
+  console.error(message);//DEBUG
   if (!message.trim()) return;
   DisplayMessage(author, date, message);
     
