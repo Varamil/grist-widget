@@ -89,13 +89,10 @@ grist.onRecord(function (record, mappings) {
       // Log but don't bother user - maybe we are just testing.
       console.error('Please map columns');
     } else { //if (lastContent !== mapped.Content) 
-      console.log('OK'); //DEBUG
-      console.log(mapped.Messages); //DEBUG
       // We will remember last thing sent, to not remove progress.
       lastContent = mapped.Messages;
 
       //load content
-      console.info(lastContent); //DEBUG
       LoadMesssages(lastContent.split('\n'));
     }
   }
@@ -155,7 +152,7 @@ document.querySelector('form').addEventListener('submit', function(event) {
             [date.getHours().padLeft(),
              date.getMinutes().padLeft()].join(':');
   const message = quill.getSemanticHTML();
-  console.error(message);//DEBUG
+  console.log(message);//DEBUG
   if (!message.trim()) return;
   DisplayMessage(author, date, message);
     
@@ -164,10 +161,10 @@ document.querySelector('form').addEventListener('submit', function(event) {
     if (!message.trim()) lastContent = lastContent + '\n'
     lastContent = lastContent + author + '###' + date + '###' + message
   }
-  const table = grist.getTable();
+  //const table = grist.getTable();
 
-  table.update({id, fields: {[column]: lastContent}});
-
+  //table.update({id, fields: {[column]: lastContent}});
+  console.log(lastContent);//DEBUG
   quill.setContents(null);
 });
 
