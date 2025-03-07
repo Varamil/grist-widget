@@ -31,6 +31,7 @@ let quill = {};
 let id;
 let column;
 let lastContent;
+const table = grist.getTable();
 
 Number.prototype.padLeft = function(base,chr){
   var  len = (String(base || 10).length - String(this).length)+1;
@@ -163,11 +164,10 @@ function AddMessage() {
     
   // If we are mapped.
   if (column && id) {    
-    if (!message.trim()) lastContent = lastContent + "\n"
+    if (!message.trim()) lastContent = lastContent + "\\n"
     lastContent = lastContent + author + '###' + date + '###' + message
   }
-  //const table = grist.getTable();
-
+  
   //table.update({id, fields: {[column]: lastContent}});
   console.log(lastContent);//DEBUG
   quill.setContents(null);
