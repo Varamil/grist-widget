@@ -54,21 +54,6 @@ body {
   button {
     padding:10px;
   }
-
-  
-  .card .card-content .new-message button{
-     background-color:#16B378; 
-     color:white; 
-     border:none; 
-     padding :10px; 
-     cursor:pointer; 
-     margin-top :10px; 
-     border-radius :5px; 
-  }
-  
-  .card .card-content .new-message button:hover{
-     background-color:#009058; 
-  }
   
   .card{
      box-shadow :0px4px8px rgba(0,0,0,0.2); 
@@ -83,7 +68,7 @@ body {
     padding: 0px;    
   }
   
-  .form-card .card-content .new-message button {
+  .add-msg {
     align-self: flex-end; /* Aligne le bouton à droite */
     background-color: #16B378;
     color: white;
@@ -91,8 +76,12 @@ body {
     padding: 10px 20px;
     cursor: pointer;
     border-radius: 5px;
+    margin-top :10px; 
   }
   
+  .add-msg:hover{
+    background-color:#009058; 
+  }
 
   /* Quill */
   .ql-toolbar.ql-snow {
