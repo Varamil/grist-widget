@@ -149,7 +149,7 @@ function AddMessage() {
   //event.preventDefault();
   console.log('clic');
   const author = 'Vous';
-  const date = new Date();//.toLocaleString('fr-FR');
+  let date = new Date();//.toLocaleString('fr-FR');
   date = [(date.getFullYear(),
               date.getMonth()+1).padLeft(),
               date.getDate().padLeft()].join('/') +' ' +
