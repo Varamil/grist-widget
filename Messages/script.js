@@ -89,7 +89,8 @@ grist.onRecord(function (record, mappings) {
       // Log but don't bother user - maybe we are just testing.
       console.error('Please map columns');
     } else if (lastContent !== mapped.Content) {
-      console.error('OK'); //DEBUG
+      console.log('OK'); //DEBUG
+      console.log(mapped.Content); //DEBUG
       // We will remember last thing sent, to not remove progress.
       lastContent = mapped.Content;
 
@@ -97,7 +98,7 @@ grist.onRecord(function (record, mappings) {
       console.info(lastContent); //DEBUG
       LoadMesssages(lastContent.split('\n'));
     } else {
-      console.error('else'); //DEBUG
+      console.log('else'); //DEBUG
     }
   }
 });
