@@ -142,8 +142,8 @@ function LoadMesssages(messages) {
 
 
 document.querySelector('form').addEventListener('submit', function(event) {
-  event.preventDefault();
-
+  //event.preventDefault();
+  console.log('clic');
   const author = 'Vous';
   const date = new Date();//.toLocaleString('fr-FR');
   date = [(date.getFullYear(),
