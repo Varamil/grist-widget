@@ -95,6 +95,8 @@ grist.onRecord(function (record, mappings) {
       //load content
       console.info(lastContent); //DEBUG
       LoadMesssages(lastContent.split('\n'));
+    } else {
+      console.error('else');
     }
   }
 });
@@ -147,11 +149,11 @@ document.querySelector('form').addEventListener('submit', function(event) {
 
   const author = 'Vous';
   const date = new Date();//.toLocaleString('fr-FR');
-  date = [(d.getFullYear(),
-              d.getMonth()+1).padLeft(),
-              d.getDate().padLeft()].join('/') +' ' +
-            [d.getHours().padLeft(),
-             d.getMinutes().padLeft()].join(':');
+  date = [(date.getFullYear(),
+              date.getMonth()+1).padLeft(),
+              date.getDate().padLeft()].join('/') +' ' +
+            [date.getHours().padLeft(),
+             date.getMinutes().padLeft()].join(':');
   const message = quill.getSemanticHTML();
 
   if (!message.trim()) return;
