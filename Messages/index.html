@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Messages</title>
+  <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.bubble.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+  <script src="image-resize.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <form id="configuration" style="display: none">
+    <h2>Notepad Widget Configuration</h1>
+    <div>
+      <label>Select Quill theme:
+        <select name="quillTheme" id="quillTheme">
+          <option value="snow">Snow (format via toolbar)</option>
+          <option value="bubble">Bubble (format via tooltip)</option>
+        </select>
+      </label>
+    </div>
+    <div>
+      <input type="submit" value="Save">
+    </div>
+  </form>
+
+<div class="chat-container">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="author">Alice</span>
+      <span class="date">07/03/2025 07:30</span>
+    </div>
+    <div class="card-content">
+      Bonjour, comment vas-tu ?
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="author">Bob</span>
+      <span class="date">07/03/2025 à 07:50</span>
+    </div>
+    <div class="card-content">
+      Très bien, merci ! Et toi ?
+    </div>
+  </div>
+
+  <!-- Carte formulaire -->
+  <div class="card form-card">
+    <div class="card-header">
+        <span class="author">Nouveau Message</span>        
+    </div>
+    <div class="card-content">
+        <form id="messageForm">
+            <!-- <input type="text" id="author" placeholder="Votre nom" required />
+            <textarea id="message-input" placeholder="Votre message..." required></textarea> -->
+            <div id="editor" class="editor-container"></div>
+            <button type="submit">Envoyer</button>
+          </form>
+      </div>    
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

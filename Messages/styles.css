@@ -1,0 +1,146 @@
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7fa;
+  }
+  
+  .chat-container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+  }
+  
+  .card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin-bottom: 16px;   
+    
+  }
+  
+  .card-header {
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+  
+  .card-content {
+    padding: 15px;
+  }
+  
+  .author {
+    font-weight: bold;
+  }
+  
+  .date {
+    float: right;
+  }
+  
+  form {
+    display: flex;
+  }
+  
+  textarea {
+    flex-grow:1;
+    padding:10px;
+    border:none;
+  }
+  
+  button {
+    padding:10px;
+  }
+  
+  .card form input[type=text], .card form textarea {
+     width:100%;
+     padding:10px; 
+     margin-top:10px; 
+     border-radius :5px; 
+     border :1px solid #ccc; 
+  }
+  
+  .card form button{
+     background-color:#007bff; 
+     color:white; 
+     border:none; 
+     padding :10px; 
+     cursor:pointer; 
+     margin-top :10px; 
+     border-radius :5px; 
+  }
+  
+  .card form button:hover{
+     background-color:#0056b3; 
+  }
+  
+  .card{
+     box-shadow :0px4px8px rgba(0,0,0,0.2); 
+     margin-bottom :20px; 
+     border-radius :8px; 
+     overflow:hidden; 
+  }
+
+  .form-card form {
+    display: flex;
+    flex-direction: column;
+    padding: 0px;    
+  }
+  
+  .form-card form input,
+  .form-card form textarea {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    resize: vertical;
+    -webkit-box-sizing: border-box;
+           -moz-box-sizing: border-box;
+                box-sizing: border-box;
+  }
+  
+  .form-card form button {
+    align-self: flex-end; /* Aligne le bouton à droite */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .form-card form button:hover {
+    background-color: #0056b3;
+  }
+
+
+  /* Quill */
+  .ql-toolbar.ql-snow {
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  
+  .ql-container.ql-snow {
+    border: none;
+    height: auto;
+    flex: 1;
+    overflow: auto;
+  } 
+  
+  .editor-container{
+    border: 1px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif,
+      Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+    overflow: hidden;
+  }
+  
+  .ql-snow .ql-picker.ql-size .ql-picker-label::before {
+    content: 'Regular'
+  }
+  .ql-snow .ql-picker.ql-size .ql-picker-item::before {
+    content: 'Regular'
+  }
