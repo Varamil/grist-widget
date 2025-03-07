@@ -158,16 +158,16 @@ function AddMessage() {
              date.getMinutes().padLeft()].join(':');
   const message = quill.getSemanticHTML();
   console.log(message);//DEBUG
-  if (!message.trim()) return;
+  if (message.trim().length === 0) return;
 
   DisplayMessage(author, date, message);
     
   // If we are mapped.
   if (column && id) {    
-    if (!message.trim()) lastContent = lastContent + "\\n"
+    if (message.trim().length !== 0) lastContent = lastContent + "\\n"
     lastContent = lastContent + author + '###' + date + '###' + message
   }
-  
+
   //table.update({id, fields: {[column]: lastContent}});
   console.log(lastContent);//DEBUG
   quill.setContents(null);
