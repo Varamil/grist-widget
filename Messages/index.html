@@ -27,20 +27,24 @@
     </div>
   </form>
 
-<div id="chat" class="chat-container">
-  <!-- Carte formulaire -->
-  <div class="card form-card">
-    <div class="card-header">
-        <span class="author">Nouveau Message</span>        
+<div id="chat">
+  <div id="msg-container" class="chat-container">
+  </div>
+  <div class="chat-container">
+    <!-- Carte formulaire -->
+    <div class="card form-card">
+      <div class="card-header">
+          <span class="author">Nouveau Message</span>        
+      </div>
+      <div class="card-content">
+          <form id="messageForm">
+              <!-- <input type="text" id="author" placeholder="Votre nom" required />
+              <textarea id="message-input" placeholder="Votre message..." required></textarea> -->
+              <div id="editor" class="editor-container"></div>
+              <button onclick="AddMessage()">Envoyer</button>
+            </form>
+        </div>    
     </div>
-    <div class="card-content">
-        <form id="messageForm">
-            <!-- <input type="text" id="author" placeholder="Votre nom" required />
-            <textarea id="message-input" placeholder="Votre message..." required></textarea> -->
-            <div id="editor" class="editor-container"></div>
-            <button type="submit">Envoyer</button>
-          </form>
-      </div>    
   </div>
 </div>
 

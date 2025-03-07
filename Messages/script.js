@@ -127,10 +127,13 @@ function DisplayMessage(author, date, message) {
       <div class="card-content">${message}</div>
     `;
   
-    document.querySelector('.chat-container').insertBefore(card, document.querySelector('.chat-container').lastElementChild);
+    //document.querySelector('.chat-container').insertBefore(card, document.querySelector('.chat-container').lastElementChild);
+    document.getElementById('msg-container').append(card);
 }
 
 function LoadMesssages(messages) {
+  document.getElementById('msg-container').innerHTML = '';
+
   let data;
   for (let i = 0; i < messages.length; i++) {
     data = messages[i].split('###');
@@ -141,7 +144,8 @@ function LoadMesssages(messages) {
 
 
 
-document.querySelector('form').addEventListener('submit', function(event) {
+//document.querySelector('form').addEventListener('submit', function(event) {
+function AddMessage() {
   //event.preventDefault();
   console.log('clic');
   const author = 'Vous';
@@ -166,7 +170,7 @@ document.querySelector('form').addEventListener('submit', function(event) {
   //table.update({id, fields: {[column]: lastContent}});
   console.log(lastContent);//DEBUG
   quill.setContents(null);
-});
+}
 
 
 
