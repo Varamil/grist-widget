@@ -1,19 +1,11 @@
-
-
 //Quil
 
 const defaultTheme = "snow";
 
 const toolbarOptions = [
-  ['bold', 'italic', 'underline', 'strike', { 'script': 'sub'}, { 'script': 'super' }],        // toggled buttons
-  [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-  [{ 'align': [] }],
-  ['blockquote', 'code-block'],
-  [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
-  ['link', 'image', 'formula'],
+  ['bold', 'italic', 'underline', 'strike', { 'script': 'sub'}, { 'script': 'super' }, { 'color': [] }, { 'background': [] },{ 'align': [] }, 'blockquote', 'code-block', { 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }, 'link', 'image', 'formula'],        // toggled buttons
 
-  [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-  [{ 'size': ['small', false, 'large', 'huge'] }],  // font sizes
+  [{ 'header': [1, 2, 3, 4, 5, 6, false] }, { 'size': ['small', false, 'large', 'huge'] }],
 
   ['clean'],                                        // remove formatting button
 ];
@@ -77,6 +69,12 @@ function makeQuill(theme){
     }
   });
 
+  // Set up config save callback
+  document.getElementById("configuration").addEventListener("submit", async function(event){
+    event.preventDefault();
+    await saveOptions();
+  });
+
   return quill;
 }
 
@@ -106,6 +104,7 @@ grist.onRecord(function (record, mappings) {
   quill.enable();
   // If this is a new record, or mapping is diffrent.
   if (id !== record.id || mappings?.Messages !== column) {
+    console.log('id' + record.id);
     id = record.id;
     column = mappings?.Messages;
     user = mappings?.User
@@ -173,15 +172,15 @@ function AddMessage(author, date, message){
   DisplayMessage(author, date, message);    
     
   //Update the table
-  if (message && message.trim().length !== 0) lastContent = lastContent + "\n"
+  if (message && message.trim().length !== 0) {
+    console.log('lastcontent' + lastContent);
+    lastContent = lastContent + "\n"
+  }
   lastContent = lastContent + author + '¤¤' + date + '¤¤' + message
   table.update({id, fields: {[column]: lastContent}});
-  console.log(lastContent);//DEBUG
 }
 
 function AddNewMessage() {
-  console.log('clic'); //DEBUG
-
   // If we are mapped.
   if (column && id) {  
     let author = '';
@@ -194,27 +193,28 @@ function AddNewMessage() {
     //           [date.getHours().padLeft(),
     //           date.getMinutes().padLeft()].join(':');
     const message = quill.getSemanticHTML();
-    console.log(message);//DEBUG
+
     if (!message || message.trim().length === 0) return;
 
     //update table to refresh user
     if (!user || user.trim().length !== 0) {
-      table.update({id, fields: {[column]: lastContent + '|-¤-|'}});
-      grist.fetchSelectedRecord(id).then((row)=> {
-        console.log('user');
-        console.log(row);
-        author = row[user];
+      table.update({id, fields: {[column]: lastContent + '|-¤-|'}}).then((result)=> {
+        grist.fetchSelectedRecord(id).then((row)=> {
+          author = row[user];
+          //Display message
+          AddMessage(author, date, message);
+          //reset editor
+          quill.setContents(null);
 
-        AddMessage(author, date, message);
-      }, (error) => {console.log('error')});
+        }, (error) => {error.log(error)});      
+      }, (error) => {error.log(error)});
     } else {
+      //Display message
       AddMessage(author, date, message);
-    }
-
-    
-  }
-  //reset editor
-  quill.setContents(null);
+      //reset editor
+      quill.setContents(null);
+    }    
+  }  
 }
 
 

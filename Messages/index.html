@@ -14,14 +14,17 @@
 <body>
 
   <form id="configuration" style="display: none">
-    <h2>Notepad Widget Configuration</h1>
-    <div>
-      <label>Select Quill theme:
+    <h2>Message Widget Configuration</h1>
+    <div class="card form-card">
+      <div class="card-header">
+        <span class="author">Select Quill theme:</span>        
+      </div>
+      <div class="card-content">
         <select name="quillTheme" id="quillTheme">
           <option value="snow">Snow (format via toolbar)</option>
           <option value="bubble">Bubble (format via tooltip)</option>
         </select>
-      </label>
+      </div>
     </div>
     <div>
       <input type="submit" value="Save">

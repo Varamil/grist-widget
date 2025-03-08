@@ -1,8 +1,8 @@
 {
     "name": "@varamil/widget-messages",
     "description": "Simple messages widget for Grist.",
-    "homePage": "https://github.com/Antol/grist-widget",
-    "version": "0.0.1",
+    "homePage": "https://github.com/Varamil/grist-widget",
+    "version": "0.1.0",
     "grist": {
       "name": "Messages Widget",
       "url": "https://varamil.github.io/grist-widget/Messages/index.html",
