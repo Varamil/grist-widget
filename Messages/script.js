@@ -158,10 +158,11 @@ function AddMessage() {
     //update table to refresh user
     if (user.trim().length !== 0) {
       table.update({id, fields: {[column]: lastContent + '|-¤-|'}});
-      row = grist.fetchSelectedRecord(id);
-      console.log('user');
-      console.log(row);
-      author = row[user];
+      grist.fetchSelectedRecord(id).then((row)=> {
+        console.log('user');
+        console.log(row);
+        author = row[user];
+      }, (error) => {console.log('error')});
     }
 
     //Display the message
