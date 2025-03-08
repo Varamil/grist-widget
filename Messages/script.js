@@ -20,13 +20,10 @@ let culture = 'en-US';
 localize();
 const table = grist.getTable();
 
-
-
-
-Number.prototype.padLeft = function(base,chr){
-  var  len = (String(base || 10).length - String(this).length)+1;
-  return len > 0? new Array(len).join(chr || '0')+this : this;
-}
+// Number.prototype.padLeft = function(base,chr){
+//   var  len = (String(base || 10).length - String(this).length)+1;
+//   return len > 0? new Array(len).join(chr || '0')+this : this;
+// }
 
 function localize() {
   var urlParams = new URLSearchParams(window.location.search);  
@@ -48,9 +45,6 @@ function localize() {
       document.getElementById('new-title').innerHTML = 'New message';
       document.getElementById('send').innerHTML = 'Send';
   }
-
-  
-
 }
 
 function makeQuill(theme){
@@ -104,7 +98,6 @@ grist.onRecord(function (record, mappings) {
   quill.enable();
   // If this is a new record, or mapping is diffrent.
   if (id !== record.id || mappings?.Messages !== column) {
-    console.log('id' + record.id);
     id = record.id;
     column = mappings?.Messages;
     user = mappings?.User
@@ -123,6 +116,7 @@ grist.onRecord(function (record, mappings) {
 });
 
 grist.onNewRecord(function () {
+  document.getElementById('msg-container').innerHTML = '';
   id = null;
   lastContent = null;
   quill.setContents(null);
@@ -152,7 +146,6 @@ function DisplayMessage(author, date, message) {
       <div class="card-content">${message}</div>
     `;
   
-    //document.querySelector('.chat-container').insertBefore(card, document.querySelector('.chat-container').lastElementChild);
     document.getElementById('msg-container').append(card);
 }
 
@@ -172,11 +165,12 @@ function AddMessage(author, date, message){
   DisplayMessage(author, date, message);    
     
   //Update the table
-  if (message && message.trim().length !== 0) {
-    console.log('lastcontent' + lastContent);
-    lastContent = lastContent + "\n"
+  if (lastContent && lastContent.trim().length !== 0) {
+    lastContent = lastContent + "\n";
+  } else {
+    lastContent = '';
   }
-  lastContent = lastContent + author + '¤¤' + date + '¤¤' + message
+  lastContent = lastContent + author + '¤¤' + date + '¤¤' + message;
   table.update({id, fields: {[column]: lastContent}});
 }
 
@@ -206,8 +200,8 @@ function AddNewMessage() {
           //reset editor
           quill.setContents(null);
 
-        }, (error) => {error.log(error)});      
-      }, (error) => {error.log(error)});
+        }, (error) => {console.error(error)});      
+      }, (error) => {console.error(error)});
     } else {
       //Display message
       AddMessage(author, date, message);
