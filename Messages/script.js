@@ -24,11 +24,41 @@ let id;
 let column;
 let user;
 let lastContent;
+let culture = 'en-US';
+localize();
 const table = grist.getTable();
+
+
+
 
 Number.prototype.padLeft = function(base,chr){
   var  len = (String(base || 10).length - String(this).length)+1;
   return len > 0? new Array(len).join(chr || '0')+this : this;
+}
+
+function localize() {
+  var urlParams = new URLSearchParams(window.location.search);  
+  if (urlParams.has('culture')) culture = urlParams.get('culture');
+
+  var lang = culture.split('-')[0];
+  switch (lang) {
+    case 'fr':
+      document.getElementById('new-title').innerHTML = 'Nouveau message';
+      document.getElementById('send').innerHTML = 'Envoyer';
+      break;
+
+    case 'es':
+      document.getElementById('new-title').innerHTML = 'Nuevo mensaje';
+      document.getElementById('send').innerHTML = 'Enviar';
+      break;
+
+    default:
+      document.getElementById('new-title').innerHTML = 'New message';
+      document.getElementById('send').innerHTML = 'Send';
+  }
+
+  
+
 }
 
 function makeQuill(theme){
@@ -41,9 +71,9 @@ function makeQuill(theme){
     theme: theme,
     modules: {
       toolbar: toolbarOptions,
-      imageResize: {
-        displaySize: true
-      }
+      // imageResize: {
+      //   displaySize: true
+      // }
     }
   });
 
@@ -157,12 +187,12 @@ function AddNewMessage() {
     let author = '';
     
     //Prepare data
-    let date = new Date();//.toLocaleString('fr-FR');
-    date = [date.getFullYear(),
-                (date.getMonth()+1).padLeft(),
-                date.getDate().padLeft()].join('/') +' ' +
-              [date.getHours().padLeft(),
-              date.getMinutes().padLeft()].join(':');
+    let date = new Date().toLocaleString(culture);
+    // date = [date.getFullYear(),
+    //             (date.getMonth()+1).padLeft(),
+    //             date.getDate().padLeft()].join('/') +' ' +
+    //           [date.getHours().padLeft(),
+    //           date.getMinutes().padLeft()].join(':');
     const message = quill.getSemanticHTML();
     console.log(message);//DEBUG
     if (!message || message.trim().length === 0) return;
