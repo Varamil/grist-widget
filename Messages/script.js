@@ -143,7 +143,7 @@ function AddMessage(author, date, message){
   DisplayMessage(author, date, message);    
     
   //Update the table
-  if (messsage && message.trim().length !== 0) lastContent = lastContent + "\n"
+  if (message && message.trim().length !== 0) lastContent = lastContent + "\n"
   lastContent = lastContent + author + '¤¤' + date + '¤¤' + message
   table.update({id, fields: {[column]: lastContent}});
   console.log(lastContent);//DEBUG
