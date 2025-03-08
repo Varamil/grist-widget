@@ -9,8 +9,8 @@ const toolbarOptions = [
   [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
   [{ 'align': [] }],
   ['blockquote', 'code-block'],
-  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-  ['link'],
+  [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+  ['link', 'image', 'formula'],
 
   [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
   [{ 'size': ['small', false, 'large', 'huge'] }],  // font sizes
@@ -88,7 +88,7 @@ grist.onRecord(function (record, mappings) {
       lastContent = mapped.Messages;
 
       //load content
-      LoadMesssages(lastContent.split('\n'));
+      LoadMesssages(lastContent.replace('|-¤-|', '').split('\n'));
     }
   }
 });
@@ -113,6 +113,7 @@ grist.onOptions((customOptions, _) => {
 function DisplayMessage(author, date, message) {
   const card = document.createElement('div');
   card.className = 'card';
+  if (author.trim().length === 0) author = '&nbsp' //force blank space to ensure the layout
 
   card.innerHTML = `
       <div class="card-header">
@@ -137,7 +138,18 @@ function LoadMesssages(messages) {
   }
 }
 
-function AddMessage() {
+function AddMessage(author, date, message){
+  //Display the message
+  DisplayMessage(author, date, message);    
+    
+  //Update the table
+  if (message.trim().length !== 0) lastContent = lastContent + "\n"
+  lastContent = lastContent + author + '###' + date + '###' + message
+  table.update({id, fields: {[column]: lastContent}});
+  console.log(lastContent);//DEBUG
+}
+
+function AddNewMessage() {
   console.log('clic'); //DEBUG
 
   // If we are mapped.
@@ -162,17 +174,14 @@ function AddMessage() {
         console.log('user');
         console.log(row);
         author = row[user];
+
+        AddMessage(author, date, message);
       }, (error) => {console.log('error')});
+    } else {
+      AddMessage(author, date, message);
     }
 
-    //Display the message
-    DisplayMessage(author, date, message);    
     
-    //Update the table
-    if (message.trim().length !== 0) lastContent = lastContent + "\n"
-    lastContent = lastContent + author + '###' + date + '###' + message
-    table.update({id, fields: {[column]: lastContent}});
-    console.log(lastContent);//DEBUG
   }
   //reset editor
   quill.setContents(null);
