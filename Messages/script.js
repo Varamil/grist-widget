@@ -159,6 +159,8 @@ function AddMessage() {
     if (user.trim().length !== 0) {
       table.update({id, fields: {[column]: lastContent + '|-¤-|'}});
       row = grist.fetchSelectedRecord(id);
+      console.log('user');
+      console.log(row);
       author = row[user];
     }
 
