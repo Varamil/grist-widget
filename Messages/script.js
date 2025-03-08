@@ -113,7 +113,7 @@ grist.onOptions((customOptions, _) => {
 function DisplayMessage(author, date, message) {
   const card = document.createElement('div');
   card.className = 'card';
-  if (author.trim().length === 0) author = '&nbsp' //force blank space to ensure the layout
+  if (!author || author.trim().length === 0) author = '&nbsp' //force blank space to ensure the layout
 
   card.innerHTML = `
       <div class="card-header">
@@ -132,7 +132,7 @@ function LoadMesssages(messages) {
 
   let data;
   for (let i = 0; i < messages.length; i++) {
-    data = messages[i].split('###');
+    data = messages[i].split('¤¤');
     if (data.length > 2)
       DisplayMessage(data[0], data[1], data[2]);
   }
@@ -143,8 +143,8 @@ function AddMessage(author, date, message){
   DisplayMessage(author, date, message);    
     
   //Update the table
-  if (message.trim().length !== 0) lastContent = lastContent + "\n"
-  lastContent = lastContent + author + '###' + date + '###' + message
+  if (messsage && message.trim().length !== 0) lastContent = lastContent + "\n"
+  lastContent = lastContent + author + '¤¤' + date + '¤¤' + message
   table.update({id, fields: {[column]: lastContent}});
   console.log(lastContent);//DEBUG
 }
@@ -165,10 +165,10 @@ function AddNewMessage() {
               date.getMinutes().padLeft()].join(':');
     const message = quill.getSemanticHTML();
     console.log(message);//DEBUG
-    if (message.trim().length === 0) return;
+    if (!message || message.trim().length === 0) return;
 
     //update table to refresh user
-    if (user.trim().length !== 0) {
+    if (!user || user.trim().length !== 0) {
       table.update({id, fields: {[column]: lastContent + '|-¤-|'}});
       grist.fetchSelectedRecord(id).then((row)=> {
         console.log('user');
