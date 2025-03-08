@@ -6,19 +6,14 @@ const defaultTheme = "snow";
 
 const toolbarOptions = [
   ['bold', 'italic', 'underline', 'strike', { 'script': 'sub'}, { 'script': 'super' }],        // toggled buttons
+  [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+  [{ 'align': [] }],
   ['blockquote', 'code-block'],
+  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+  ['link'],
 
   [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
   [{ 'size': ['small', false, 'large', 'huge'] }],  // font sizes
-
-  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-  
-
-
-  [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-  [{ 'align': [] }],
-
-  ['link'],
 
   ['clean'],                                        // remove formatting button
 ];
@@ -27,6 +22,7 @@ let quill = {};
 
 let id;
 let column;
+let user;
 let lastContent;
 const table = grist.getTable();
 
@@ -69,7 +65,7 @@ async function saveOptions() {
 }
 
 // Subscribe to grist data
-grist.ready({requiredAccess: 'full', columns: [{name: 'Messages', type: 'Text'}],
+grist.ready({requiredAccess: 'full', columns: [{name: 'Messages', type: 'Text'}, {name: 'User', type: 'Text', optional: true}],
   // Register configuration handler to show configuration panel.
   onEditOptions() {
     showPanel('configuration');
@@ -82,6 +78,7 @@ grist.onRecord(function (record, mappings) {
   if (id !== record.id || mappings?.Messages !== column) {
     id = record.id;
     column = mappings?.Messages;
+    user = mappings?.User
     const mapped = grist.mapColumnNames(record);
     if (!mapped) {
       // Log but don't bother user - maybe we are just testing.
@@ -140,33 +137,41 @@ function LoadMesssages(messages) {
   }
 }
 
-
-
-//document.querySelector('form').addEventListener('submit', function(event) {
 function AddMessage() {
-  //event.preventDefault();
-  console.log('clic');
-  const author = 'Vous';
-  let date = new Date();//.toLocaleString('fr-FR');
-  date = [date.getFullYear(),
-              (date.getMonth()+1).padLeft(),
-              date.getDate().padLeft()].join('/') +' ' +
-            [date.getHours().padLeft(),
-             date.getMinutes().padLeft()].join(':');
-  const message = quill.getSemanticHTML();
-  console.log(message);//DEBUG
-  if (message.trim().length === 0) return;
+  console.log('clic'); //DEBUG
 
-  DisplayMessage(author, date, message);
-    
   // If we are mapped.
-  if (column && id) {    
+  if (column && id) {  
+    let author = '';
+    
+    //Prepare data
+    let date = new Date();//.toLocaleString('fr-FR');
+    date = [date.getFullYear(),
+                (date.getMonth()+1).padLeft(),
+                date.getDate().padLeft()].join('/') +' ' +
+              [date.getHours().padLeft(),
+              date.getMinutes().padLeft()].join(':');
+    const message = quill.getSemanticHTML();
+    console.log(message);//DEBUG
+    if (message.trim().length === 0) return;
+
+    //update table to refresh user
+    if (user.trim().length !== 0) {
+      table.update({id, fields: {[column]: lastContent + '|-¤-|'}});
+      row = grist.fetchSelectedRecord(id);
+      author = row[user];
+    }
+
+    //Display the message
+    DisplayMessage(author, date, message);    
+    
+    //Update the table
     if (message.trim().length !== 0) lastContent = lastContent + "\n"
     lastContent = lastContent + author + '###' + date + '###' + message
+    table.update({id, fields: {[column]: lastContent}});
+    console.log(lastContent);//DEBUG
   }
-
-  table.update({id, fields: {[column]: lastContent}});
-  console.log(lastContent);//DEBUG
+  //reset editor
   quill.setContents(null);
 }
 
