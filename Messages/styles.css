@@ -37,6 +37,10 @@ body {
   .card-content p {
     margin: 0px;
   }
+
+  .card-content img {
+    width: 100%;
+  }
   
   .author {
     font-weight: bold;
@@ -93,10 +97,10 @@ body {
     border-top: none;
     border-left: none;
     border-right: none;
+    padding-top: 0px;
   }
   
   .ql-container.ql-snow {
-    border: none;
     height: auto;
     flex: 1;
     overflow: auto;

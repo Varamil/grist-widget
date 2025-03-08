@@ -76,7 +76,8 @@ function makeQuill(theme){
 function showPanel(name) {
   document.getElementById("configuration").style.display = 'none';
   document.getElementById("chat").style.display = 'none';
-  document.getElementById(name).style.display = '';
+  if(name.length !== 0)
+    document.getElementById(name).style.display = '';
 }
 
 // Define handler for the Save button.
@@ -96,6 +97,7 @@ grist.ready({requiredAccess: 'full', columns: [{name: 'Messages', type: 'Text'},
 
 grist.onRecord(function (record, mappings) {
   quill.enable();
+  showPanel('chat');
   // If this is a new record, or mapping is diffrent.
   if (id !== record.id || mappings?.Messages !== column) {
     id = record.id;
@@ -117,6 +119,7 @@ grist.onRecord(function (record, mappings) {
 
 grist.onNewRecord(function () {
   document.getElementById('msg-container').innerHTML = '';
+  showPanel('');
   id = null;
   lastContent = null;
   quill.setContents(null);
