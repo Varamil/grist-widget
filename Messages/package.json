@@ -2,7 +2,7 @@
     "name": "@varamil/widget-messages",
     "description": "Simple messages widget for Grist.",
     "homePage": "https://github.com/Varamil/grist-widget",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "grist": {
       "name": "Messages Widget",
       "url": "https://varamil.github.io/grist-widget/Messages/index.html",

@@ -109,10 +109,15 @@ grist.onRecord(function (record, mappings) {
       console.error('Please map columns');
     } else { //if (lastContent !== mapped.Content) 
       // We will remember last thing sent, to not remove progress.
-      lastContent = mapped.Messages;
+      msg = mapped.Messages;
+      if (!msg || msg.trim().length === 0) {
+        lastContent = [];
+      } else {
+        lastContent = JSON.parse(msg);
+      }
 
       //load content
-      LoadMesssages(lastContent.replace('|-¤-|', '').split('\n'));
+      LoadMesssages(lastContent);
     }
   }
 });
@@ -121,7 +126,7 @@ grist.onNewRecord(function () {
   document.getElementById('msg-container').innerHTML = '';
   showPanel('');
   id = null;
-  lastContent = null;
+  lastContent = [];
   quill.setContents(null);
   quill.disable();
 })
@@ -144,7 +149,7 @@ function DisplayMessage(author, date, message) {
   card.innerHTML = `
       <div class="card-header">
         <span class="author">${author}</span>
-        <span class="date">${date}</span>
+        <span class="date">${date.toLocaleString(culture)}</span>
       </div>
       <div class="card-content">${message}</div>
     `;
@@ -157,7 +162,7 @@ function LoadMesssages(messages) {
 
   let data;
   for (let i = 0; i < messages.length; i++) {
-    data = messages[i].split('¤¤');
+    data = messages[i];
     if (data.length > 2)
       DisplayMessage(data[0], data[1], data[2]);
   }
@@ -168,13 +173,14 @@ function AddMessage(author, date, message){
   DisplayMessage(author, date, message);    
     
   //Update the table
-  if (lastContent && lastContent.trim().length !== 0) {
-    lastContent = lastContent + "\n";
-  } else {
-    lastContent = '';
-  }
-  lastContent = lastContent + author + '¤¤' + date + '¤¤' + message;
-  table.update({id, fields: {[column]: lastContent}});
+  // if (lastContent && lastContent.trim().length !== 0) {
+  //   lastContent = lastContent + "\n";
+  // } else {
+  //   lastContent = '';
+  // }
+  lastContent.append([author, date, message]);
+  //lastContent = lastContent + author + '¤¤' + date + '¤¤' + message;
+  table.update({id, fields: {[column]: JSON.stringify(lastContent)}});
 }
 
 function AddNewMessage() {
@@ -183,7 +189,7 @@ function AddNewMessage() {
     let author = '';
     
     //Prepare data
-    let date = new Date().toLocaleString(culture);
+    let date = new Date(); //.toLocaleString(culture);
     // date = [date.getFullYear(),
     //             (date.getMonth()+1).padLeft(),
     //             date.getDate().padLeft()].join('/') +' ' +
@@ -195,7 +201,8 @@ function AddNewMessage() {
 
     //update table to refresh user
     if (!user || user.trim().length !== 0) {
-      table.update({id, fields: {[column]: lastContent + '|-¤-|'}}).then((result)=> {
+      lastContent.append('|-¤-|');
+      table.update({id, fields: {[column]: JSON.stringify(lastContent)}}).then((result)=> {
         grist.fetchSelectedRecord(id).then((row)=> {
           author = row[user];
           //Display message
