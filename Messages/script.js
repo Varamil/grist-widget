@@ -109,7 +109,7 @@ grist.onRecord(function (record, mappings) {
       console.error('Please map columns');
     } else { //if (lastContent !== mapped.Content) 
       // We will remember last thing sent, to not remove progress.
-      msg = mapped.Messages;
+      msg = mapped.Messages.replace('|-¤-|','');
       if (!msg || msg.trim().length === 0) {
         lastContent = [];
       } else {
@@ -201,8 +201,7 @@ function AddNewMessage() {
 
     //update table to refresh user
     if (!user || user.trim().length !== 0) {
-      lastContent.push('|-¤-|');
-      table.update({id, fields: {[column]: JSON.stringify(lastContent)}}).then((result)=> {
+      table.update({id, fields: {[column]: JSON.stringify(lastContent)+'|-¤-|'}}).then((result)=> {
         grist.fetchSelectedRecord(id).then((row)=> {
           author = row[user];
           //Display message
