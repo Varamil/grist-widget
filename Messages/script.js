@@ -178,7 +178,7 @@ function AddMessage(author, date, message){
   // } else {
   //   lastContent = '';
   // }
-  lastContent.append([author, date, message]);
+  lastContent.push([author, date, message]);
   //lastContent = lastContent + author + '¤¤' + date + '¤¤' + message;
   table.update({id, fields: {[column]: JSON.stringify(lastContent)}});
 }
@@ -201,7 +201,7 @@ function AddNewMessage() {
 
     //update table to refresh user
     if (!user || user.trim().length !== 0) {
-      lastContent.append('|-¤-|');
+      lastContent.push('|-¤-|');
       table.update({id, fields: {[column]: JSON.stringify(lastContent)}}).then((result)=> {
         grist.fetchSelectedRecord(id).then((row)=> {
           author = row[user];
