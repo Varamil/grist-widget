@@ -20,11 +20,6 @@ let culture = 'en-US';
 localize();
 const table = grist.getTable();
 
-// Number.prototype.padLeft = function(base,chr){
-//   var  len = (String(base || 10).length - String(this).length)+1;
-//   return len > 0? new Array(len).join(chr || '0')+this : this;
-// }
-
 function localize() {
   var urlParams = new URLSearchParams(window.location.search);  
   if (urlParams.has('culture')) culture = urlParams.get('culture');
@@ -45,6 +40,17 @@ function localize() {
       document.getElementById('new-title').innerHTML = 'New message';
       document.getElementById('send').innerHTML = 'Send';
   }
+
+}
+
+function Datereviver(key, value) {
+  if (typeof value === 'string') {
+    const date = Date.parse(value);
+    if (!isNaN(date)) {
+      return new Date(date);
+    }
+  }
+  return value;
 }
 
 function makeQuill(theme){
@@ -113,7 +119,7 @@ grist.onRecord(function (record, mappings) {
       if (!msg || msg.trim().length === 0) {
         lastContent = [];
       } else {
-        lastContent = JSON.parse(msg);
+        lastContent = JSON.parse(msg, Datereviver);
       }
 
       //load content
@@ -173,13 +179,7 @@ function AddMessage(author, date, message){
   DisplayMessage(author, date, message);    
     
   //Update the table
-  // if (lastContent && lastContent.trim().length !== 0) {
-  //   lastContent = lastContent + "\n";
-  // } else {
-  //   lastContent = '';
-  // }
-  lastContent.push([author, date, message]);
-  //lastContent = lastContent + author + '¤¤' + date + '¤¤' + message;
+  lastContent.push([author, date, message]);  
   table.update({id, fields: {[column]: JSON.stringify(lastContent)}});
 }
 
@@ -189,15 +189,10 @@ function AddNewMessage() {
     let author = '';
     
     //Prepare data
-    let date = new Date(); //.toLocaleString(culture);
-    // date = [date.getFullYear(),
-    //             (date.getMonth()+1).padLeft(),
-    //             date.getDate().padLeft()].join('/') +' ' +
-    //           [date.getHours().padLeft(),
-    //           date.getMinutes().padLeft()].join(':');
+    let date = new Date();
     const message = quill.getSemanticHTML();
 
-    if (!message || message.trim().length === 0) return;
+    if (!message || message.trim().length === 0 || message == '<p></p>') return;
 
     //update table to refresh user
     if (!user || user.trim().length !== 0) {
