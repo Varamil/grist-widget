@@ -128,7 +128,7 @@ function doActions(trigger, record) {
         obj = /(?<=[$])[_A-Za-z0-9]+/.exec(text);
     }
     data = JSON.parse(text);
-
+    console.log(data);
     //run actions
     grist.docApi.applyUserActions(data);
 };
