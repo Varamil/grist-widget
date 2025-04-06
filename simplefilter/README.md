@@ -10,6 +10,8 @@ A widget to display a simple chat interface storing all messages in a row withou
 * Supports negation
 * Supports regular expressions (regex)
 
+![image](images/example.png)
+
 ## Installation
 1. Add a new *Custom* view to your page, choosing as source the table to which you wish to add filtering
 2. Choose the *Custom URL* widget and paste the following URL into the field: https://varamil.github.io/grist-widget/simplefilter/index.html then click on *Add widget*
@@ -27,6 +29,11 @@ In the widget configuration (right-hand pane), via *Open configuration*, you can
 * The last field allows you to modify the help message displayed when the user types “?"
 
 Click *Apply* to apply the changes and then click on Grist *Save* to save them.
+
+## Usage
+Simply type the various *words* you wish to search for into the widget field. The search is launched on *Enter* or when you leave the field.
+
+Example available here: https://docs.getgrist.com/wrUr32FUVsDo/simple-filter/p/2
 
 ## Filtering options
 By default, the search is based on *OR* logic, i.e. if one of the *words* is present in the line, it will be displayed.
@@ -86,6 +93,8 @@ Varamil - [GitHub](https://github.com/Varamil)
 * Supporte la négation
 * Supporte les expressions régulières (regex)
 
+![image](images/example.png)
+
 ## Installation
 1. Ajouter une nouvelle vue de type *Personnalisée* à votre page en choisissant comme source la table à laquelle vous souhaitez ajouter un filtrage
 2. Choisir le widget *URL personnalisé* et coller dans le champs l'URL suivante :  https://varamil.github.io/grist-widget/simplefilter/index.html puis cliquer sur *Ajouter un widget*
@@ -103,6 +112,11 @@ Dans la configuration du widget (volet de droite), via *Ouvrir la configuration*
 * Le dernier champ permet de modifier le message d'aide affiché quand l'utilisateur tape "?"
 
 Faire *Apply* pour appliquer les modifications et bien cliquer sur l'*Enregistrer* de Grist pour conserver ces modifications.
+
+## Utilisation
+Simplement taper les différents *mots* que vous souhaitez rechercher dans le champs du widget. La recherche est lancée sur *Entrer* ou quand vous quittez le champs.
+
+Un exemple est disponible ici : https://docs.getgrist.com/wrUr32FUVsDo/simple-filter/p/2
 
 ## Options de filtrage
 Par défaut, la recherche se fait suivant la logique *OU*, c'est à dire que si l'un des *mots* est présent dans la ligne alors celle-ci sera affichée.
