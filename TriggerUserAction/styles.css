@@ -121,8 +121,3 @@ body {
   .ql-snow .ql-picker.ql-size .ql-picker-item::before {
     content: 'Regular'
   }
-
-  .ql-bubble * {
-    background-color: #F8F8F8;
-    padding: 5px;
-  }

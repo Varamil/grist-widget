@@ -1,12 +1,12 @@
 {
-    "name": "@varamil/trigger-user-actions",
+    "name": "@varamil/widget-trigger-user-actions",
     "description": "Widget to configure simple automation, triggering some actions.",
     "homePage": "https://github.com/Varamil/grist-widget",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "grist": {
       "name": "Trigger User Actions",
       "url": "https://varamil.github.io/grist-widget/TriggerUserAction/index.html",
-      "widgetId": "@gristlabs/trigger-user-actions",
+      "widgetId": "@gristlabs/widget-trigger-user-actions",
       "published": true,
       "accessLevel": "full",
       "renderAfterReady": true,

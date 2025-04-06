@@ -7,21 +7,13 @@
 //          [1] tableID: string ID of the table to be modified, empty = current table
 //          [2] rowsID: rows ID that will be updated or deleted, None when add a record
 //          [3] data: dictionnary with key:value corresponding to columnName:newValue
-let config = [
-    {
-        'type': 'OnNewRow',
-        'columnsID': null,
-        'actions': [
-            ['AddRecord', 'Sub', null, {"IDmain": "$ID", "SubData1": "Test"}],
-        ]
-    }
-];
-console.log(config[0]['actions']);
+let config = [];
+
 // Table data before changes occur. Dictionnary where keys are table columns, and 
 // values are arrays of row values.
-let tableData;
+var tableData;
 
-let rows;
+var rows;
 
 
 
@@ -45,21 +37,41 @@ grist.ready({requiredAccess: 'full',
 // Register onOptions handler.
 grist.onOptions((customOptions, _) => {
     customOptions = customOptions || {};
+    config = customOptions.config || [
+        {
+            'type': 'OnNewRow',
+            'columnsID': null,
+            'actions': [
+                ['AddRecord', 'TableID', null, {"ColID": "Value"}],
+            ]
+        }
+    ];
+    console.log(config);
+    document.getElementById("json").value = JSON.stringify(config);
     //showPanel("chat"); //TODO
   });
 
 // Define handler for the Save button.
-async function saveOptions() {
+function saveOptions() {
     //TODO
-    //await grist.widgetApi.setOption('quillTheme', theme);
+    conf = document.getElementById("json").value;
+    console.log(conf);
+    try {
+        config = JSON.parse(conf);
+        grist.widgetApi.setOption('config', config).then();
+        console.log(config);
+    } catch {
+        console.error("save config");
+    }
     //showPanel('chat');
   }
 
 // Register onRecord    
 grist.onRecords(function (records, mappings) {
     //TODO
-    new_rows = [];
-    old_rows = [];
+    console.log(records);
+    let new_rows = [];
+    let old_rows = [];
 
     //iterate triggers
     for (const trigger of config) {
@@ -71,7 +83,7 @@ grist.onRecords(function (records, mappings) {
                 for (const rec of records) {                    
                     if (!rows.includes(rec['id'])) {
                         //new row added
-                        console.log("new row added");    
+                        console.log("new row added");  
                         //save the new id
                         new_rows.push(rec['id']);
                         //perform actions
@@ -99,10 +111,14 @@ grist.onRecords(function (records, mappings) {
         }
     }
 
-    //fetch new data when all actions are done
-    if (new_rows.length > 0) {
-        rows.push(new_rows);
-    }
+    //First save current table state
+    grist.fetchSelectedTable(format="rows").then((records) => {
+        tableData = records;
+    });
+    //And save row ids list
+    grist.fetchSelectedTable(format="columns").then((records) => {
+        rows = records['id'];
+    });
 
   }, includeColumns="all", keepEncoded=true);
 

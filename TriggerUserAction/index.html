@@ -4,10 +4,24 @@
   <meta charset="UTF-8">
   <title>Trigger User Actions</title>
   <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-
+  <form>
+    <h2>Trigger Configuration</h1>
+    <div class="card form-card">
+      <div class="card-header">
+        <span class="author">JSON</span>        
+      </div>
+      <div class="card-content">
+        <textarea name="json" id="json" style="width: 100%; height: 200px;"></textarea>  
+      </div>
+    </div>
+    <div>
+      <button id="send" class="add-msg" onclick="saveOptions()">Save</button>
+    </div>
+  </form>
 
 <script src="script.js"></script>
 </body>

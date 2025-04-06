@@ -115,7 +115,7 @@ grist.onRecord(function (record, mappings) {
       console.error('Please map columns');
     } else { //if (lastContent !== mapped.Content) 
       // We will remember last thing sent, to not remove progress.
-      msg = mapped.Messages.replace('|-¤-|','');
+      msg = mapped.Messages?.replace('|-¤-|','');
       if (!msg || msg.trim().length === 0) {
         lastContent = [];
       } else {
