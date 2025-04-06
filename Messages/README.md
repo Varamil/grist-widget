@@ -21,7 +21,7 @@ A widget to display a simple chat interface storing all messages in a row withou
 ![image](images/user_config.png)
 
 4. Add a new view of type *Custom* to your page by choosing as source the table that will contain your messages.
-5. Select the *Custom URL* widget and paste the following URL into the field:  https://varamil.github.io/grist-widget/Messages/index.html
+5. Select the *Custom URL* widget and paste the following URL into the field:  https://varamil.github.io/grist-widget/Messages/index.html then click on *Add a widget*
 6. In widget configuration (right pane), authorize widget access to your table 
 7. For *MESSAGES* option, select the column that will contain your messages
 8. *(Optional)* select for the *USER* option the column containing the author of the changes
@@ -48,7 +48,7 @@ Varamil - [GitHub](https://github.com/Varamil)
 # Français
 *Message* est un widget pour afficher une interface de chat simple, stockant tous les messages dans une ligne sans faire appel à une table supplémentaire.
 
-## Features
+## Fonctionnalités
 * Afficher les messages dans une interface moderne
 * Supporte la mise en forme du texte (via [Quill](https://github.com/slab/quill)), incluant images, tableaux et formules
 * Inclue un formulaire pour ajouter un nouveau message
@@ -66,7 +66,7 @@ Varamil - [GitHub](https://github.com/Varamil)
 ![image](images/user_config.png)
 
 4. Ajouter une nouvelle vue de type *Personnalisée* à votre page en choisissant comme source la table qui contiendra vos messages
-5. Choisir le widget *URL personnalisé* et coller dans le champs l'URL suivante :  https://varamil.github.io/grist-widget/Messages/index.html
+5. Choisir le widget *URL personnalisé* et coller dans le champs l'URL suivante :  https://varamil.github.io/grist-widget/Messages/index.html puis cliquer sur *Ajouter un widget*
 6. Dans la configuration du widget (volet de droite), autoriser l'accès du widget à votre table. 
 7. Sélectionnez pour l'option *MESSAGES* la colonne qui contiendra vos messages
 8. *(Optionnel)* sélectionnez pour l'option *USER* la colonne qui contient l'auteur des modifications

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Simple filter</title>
+  <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+</head>
+<body>
+    <input type="checkbox" id="target" value="normal" style="display: none;"><label id="labtarget" style="display: none;">Include hidden columns</label>
+    <input type='text' id="filter" style="width: 100%; box-sizing:border-box;" onblur="onLeave()" onkeydown="onKey(this)"/>    
+    <input type='text' id="columns" style="width: 100%; box-sizing:border-box;display: none;" placeholder="List columns IDs on which perform the search (commas separated)" />    
+    <textarea id="help" style="width: 100%;box-sizing:border-box;display: none;"></textarea>
+    <button id="save" onclick="saveOption()" style="display: none;">Apply</button>
+    <script src="script.js"></script>
+</body>
+</html>

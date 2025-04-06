@@ -1,0 +1,22 @@
+{
+    "name": "@varamil/widget-simplefilter",
+    "description": "Simple table filtering to display any row that matches the search.",
+    "homePage": "https://github.com/Varamil/grist-widget",
+    "version": "1.0.0",
+    "grist": {
+      "name": "Simple table filter",
+      "url": "https://varamil.github.io/grist-widget/simplefilter/index.html",
+      "widgetId": "@gristlabs/widget-simplefilter",
+      "published": true,
+      "accessLevel": "read table",
+      "renderAfterReady": true,
+      "description": "Simple table filtering to display any row that matches the search.",
+      "authors": [
+        {
+          "name": "Varamil",
+          "url": "https://github.com/Varamil"
+        }
+      ],
+      "isGristLabsMaintained": false
+    }
+  }
