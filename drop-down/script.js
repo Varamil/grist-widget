@@ -41,6 +41,7 @@ function initGrist() {
     onEditOptions() {
       document.getElementById("container").style.display = 'none';
       document.getElementById("config").style.display = '';
+      document.getElementById("sessionid").value = sessionID;
     },
   });
 
