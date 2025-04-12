@@ -54,7 +54,7 @@ The following options modify the overall behavior of the filter. They should alw
 * `&&`: same as `&` but all words must be present in the **same cell**
 
 
-* `/`: search is performed using a regular expression (regex). Directly uses the [JavaScript] format (https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/RegExp). Here, spaces doesn't need to be replaced by `\s`. By default, `im` modifiers are used.
+* `“...”`: considers everything enclosed in quotation marks to be part of the same word, allowing spaces to be included in a word. The whole word doesn't need to be enclosed in quotation marks `mar “tin paul”` will have the same result as `“martin paul”`. However, for regular expressions (see next paragraph), quotation marks must be outside `/` (`“/.../”`) to not be interpreted. If quotation marks are to be included in the word, use `\"` to escape.
 
 
 * `@IdCol1,IdCol2`: doesn't have to be at the beginning, but must be a word in its own (so if it's at the beginning, a space is required after the last ID and before the first word). Allows you to specify the columns in which to search. Overwrites configuration, but applies to visible/hidden columns as defined in configuration. The IDs to be used are those of Grist (without the $) and must be separated by commas. Please note that case is important.
@@ -65,15 +65,17 @@ The following options are applied to the word, and must always be at the beginni
 * `!` : *negation*, indicates that the *word* **must not** be present. Must always come first, before the other modifiers listed below.
 
 
-* `=` : *exactly equal*, indicates that the line must contain a cell that **exactly** contains this *word*. Since it's quite common for there to contain spaces in this kind of situation, replace them with `\s` in the search (e.g. `martin\spaul` to find a cell equal to `martin paul`). Use `\\s` to escape. . Use `!=` for the inverse (**is different from**) 
+* `=` : *exactly equal*, indicates that the line must contain a cell that **exactly** contains this *word*. Use `!=` for the inverse (**is different from**) 
 
 
 * `<` : *begins with*, indicates that the line must contain a cell **beginning with** this *word* (e.g. `<martin` will display lines with `martin paul` but not `jean martin`). Use `!<` for the reverse (**does not begin with**) 
 
 
-* `>` : *terminates with*, indicates that the line must contain a cell **terminating with** this *word* (e.g. `>martin` will display lines with `jean martin` but not `martin paul`). Use `!<` for the reverse (**does not end with**) 
+* `>` : *terminates with*, indicates that the line must contain a cell **terminating with** this *word* (e.g. `>martin` will display lines with `jean martin` but not `martin paul`). Use `!<` for the reverse (**does not end with**)
 
-* `/` : *regex*, indicates that the line must contain a cell that **verifies** the regular expression. Directly uses the format of [JavaScript](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/RegExp) and spaces must be replaced by `\s` (else the regex will be split). Use `\\s` to escape. By default, `im` modifiers are used. Use `!/` for reverse (**must not verifies**). Cannot be used with `=`, `<` or `>` as it makes no sense, as regexes can handle these options (via `^` and `$`). 
+* `'` : *independent word*, indicates that the text following the `'` is to be found as a “complete word”. Thus, `'ok` will display lines where the word `ok` is found, but not those containing words including `ok` such as `books` or `look`. Use `!'` to find the absence of a word, but cannot be used with `=`, `<` or `>`.
+
+* `/` : *regex*, indicates that the line must contain a cell that **verifies** the regular expression. Directly uses the format of [JavaScript](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/RegExp). Replace spaces by `\s` or use `"` outside the regex (e.g. `"/reg ex/"`), else the regex will be split. Use `\\s` to escape. By default, `im` modifiers are used. Use `!/` for reverse (**must not verifies**). Cannot be used with `=`, `<` or `>` as it makes no sense, as regexes can handle these options (via `^` and `$`). 
 
 * `@IdCol1,IdCol2`: must be at the end of the *word* (unlike the others). Allows you to specify the columns in which to search for the *word*. Overwrites configuration, but applies to visible/hidden columns as defined in configuration. The IDs to be used are those of Grist (without the $) and must be separated by commas. Please note that case is important. **If the search contains a `@`, add a `@` at the very end of the word to ignore** (e.g. `martin@paul.com@` to be able to search `martin@paul.com` otherwise will search `martin` in the `paul.com` column).
 
@@ -136,8 +138,7 @@ Les options suivantes modifies le comportement global du filtre. Elles doivent �
 
 * `&&` : comme le `&` mais alors les mots doivent être présent dans la **même cellule**
 
-
-* `/` : la recherche se fait via une expression régulière (regex). Utilise directement le format de [JavaScript](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/RegExp). Ici les espaces n'ont pas besoin d'être remplacés par des `\s`. Par défaut les modificateurs `im` sont utilisés.
+* `"..."` : considère que tous ce qui est contenu entre les quillemets fait parti du même mot, permet aini d'inclure des espaces dans un mot. Tout le mot n'a pas besoin d'être entre guillemets `mar"tin paul"` aura le même résulat que `"martin paul"`. Cependant pour les expressions régulières (voir paragraphe suivant) les guillemets doivent être à l'extérieur des `/` (`"/.../"`) pour ne pas être interprêtés. Si des guillemets doivent être inclus dans le mot, utiliser `\"` échapper.
 
 
 * `@IdCol1,IdCol2` : n'a pas besoin d'être au début, mais doit être un mot à part entière (et donc s'il est au début il faut un espace après le dernier ID et le début du premier mot). Permet de spécifier les colonnes dans lesquelles faire la recherche. Écrase la configuration, mais s'applique aux colonnes visibles/cachées comme défini dans la configuration. Les IDs à utiliser sont ceux de Grist (sans les $) et doivent être séparés par des virgules. Attention, la casse est importante.
@@ -149,16 +150,17 @@ Les options suivantes sont appliquées au mots, et doivent toujours être au dé
 * `!` : *négation*, indique que le *mot* **ne doit pas** être présent. Doit toujours être en premier, avant les autres modificateurs listé ci-après
 
 
-* `=` : *exactement égal*, indique que la ligne doit contenir une cellule contenant **exatctement** ce *mot*. Comme il est conrant qu'il y ait des espaces dans ce genre de situation, il faut les remplacer par `\s` dans la recherche (ex: `martin\spaul` pour trouver une cellule égale à `martin paul`). Utiliser `\\s` pour échapper. . Utiliser `!=` pour l'inverse (**est différent de**) 
-
+* `=` : *exactement égal*, indique que la ligne doit contenir une cellule contenant **exatctement** ce *mot*. Utiliser `!=` pour l'inverse (**est différent de**) 
 
 * `<` : *commence par*, indique que la ligne doit contenir une cellule **commençant par** ce *mot* (ex: `<martin` affichera les lignes avec `martin paul` mais pas `jean martin`). Utiliser `!<` pour l'inverse (**ne commence pas par**) 
 
 
 * `>` : *termine par*, indique que la ligne doit contenir une cellule **terminant par** ce *mot* (ex: `>martin` affichera les lignes avec `jean martin` mais pas `martin paul`). Utiliser `!<` pour l'inverse (**ne termine pas par**) 
 
+* `'` : *mot indépendant*, indique que le texte qui suit le `'` doit être trouvé comme un "mot complet". Ainsi, `'eau` affichera les lignes où le mot `eau` est trouvé, mais pas celles qui contiendront des mots incluants `eau` tels que `gateaux` ou `rideau`. Utiliser `!'` pour trouver l'absence d'un mot, mais ne peut pas être utilisé avec `=`, `<` ou `>`.
 
-* `/` : *regex*, indique que la ligne doit contenir une cellule qui **vérifie** l'expression régulière. Utilise directement le format de [JavaScript](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/RegExp) et les espaces doivent être remplacées par des `\s` (pour que la regex ne soit pas découpée). Utiliser `\\s` pour échapper. Par défaut les modificateurs `im` sont utilisés. Utiliser `!/` pour l'inverse (**de doit pas vérifier**). Ne peut pas être utilisé avec `=`, `<` ou `>` car ça n'a pas de sens, les regex permettant de gérer ces options (via `^` et `$`). 
+
+* `/` : *regex*, indique que la ligne doit contenir une cellule qui **vérifie** l'expression régulière. Utilise directement le format de [JavaScript](https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/RegExp). Remplacer les espaces par des `\s` ou utiliser des `"` à l'extérieur de la regex (ex: `"/reg ex/"`) pour que la regex ne soit pas découpée. Utiliser `\\s` pour échapper. Par défaut les modificateurs `im` sont utilisés. Utiliser `!/` pour l'inverse (**de doit pas vérifier**). Ne peut pas être utilisé avec `=`, `<` ou `>` car ça n'a pas de sens, les regex permettant de gérer ces options (via `^` et `$`). 
 
 * `@IdCol1,IdCol2` : doit être à la fin du *mot* (contrairement aux autres). Permet de spécifier les colonnes dans lesquelles faire la recherche du *mot*. Écrase la configuration, mais s'applique aux colonnes visibles/cachées comme défini dans la configuration. Les IDs à utiliser sont ceux de Grist (sans les $) et doivent être séparés par des virgules. Attention, la casse est importante. **Si la recherche contien un `@`, ajouter un `@` à la toute fin du mot pour ignorer** (ex: `martin@paul.com@` pour pouvoir chercher `martin@paul.com` sinon va chercher `martin` dans la colonne `paul.com`)
 

@@ -2,8 +2,10 @@ var search_col = [];
 var target = "shown";
 var placeholder = "";
 var helpmsg = "";
+var displayall = true;
+
 const defplaceholder = "Search (? + Enter to get help)" ;
-// const defplaceholder = "Recherche (? + Entrer pour obtenir de l'aide)" ;
+//const defplaceholder = "Recherche (? + Entrer pour obtenir de l'aide)" ;
 
 
 // const defhelp = `Aide
@@ -42,6 +44,10 @@ grist.ready({requiredAccess: 'read table', allowSelectBy: true,
         document.getElementById("target").style.display = '';
         document.getElementById("target").checked = (target === "normal");
         document.getElementById("labtarget").style.display = '';
+        document.getElementById("empty").style.display = '';
+        console.log(displayall);
+        document.getElementById("empty").checked = (displayall === true);
+        document.getElementById("labempty").style.display = '';
         document.getElementById("help").style.display = '';
         document.getElementById("help").value = helpmsg;    
         document.getElementById("save").style.display = '';
@@ -55,15 +61,21 @@ grist.onOptions((customOptions, _) => {
     target = customOptions.target || "shown";
     placeholder = customOptions.placeholder || defplaceholder;
     helpmsg = customOptions.helpmsg || defhelp;
-
+    displayall = (customOptions.displayall === undefined) ? true: customOptions.displayall;
+    console.log(customOptions);
+    console.log(displayall);
     document.getElementById("save").style.display = 'none';
     document.getElementById("columns").style.display = 'none';
     document.getElementById("target").style.display = 'none';
     document.getElementById("labtarget").style.display = 'none';
+    document.getElementById("empty").style.display = 'none';
+    document.getElementById("labempty").style.display = 'none';
     document.getElementById("help").style.display = 'none';
     const fl = document.getElementById("filter");
     fl.placeholder = placeholder;
     fl.value = "";
+
+    grist.setSelectedRows(displayall? null: []);
   });
 
 function saveOption() {
@@ -82,6 +94,10 @@ function saveOption() {
             target = "shown";
         }
         grist.widgetApi.setOption('target', target);
+
+        displayall = document.getElementById("empty").checked;
+        grist.widgetApi.setOption('displayall', displayall);
+        console.log(displayall);
 
         placeholder = document.getElementById("filter").value;
         grist.widgetApi.setOption('placeholder', (placeholder === defplaceholder)? null: placeholder);
@@ -108,7 +124,7 @@ function ApplyFilter() {
         
         //if empty, display all the table
         if (!search || search.trim().length === 0) {
-            grist.setSelectedRows(null);
+            grist.setSelectedRows(displayall? null: []);
         } else {
             //help
             if (search.startsWith('?')) {
@@ -119,10 +135,7 @@ function ApplyFilter() {
 
             // fetch the table
             grist.fetchSelectedTable(format="columns", includeColumns=target).then((records) => {    
-                let scol;
-                let re;
-                let neg;
-                let tp;
+                let scol, re, neg, tp, searches, type;
 
                 // get columns names
                 let columns;
@@ -132,11 +145,14 @@ function ApplyFilter() {
                     columns = search_col;
                 }
 
-                // custom columns ?
+                [type, searches] = parseinput(search);
+                console.log(searches);
+
+                // custom columns ? **************************************************************
                 if (search.includes("@")) {
                     scol = null;
                     let finalsearches = [];
-                    for (c of search.split(" ")) {
+                    for (c of searches) {
                         if (c.startsWith('@')) {
                             scol = [scol, c.substring(1)].join(",");
                         } else {
@@ -145,21 +161,37 @@ function ApplyFilter() {
                     }
 
                     if (finalsearches.length === 0) {
-                        grist.setSelectedRows(null);
+                        grist.setSelectedRows(displayall? null: []);
                         return;
                     } else {
-                        search = finalsearches.join(" ");
+                        searches = finalsearches;
                     }
 
                     if (scol) {
                         scol = scol.substring(1).split(",");
                     if (scol.length > 0) columns = scol;
                     }                
-                }       
+                }     
+                console.log(searches);  
 
-                if (search.startsWith('&&')) {
-                    //AND search, all in the same column
-                    let searches = search.substring(2).split(" ");
+                /*if (search.startsWith('/')) {
+                    //regex search **************************************************************
+                    re = getregex(search);
+
+                    let match = records['id'].filter((id) => {
+                        for (c of columns) {
+                            if(regex.test(text?.toString())) return true;                  
+                        } 
+
+                        return false;
+                    });
+            
+                    grist.setSelectedRows(match);
+                
+                } else */
+                if (type === "&&") {
+                    //AND search, all in the same column **************************************************************
+                    //let searches = parseinput(search, 2); //search.substring(2).split(" ");
 
                     let ok;
                     let match = records['id'].filter((id) => {
@@ -186,9 +218,9 @@ function ApplyFilter() {
                     });
             
                     grist.setSelectedRows(match);
-                } else if (search.startsWith('&')) {
-                    //AND search with matches in any column
-                    let searches = search.substring(1).split(" ");                
+                } else if (type === "&") {
+                    //AND search with matches in any column **************************************************************
+                    //let searches = parseinput(search, 1); //search.substring(1).split(" ");                
 
                     let match = records['id'].filter((id) => {
                         let matches = [];
@@ -221,8 +253,9 @@ function ApplyFilter() {
             
                     grist.setSelectedRows(match);
                 } else {
-                    //OR
-                    let searches = search.split(" ");
+                    //OR **************************************************************
+                    //let searches = parseinput(search); //search.split(" ");
+                    
                     let match = records['id'].filter((id) => {
                         for (s of searches) {
                             [s, re, neg, tp, scol] = parsesearch(s, columns);
@@ -293,11 +326,13 @@ function gettype(text) {
 
     switch (text.substring(0, 1)) {
         case '=':
-            return [text.substring(1).replace(/(?<![\\])[\\]s/gim, " "), neg, '='];        
+            return [text.substring(1), neg, '='];        
         case '<':
             return [text.substring(1), neg, '<'];
         case '>':
             return [text.substring(1), neg, '>'];
+        case "'":
+            return ["/\\b" + text.substring(1).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&") + "\\b", neg, ""];
         default:
             return [text, neg, ''];
     }
@@ -313,4 +348,42 @@ function parsesearch(text, columns) {
         c = gettype(text);
         return [c[0].toLowerCase(), getregex(c[0]), c[1], c[2], columns];
     }
+}
+
+function parseinput(input) {
+    let quote = false;
+    let data = [];
+    let word = "";
+    let type;
+    let start;
+
+    //if (input.startsWith('/')) {type = "/"; start = 1;} 
+    if (input.startsWith('&&')) {type = "&&"; start = 2;}
+    else if (input.startsWith('&')) {type = "&"; start = 1;}
+    else if (input.startsWith('@')) {type = "@"; start = 1;}
+    else {type = ""; start = 0;}
+
+
+    for (let i = start; i < input.length; i++) {
+        if (input[i] === " " && !quote) {
+            if (word.length > 0) {
+                data.push(word);
+                word = "";
+            }
+        } else if (input[i] === '"') {
+            quote = !quote;
+        } else if(input[i] === '\\') {
+            if (i < input.length && input[i+1] === '"') {
+                word += '"';
+                i++; //jump next
+            }
+        } else {
+            word += input[i];
+        }
+    }
+
+    //last word
+    if (word.length > 0) data.push(word);
+
+    return [type, data];
 }
