@@ -5,7 +5,7 @@ A widget to display a simple chat interface storing all messages in a row withou
 
 ## Features
 * Easy to use and quick to access 
-* Supports *OR* and *ET* searches
+* Supports *OR* and *AND* searches
 * Supports *contains*, *starts with*, *ends with*, *exactly equals* search options
 * Supports negation
 * Supports regular expressions (regex)
@@ -38,6 +38,8 @@ Click *Apply* to apply the changes and then click on Grist *Save* to save them.
 
 ## Usage
 Simply type the various *words* you wish to search for into the widget field. The search is launched on *Enter* or when you leave the field.
+
+You can click on the *logic* on the search field left to automatically switch the current reserch logic.
 
 Example available here: https://docs.getgrist.com/wrUr32FUVsDo/simple-filter/p/2
 
@@ -149,6 +151,8 @@ Effectue une recherche de type OU des mots listés (séparés par des espaces) d
 
 ## Utilisation
 Simplement taper les différents *mots* que vous souhaitez rechercher dans le champs du widget. La recherche est lancée sur *Entrer* ou quand vous quittez le champs.
+
+Vous pouvez cliquer sur la *logique* à gauche du champ de recherche pour basculer automatiquement le type de logique de votre recherche.
 
 Un exemple est disponible ici : https://docs.getgrist.com/wrUr32FUVsDo/simple-filter/p/2
 
