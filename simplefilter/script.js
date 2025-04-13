@@ -3,6 +3,15 @@ var target = "shown";
 var placeholder = "";
 var helpmsg = "";
 var displayall = true;
+var defsearchtype = 0;
+var cursearchtype = 0;
+var savesession = false;
+var sessionID = "";
+var sessionUUID = "";
+var defval = "";
+const searchtypes = ["+", "&", "&&"];
+//const searchtypesnames = ["OU", "ET", "ET col"];
+const searchtypesnames = ["OR", "AND", "AND col"];
 
 const defplaceholder = "Search (? + Enter to get help)" ;
 //const defplaceholder = "Recherche (? + Entrer pour obtenir de l'aide)" ;
@@ -12,9 +21,10 @@ const defplaceholder = "Search (? + Enter to get help)" ;
 // Effectue une recherche de type OU des mots listés (séparés par des espaces) dans les différentes colonnes.\n
 // • Commencer une recherche par un '&' ⇒ tous les mots doivent être présents dans la ligne
 // • Commencer une recherche par '&&' ⇒ tous les mots doivent être présent dans une même colonne
-// • Commmencer une recherche par '/' ⇒ faire une recherche par expression régilière (regex). Utilise directement le format JavaScript\n
 // • '!' avant un mot ⇒ le mot ne doit pas être présent
 // • '=', '<' ou '>' avant un mot (et après le '!' s'il y a) ⇒ la cellule doit être exactement égale, commencer par ou terminer par le mot. Avec le '=', remplacer les espaces par '\\s', sinon le mot sera découpé
+// • '"..."' ⇒ considère tous ce qu'il y a entre guillemets comme un mot (incluant les espaces)
+// • ' avant un mot ⇒ le mot doit être présent de manière indépendante ('eau' ne vérifie pas 'gâteaux')
 // • Terminer un mot par '@IdCol1,IdCol2' ⇒ le mot doit être présent dans la liste des colonnes indiquée (séparées par des virgules). Si un mot recherché contient '@', alors ajouter un '@' à la fin pour ignorer
 // • Utiliser '@IdCol1,IdCol2' comme mot ⇒ les autres mots ne seront cherchés que dans ces colonnes
 // • '/' avant un mot ⇒ utiliser une regex. Utiliser '\\s' pour les espaces, sinon la regex sera découpée
@@ -24,33 +34,35 @@ const defhelp = `Help
 Performs an OR search of the words listed (separated by spaces) in the various columns.\n
 • Start a search with '&' ⇒ all words must be present in the row
 • Start a search with '&&' ⇒ all words must be present in the same column
-• Start search with '/' ⇒ search by regular expression (regex). Uses JavaScript format directly\n
 • '!' before a word ⇒ the word must not be present
 • '=', '<' or '>' before a word (and after the '!' if present) ⇒ cell must be exactly equal to, begin with or end with the word. With the '=', replace spaces with '\\s', otherwise the word will be split
+'"..."' ⇒ considers everything between quotation marks as a word (including spaces)
+' before a word ⇒ the word need to be present independently ('ok' doesn't match 'books')
 • End a word with '@IdCol1,IdCol2' ⇒ the word must be present in the list of columns indicated (separated by commas). If a searched word contains '@', then add an '@' at the end to ignore it
 • Use '@IdCol1,IdCol2' as word ⇒ other words will only be searched in these columns
 • '/' before a word ⇒ use a regex. Use '\\s' for spaces, otherwise the regex will be split.
 `
 
+//TODO
+// xor
+
+
 //Subscribe to grist
 grist.ready({requiredAccess: 'read table', allowSelectBy: true,
     // Register configuration handler to show configuration panel.
     onEditOptions() {
-        const fl = document.getElementById("filter");
-        fl.value = fl.placeholder;
-        fl.placeholder = "";
-        document.getElementById("columns").style.display = '';
-        document.getElementById("columns").value = search_col.join(",");      
-        document.getElementById("target").style.display = '';
+        document.getElementById("search").style.display = 'none';
+        document.getElementById("config").style.display = '';
+
         document.getElementById("target").checked = (target === "normal");
-        document.getElementById("labtarget").style.display = '';
-        document.getElementById("empty").style.display = '';
-        console.log(displayall);
         document.getElementById("empty").checked = (displayall === true);
-        document.getElementById("labempty").style.display = '';
-        document.getElementById("help").style.display = '';
+        document.getElementById("defsearchtype").value = defsearchtype;
+        document.getElementById("defval").value = defval;
+        document.getElementById("savesession").checked = (savesession === true);
+        document.getElementById("sessionID").value = sessionID;
+        document.getElementById("columns").value = search_col.join(",");
+        document.getElementById("placeholder").value = placeholder;
         document.getElementById("help").value = helpmsg;    
-        document.getElementById("save").style.display = '';
     },
   });
 
@@ -62,32 +74,32 @@ grist.onOptions((customOptions, _) => {
     placeholder = customOptions.placeholder || defplaceholder;
     helpmsg = customOptions.helpmsg || defhelp;
     displayall = (customOptions.displayall === undefined) ? true: customOptions.displayall;
-    console.log(customOptions);
-    console.log(displayall);
-    document.getElementById("save").style.display = 'none';
-    document.getElementById("columns").style.display = 'none';
-    document.getElementById("target").style.display = 'none';
-    document.getElementById("labtarget").style.display = 'none';
-    document.getElementById("empty").style.display = 'none';
-    document.getElementById("labempty").style.display = 'none';
-    document.getElementById("help").style.display = 'none';
+    defsearchtype = customOptions.defsearchtype || 0; 
+    savesession = (customOptions.savesession === undefined) ? false: customOptions.savesession;
+    sessionID = customOptions.sessionID || "";
+    defval = customOptions.defval || "";
+    sessionUUID = customOptions.sessionUUID || generateUUID();
+
+    //display
+    closeConfig();
+
     const fl = document.getElementById("filter");
     fl.placeholder = placeholder;
-    fl.value = "";
+    if (savesession) {
+        if (sessionID.length > 0) fl.value = sessionStorage.getItem(sessionID + "_Simple_Filter");
+        else fl.value = sessionStorage.getItem(sessionUUID);
+    }
+    if (fl.value.length === 0) fl.value = defval;
 
-    grist.setSelectedRows(displayall? null: []);
+    cursearchtype = searchtypes.indexOf(parsetype(fl.value)[0]);
+    console.log(cursearchtype);
+    updateTag();
+
+    ApplyFilter();
   });
 
 function saveOption() {
     try {
-        let col = document.getElementById("columns").value.replace(/\s/g, '');
-        if (col.length !== 0) {
-            search_col = col.split(",");
-        } else {
-            search_col = [];
-        }
-        grist.widgetApi.setOption('search_col', search_col)
-
         if (document.getElementById("target").checked) {
             target = document.getElementById("target").value;
         } else {
@@ -97,14 +109,44 @@ function saveOption() {
 
         displayall = document.getElementById("empty").checked;
         grist.widgetApi.setOption('displayall', displayall);
-        console.log(displayall);
 
-        placeholder = document.getElementById("filter").value;
+        defsearchtype = document.getElementById("defsearchtype").value;
+        grist.widgetApi.setOption('defsearchtype', defsearchtype);
+        cursearchtype = defsearchtype;
+        
+
+        defval = document.getElementById("defval").value;
+        grist.widgetApi.setOption('defval', defval);
+
+        savesession = document.getElementById("savesession").checked;
+        grist.widgetApi.setOption('savesession', savesession);
+
+        sessionID = document.getElementById("sessionID").value;
+        grist.widgetApi.setOption('sessionID', sessionID);
+        grist.widgetApi.setOption('sessionUUID', sessionUUID);
+
+        let col = document.getElementById("columns").value.replace(/\s/g, '');
+        if (col.length !== 0) {
+            search_col = col.split(",");
+        } else {
+            search_col = [];
+        }
+        grist.widgetApi.setOption('search_col', search_col)      
+
+        placeholder = document.getElementById("placeholder").value;
         grist.widgetApi.setOption('placeholder', (placeholder === defplaceholder)? null: placeholder);
+        document.getElementById("filter").placeholder = placeholder;
 
         helpmsg = document.getElementById("help").value;
         grist.widgetApi.setOption('helpmsg', (helpmsg === defhelp)? null : helpmsg);
+
+        updateTag();
     } catch {}    
+}
+
+function closeConfig() {
+    document.getElementById("search").style.display = '';
+    document.getElementById("config").style.display = 'none';
 }
 
 function onLeave() {
@@ -114,13 +156,43 @@ function onLeave() {
 function onKey() {
     if (event.key === 'Enter') {
         ApplyFilter();
-    }   
+    } else {
+        const s = event.target.value;
+        if (s.startsWith("&&")) {cursearchtype = 2; updateTag();}
+        else if (s.startsWith("&")) {cursearchtype = 1; updateTag();}
+        else if (s.startsWith("+")) {cursearchtype = 0; updateTag();}
+        else  {cursearchtype = defsearchtype; updateTag();}
+    }
+}
+
+function tagclick() {
+    cursearchtype = (cursearchtype + 1) % searchtypes.length;
+    updateTag();
+
+    const f = document.getElementById("filter");
+    if (f.value.startsWith("&&")) f.value = searchtypes[cursearchtype] + f.value.substring(2);
+    else if (f.value.startsWith("&")) f.value = searchtypes[cursearchtype] + f.value.substring(1);
+    else if (f.value.startsWith("+")) f.value = searchtypes[cursearchtype] + f.value.substring(1);
+    else f.value = searchtypes[cursearchtype] + f.value;
+}
+
+function updateTag() {
+    document.getElementById("type").innerHTML = searchtypesnames[cursearchtype];
+}
+
+function clearsearch() {
+    console.log("clear");
+    document.getElementById("filter").value = "";
+    cursearchtype = defsearchtype;
+    updateTag();
+    ApplyFilter();
 }
 
 function ApplyFilter() {
     try {
         //get serche text
         let search = document.getElementById("filter").value;
+        if (savesession) sessionStorage.setItem((sessionID.length > 0)? sessionID + "_Simple_Filter": sessionUUID, search);
         
         //if empty, display all the table
         if (!search || search.trim().length === 0) {
@@ -146,7 +218,6 @@ function ApplyFilter() {
                 }
 
                 [type, searches] = parseinput(search);
-                console.log(searches);
 
                 // custom columns ? **************************************************************
                 if (search.includes("@")) {
@@ -172,7 +243,6 @@ function ApplyFilter() {
                     if (scol.length > 0) columns = scol;
                     }                
                 }     
-                console.log(searches);  
 
                 /*if (search.startsWith('/')) {
                     //regex search **************************************************************
@@ -350,6 +420,14 @@ function parsesearch(text, columns) {
     }
 }
 
+function parsetype(input) {
+    if (input.startsWith('&&')) return ["&&", 2];
+    else if (input.startsWith('&')) return ["&", 1];
+    else if (input.startsWith('+')) return ["+", 0];
+    else if (input.startsWith('@')) return ["@", 1];
+    else return [searchtypes[defsearchtype], 0];
+}
+
 function parseinput(input) {
     let quote = false;
     let data = [];
@@ -357,11 +435,13 @@ function parseinput(input) {
     let type;
     let start;
 
+    [type, start] = parsetype(input);
     //if (input.startsWith('/')) {type = "/"; start = 1;} 
-    if (input.startsWith('&&')) {type = "&&"; start = 2;}
-    else if (input.startsWith('&')) {type = "&"; start = 1;}
-    else if (input.startsWith('@')) {type = "@"; start = 1;}
-    else {type = ""; start = 0;}
+    // if (input.startsWith('&&')) {type = "&&"; start = 2;}
+    // else if (input.startsWith('&')) {type = "&"; start = 1;}
+    // else if (input.startsWith('+')) {type = ""; start = 1;}
+    // else if (input.startsWith('@')) {type = "@"; start = 1;}
+    // else {type = defsearchtype; start = 0;}
 
 
     for (let i = start; i < input.length; i++) {
@@ -386,4 +466,20 @@ function parseinput(input) {
     if (word.length > 0) data.push(word);
 
     return [type, data];
+}
+
+function generateUUID() { // Public Domain/MIT
+    var d = new Date().getTime();//Timestamp
+    var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16;//random number between 0 and 16
+        if(d > 0){//Use timestamp until depleted
+            r = (d + r)%16 | 0;
+            d = Math.floor(d/16);
+        } else {//Use microseconds since page-load if supported
+            r = (d2 + r)%16 | 0;
+            d2 = Math.floor(d2/16);
+        }
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
 }

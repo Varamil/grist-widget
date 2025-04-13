@@ -24,9 +24,15 @@ In the widget configuration (right-hand pane), via *Open configuration*, you can
 ![image](images/config.png)
 
 * *Include hidden columns*: if unchecked, only the columns displayed will be used for the search.
-* The next field lets you change the default text displayed in the search field.
-* The third allows you to restrict the list of columns used by the search. Use Grist IDs (without the $) and separate them with commas. If listed columns are hidden and *Include hidden columns* is not checked, then they will be ignored.
-* The last field allows you to modify the help message displayed when the user types “?"
+* *If search is empty...*: if checked, when the search field is empty, no line will be displayed.
+* *Default search type*: defines the default search type (when the user doesn't use any gobal option)
+* *Default value*: default value present in the search field
+* *Save search in current browsing session*: if checked, as long as the browsing session is open, you can navigate to other pages, and when you return to this one, your search will be restored.
+* *Session ID*: allows you to set a session ID to synchronize multiple search fields on different pages. *Save search in current browsing session* must be checked.
+* *List columns IDs...*: allows you to restrict the list of columns used by the search. Use Grist IDs (without the $) and separate them with commas. If listed columns are hidden and *Include hidden columns* is unchecked, they will be ignored.
+* *Search field placeholder*: changes the default text displayed in the search field.
+* *Help message*: modifies the help message displayed when the user types “?
+
 
 Click *Apply* to apply the changes and then click on Grist *Save* to save them.
 
@@ -109,11 +115,37 @@ Dans la configuration du widget (volet de droite), via *Ouvrir la configuration*
 ![image](images/config.png)
 
 * *Include hidden columns* : si décoché, seule les colonnes affichées seront utilisées pour la recherche
-* Le champ suivant vous permet de modifier le text par défaut affiché dans le champ de recherche
-* Le troisième, vous permet de restreindre la liste des colonnes utilisées par la recherche. Utiliser les IDs Grist (sans le $) et les séparer par des virgues. Si des colonnes listées sont cachées et que *Include hidden columns* n'est pas coché, alors elles seront ignorées
-* Le dernier champ permet de modifier le message d'aide affiché quand l'utilisateur tape "?"
+* *If search is empty...* : si coché, alors quand le champ de recherche sera vide, aucune ligne ne sera affichée
+* *Default search type* : défini le type de recherche par défaut (quand l'utilisateur n'utilise aucune option gobale)
+* *Default value* : valeur présente par défaut dans le champ de recherche
+* *Save search in current browsing session* : si coché, tant que la session de navigation sera ouverte, vous pouvez naviguer vers d'autres pages et quand vous reviendrez à celle-ci, votre recherche sera restorée
+* *Session ID* : permet de fixer un identifiant de session pour synchroniser plusieurs champs de recherche sur des pages différentes. *Save search in current browsing session* doit être coché
+* *List columns IDs...* : vous permet de restreindre la liste des colonnes utilisées par la recherche. Utiliser les IDs Grist (sans le $) et les séparer par des virgues. Si des colonnes listées sont cachées et que *Include hidden columns* n'est pas coché, alors elles seront ignorées
+* *Search field placeholder* : permet de modifier le text par défaut affiché dans le champ de recherche
+* *Help message* : permet de modifier le message d'aide affiché quand l'utilisateur tape "?"
 
 Faire *Apply* pour appliquer les modifications et bien cliquer sur l'*Enregistrer* de Grist pour conserver ces modifications.
+
+Voici les textes français recommandés :
+
+*Search field placeholder* :
+`Recherche (? + Entrer pour obtenir de l'aide)`
+
+*Help message* :
+```
+Aide
+Effectue une recherche de type OU des mots listés (séparés par des espaces) dans les différentes colonnes.\n
+• Commencer une recherche par un '&' ⇒ tous les mots doivent être présents dans la ligne
+• Commencer une recherche par '&&' ⇒ tous les mots doivent être présent dans une même colonne
+• '!' avant un mot ⇒ le mot ne doit pas être présent
+• '=', '<' ou '>' avant un mot (et après le '!' s'il y a) ⇒ la cellule doit être exactement égale, commencer par ou terminer par le mot. Avec le '=', remplacer les espaces par '\\s', sinon le mot sera découpé
+• '"..."' ⇒ considère tous ce qu'il y a entre guillemets comme un mot (incluant les espaces)
+• ' avant un mot ⇒ le mot doit être présent de manière indépendante ('eau' ne vérifie pas 'gâteaux')
+• Terminer un mot par '@IdCol1,IdCol2' ⇒ le mot doit être présent dans la liste des colonnes indiquée (séparées par des virgules). Si un mot recherché contient '@', alors ajouter un '@' à la fin pour ignorer
+• Utiliser '@IdCol1,IdCol2' comme mot ⇒ les autres mots ne seront cherchés que dans ces colonnes
+• '/' avant un mot ⇒ utiliser une regex. Utiliser '\\s' pour les espaces, sinon la regex sera découpée
+
+``` 
 
 ## Utilisation
 Simplement taper les différents *mots* que vous souhaitez rechercher dans le champs du widget. La recherche est lancée sur *Entrer* ou quand vous quittez le champs.

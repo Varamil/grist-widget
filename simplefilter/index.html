@@ -4,13 +4,88 @@
   <meta charset="UTF-8">
   <title>Simple filter</title>
   <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+  <style>
+    table {
+      width: 100%;
+    }
+
+    td {
+      width: 100%;
+    }
+
+    .tag {      
+      background-color: lightgray;      
+      font-size: small;
+      border-radius: 4px;
+      border-color: transparent;
+    }
+  </style>
 </head>
 <body>
-    <input type="checkbox" id="target" value="normal" style="display: none;"><label id="labtarget" style="display: none;">Include hidden columns</label>
-    <input type='text' id="filter" style="width: 100%; box-sizing:border-box;" onblur="onLeave()" onkeydown="onKey(this)"/>    
-    <input type='text' id="columns" style="width: 100%; box-sizing:border-box;display: none;" placeholder="List columns IDs on which perform the search (commas separated)" />    
-    <textarea id="help" style="width: 100%;box-sizing:border-box;display: none;"></textarea>
-    <button id="save" onclick="saveOption()" style="display: none;">Apply</button>
+  <table id="search">
+      <tr>
+        <td style="width: unset;white-space: nowrap;"><button id="type" class="tag _grain803_" onclick="tagclick()">ET col</button></td>
+        <td><input type='text' id="filter" style="width: 100%; box-sizing:border-box;" class="_grain446_ _grain828_" onblur="onLeave()" onkeyup="onKey(this)"/></td>
+        <td><button class="tag _grain803_" onclick="clearsearch()">X</button></td>
+      </tr>
+  </table>
+  <table id="config" style="display: block;">
+    <tr>
+      <td><button id="save" onclick="saveOption()" >Apply</button></td>
+      <td style="text-align: right;"><button id="close" onclick="closeConfig()" >Close</button></td>
+    </tr>
+    <tr>
+      <td>Include hidden columns</td>
+      <td style="text-align: center;"><input type="checkbox" id="target" value="normal"></td>
+    </tr>
+    <tr>
+      <td>If search is empty, display all row (else none)</td>
+      <td style="text-align: center;"><input type="checkbox" id="empty" value="true"></td>
+    </tr>
+    <tr>
+      <td>Default search type:</td>
+      <td>
+        <select id="defsearchtype">
+          <option value="0">OR</option>
+          <option value="1">AND</option>
+          <option value="2">AND Column</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">Default value:</td>
+    </tr>
+    <tr>
+      <td colspan="2"><input type='text' id="defval" style="width: 100%; box-sizing:border-box;" /></td>
+    </tr>
+    <tr>
+      <td>Save search in current browsing session:</td>
+      <td style="text-align: center;"><input type="checkbox" id="savesession" value="true"></td>
+    </tr>
+    <tr>
+      <td>Session ID (to share search between compoents):</td>
+      <td><input type='text' id="sessionID" style="width: 100%; box-sizing:border-box;" /></td>
+    </tr>
+    <tr>
+      <td colspan="2">List columns IDs on which perform the search (commas separated):</td>
+    </tr>
+    <tr>
+      <td colspan="2"><input type='text' id="columns" style="width: 100%; box-sizing:border-box;" /></td>
+    </tr>
+    <tr>
+      <td colspan="2">Search field placeholder:</td>
+    </tr>
+    <tr>
+      <td colspan="2"><input type='text' id="placeholder" style="width: 100%; box-sizing:border-box;" /></td>
+    </tr>
+    <tr>
+      <td colspan="2">Help message:</td>
+    </tr>
+    <tr>
+      <td colspan="2"><textarea id="help" style="width: 100%;height: 200px;box-sizing:border-box;"></textarea></td>
+    </tr>
+    
+  </table>
     <script src="script.js"></script>
 </body>
 </html>

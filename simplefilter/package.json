@@ -2,7 +2,7 @@
     "name": "@varamil/widget-simplefilter",
     "description": "Simple table filtering to display any row that matches the search.",
     "homePage": "https://github.com/Varamil/grist-widget",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "grist": {
       "name": "Simple table filter",
       "url": "https://varamil.github.io/grist-widget/simplefilter/index.html",
