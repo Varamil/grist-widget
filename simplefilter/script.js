@@ -10,11 +10,11 @@ var sessionID = "";
 var sessionUUID = "";
 var defval = "";
 const searchtypes = ["+", "&", "&&"];
-//const searchtypesnames = ["OU", "ET", "ET col"];
+// const searchtypesnames = ["OU", "ET", "ET col"];
 const searchtypesnames = ["OR", "AND", "AND col"];
 
 const defplaceholder = "Search (? + Enter to get help)" ;
-//const defplaceholder = "Recherche (? + Entrer pour obtenir de l'aide)" ;
+// const defplaceholder = "Recherche (? + Entrer pour obtenir de l'aide)" ;
 
 
 // const defhelp = `Aide
@@ -264,18 +264,18 @@ function ApplyFilter() {
                     //let searches = parseinput(search, 2); //search.substring(2).split(" ");
 
                     let ok;
-                    let match = records['id'].filter((id) => {
+                    let match = records['id'].filter((idgrist, id) => {
                         for (c of columns) {
                             ok = true;
                             for (s of searches) {
                                 [s, re, neg, tp, _] = parsesearch(s, columns);
                                 if (neg) {
-                                    if (matchtxt(records[c][id-1], s, re, tp)){ //(records[c][id-1]?.toString().toLowerCase().includes(s))
+                                    if (matchtxt(records[c][id], s, re, tp)){ //(records[c][id-1]?.toString().toLowerCase().includes(s))
                                         ok = false;
                                         break;
                                     }
                                 } else {
-                                    if (!matchtxt(records[c][id-1], s, re, tp)){
+                                    if (!matchtxt(records[c][id], s, re, tp)){
                                         ok = false;
                                         break;
                                     }
@@ -292,7 +292,7 @@ function ApplyFilter() {
                     //AND search with matches in any column **************************************************************
                     //let searches = parseinput(search, 1); //search.substring(1).split(" ");                
 
-                    let match = records['id'].filter((id) => {
+                    let match = records['id'].filter((idgrist, id) => {
                         let matches = [];
 
                         for (si in searches) {
@@ -302,7 +302,7 @@ function ApplyFilter() {
                                 matches.push(true)
 
                                 for (c of scol) {
-                                    if (matchtxt(records[c][id-1], s, re, tp))  {
+                                    if (matchtxt(records[c][id], s, re, tp))  {
                                         matches[si] = false;
                                         break;
                                     }
@@ -310,7 +310,7 @@ function ApplyFilter() {
                             } else {
                                 matches.push(false)
                                 for (c of scol) {
-                                    if (matchtxt(records[c][id-1], s, re, tp))  {
+                                    if (matchtxt(records[c][id], s, re, tp))  {
                                         matches[si] = true;
                                         break;
                                     }
@@ -325,14 +325,14 @@ function ApplyFilter() {
                 } else {
                     //OR **************************************************************
                     //let searches = parseinput(search); //search.split(" ");
-                    
-                    let match = records['id'].filter((id) => {
+
+                    let match = records['id'].filter((idgrist, id) => {
                         for (s of searches) {
                             [s, re, neg, tp, scol] = parsesearch(s, columns);
                             if (neg) {
                                 let ok = true;
                                 for (c of scol) {
-                                    if (matchtxt(records[c][id-1], s, re, tp)) {
+                                    if (matchtxt(records[c][id], s, re, tp)) {
                                         ok = false
                                         break;
                                     };
@@ -340,7 +340,7 @@ function ApplyFilter() {
                                 if (ok) return true; //the word is no where, so this part is true
                             } else {
                                 for (c of scol) {
-                                    if (matchtxt(records[c][id-1], s, re, tp)) return true;
+                                    if (matchtxt(records[c][id], s, re, tp)) return true;                                    
                                 } 
                             }                                               
                         } 
