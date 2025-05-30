@@ -6,7 +6,7 @@
     "grist": {
       "name": "Simple table filter",
       "url": "https://varamil.github.io/grist-widget/simplefilter/index.html",
-      "widgetId": "@gristlabs/widget-simplefilter",
+      "widgetId": "@varamil/widget-simplefilter",
       "published": true,
       "accessLevel": "read table",
       "renderAfterReady": true,
