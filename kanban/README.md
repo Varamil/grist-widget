@@ -1,0 +1,1 @@
+In development, see [https://forum.grist.libre.sh/t/custom-widget-kanban/506/30](https://forum.grist.libre.sh/t/custom-widget-kanban/506/30)

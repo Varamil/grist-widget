@@ -1,0 +1,23 @@
+{
+    "name": "@celine/widget-kanban",
+    "description": "Kanban",
+    "homePage": "https://github.com/gristlabs/grist-widget",
+    "version": "4.0",
+    "grist": {
+      "name": "Kanban",
+      "url": "https://forum.grist.libre.sh/t/custom-widget-kanban/506/17",
+      "widgetId": "@celine/widget-kanban",
+      "published": true,
+      "accessLevel": "full",
+      "renderAfterReady": true,
+      "description": "Kanban viewer",
+      "authors": [
+        {
+          "name": "Grist Labs",
+          "url": "https://github.com/gristlabs"
+        }
+      ],
+      "isGristLabsMaintained": true
+    }
+  }
+  
