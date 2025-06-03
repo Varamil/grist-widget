@@ -5,16 +5,16 @@
     "version": "4.0",
     "grist": {
       "name": "Kanban",
-      "url": "https://forum.grist.libre.sh/t/custom-widget-kanban/506/17",
+      "url": "https://varamil.github.io/grist-widget/kanban/index.html",
       "widgetId": "@celine/widget-kanban",
       "published": true,
       "accessLevel": "full",
       "renderAfterReady": true,
-      "description": "Kanban viewer",
+      "description": "Kanban",
       "authors": [
         {
-          "name": "Grist Labs",
-          "url": "https://github.com/gristlabs"
+          "name": "celine",
+          "url": "https://forum.grist.libre.sh/t/custom-widget-kanban/506/17"
         }
       ],
       "isGristLabsMaintained": true
