@@ -67,11 +67,10 @@ let TYPES_RAW;
         if (infoColonne && infoColonne.useconfetti)
           triggerConfetti();
       }
+      let data = {[champ]: valeur};
+      if (COLONNES_MAP.DERNIERE_MISE_A_JOUR) data[COLONNES_MAP.DERNIERE_MISE_A_JOUR] = new Date().toISOString();
       await grist.docApi.applyUserActions([
-        ['UpdateRecord', TABLE_KANBAN, parseInt(todoId), {
-          [champ]: valeur,
-          [COLONNES_MAP.DERNIERE_MISE_A_JOUR]: new Date().toISOString()
-        }]
+        ['UpdateRecord', TABLE_KANBAN, parseInt(todoId), data]
       ]);
     } catch (erreur) {
       console.error('Erreur mise à jour:', erreur);
@@ -519,7 +518,7 @@ let TYPES_RAW;
       {name:'RESPONSABLE', title:'Tâche assignée à', type:'Any', optional:true}, 
       {name:'CREE_PAR', title:'Tâche créée par', type:'Any', optional:true}, 
       {name:'CREE_LE', title:'Tâche créée le', type:'DateTime', optional:true}, 
-      {name:'DERNIERE_MISE_A_JOUR', title:'Mis à jour le', type:'DateTime'}
+      {name:'DERNIERE_MISE_A_JOUR', title:'Mis à jour le', type:'DateTime', optional:true}
     ],
     onEditOptions() {
       ShowConfig(true);
