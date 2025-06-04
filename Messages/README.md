@@ -24,7 +24,7 @@ A widget to display a simple chat interface storing all messages in a row withou
 5. Select the *Custom URL* widget and paste the following URL into the field:  https://varamil.github.io/grist-widget/Messages/index.html then click on *Add a widget*
 6. In widget configuration (right pane), authorize widget access to your table 
 7. For *MESSAGES* option, select the column that will contain your messages
-8. *(Optional)* select for the *USER* option the column containing the author of the changes
+8. *(Optional)* select for the *USER* option the column containing the author of the changes. It looks necessary, when this last configuration has been done, to reload the page to ensure all configurations are applied properly
 9. Adding a new message will update the row selected on linked widget
 
 ## Configuration
@@ -61,7 +61,7 @@ Varamil - [GitHub](https://github.com/Varamil)
 ## Installation
 1. Choisir ou créer un table pour laquelle vous souhaitez ajouter des Messages
 2. Ajouter une colonne pour contenir les messages
-3. *(Optionnel)* ajouter une colonne et définir la formule d'initialisation à `user.Name`, cocher la case *Appliquer sur les modifications à* puis choisir la colonne qui contiendra les messages (ou plus selon votre besoin)
+3. *(Optionnel)* ajouter une colonne et définir la formule d'initialisation à `user.Name`, cocher la case *Appliquer sur les modifications à* puis choisir la colonne qui contiendra les messages (ou plus selon votre besoin). 
 
 ![image](images/user_config.png)
 
@@ -69,8 +69,8 @@ Varamil - [GitHub](https://github.com/Varamil)
 5. Choisir le widget *URL personnalisé* et coller dans le champs l'URL suivante :  https://varamil.github.io/grist-widget/Messages/index.html puis cliquer sur *Ajouter un widget*
 6. Dans la configuration du widget (volet de droite), autoriser l'accès du widget à votre table. 
 7. Sélectionnez pour l'option *MESSAGES* la colonne qui contiendra vos messages
-8. *(Optionnel)* sélectionnez pour l'option *USER* la colonne qui contient l'auteur des modifications
-9. Ajouter un nouveau message mettre maintenant à jour la ligne sélectionnée dans le widget lié
+8. *(Optionnel)* sélectionnez pour l'option *USER* la colonne qui contient l'auteur des modifications. Il semble nécessaire, une fois cette dernière configuration faite, de devoir recharger la page pour s'assurer que toutes les configurations sont bien appliquées correctement
+9. Ajouter un nouveau message mettra maintenant à jour la ligne sélectionnée dans le widget lié
 
 ## Configuration
 * *MESSAGES* : sélectionnez la colonne qui contiendra vos messages
