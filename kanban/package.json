@@ -1,23 +1,23 @@
 {
-    "name": "@celine/widget-kanban",
+    "name": "@celinedelval/widget-kanban",
     "description": "Kanban",
     "homePage": "https://github.com/gristlabs/grist-widget",
     "version": "4.0",
     "grist": {
       "name": "Kanban",
       "url": "https://varamil.github.io/grist-widget/kanban/index.html",
-      "widgetId": "@celine/widget-kanban",
+      "widgetId": "@celinedelval/widget-kanban",
       "published": true,
       "accessLevel": "full",
       "renderAfterReady": true,
       "description": "Kanban",
       "authors": [
         {
-          "name": "celine",
+          "name": "Céline Delval",
           "url": "https://forum.grist.libre.sh/t/custom-widget-kanban/506/17"
         }
       ],
-      "isGristLabsMaintained": true
+      "isGristLabsMaintained": false
     }
   }
   
