@@ -1,0 +1,22 @@
+{
+  "name": "@varamil/widget-drop-down-filter",
+  "description": "Simple drop-down widget to filter other wigets.",
+  "homePage": "https://github.com/Varamil/grist-widget",
+  "version": "1.0",
+  "grist": {
+    "name": "Drop-down Widget",
+    "url": "https://varamil.github.io/grist-widget/drop-down-filter/index.html",
+    "widgetId": "@varamil/widget-drop-down-filter",
+    "published": true,
+    "accessLevel": "read table",
+    "renderAfterReady": true,
+    "description": "Display a drop-down menu with options from a column to filter other widget with the selected option.",
+    "authors": [
+      {
+        "name": "Varamil",
+        "url": "https://github.com/Varamil"
+      }
+    ],
+    "isGristLabsMaintained": false
+  }
+}
