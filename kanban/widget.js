@@ -112,7 +112,11 @@ let CARTE_COMPACT = false;
     
     carte.setAttribute('data-todo-id', todo.id);
     carte.setAttribute('data-last-update', todo[COLONNES_MAP.DERNIERE_MISE_A_JOUR] || '');
-  
+    carte.setAttribute('data-deadline', todo[COLONNES_MAP.DEADLINE] || '');
+    if (COLONNES_MAP.COULEUR && todo[COLONNES_MAP.COULEUR]) {
+      carte.setAttribute('style', `background-color: ${(todo[COLONNES_MAP.COULEUR].startsWith("#")? '': '#') + todo[COLONNES_MAP.COULEUR]}`);
+    }
+
     const type = todo[COLONNES_MAP.TYPE] || '';
     const description = todo[COLONNES_MAP.DESCRIPTION] || 'Sans titre';
     const deadline = todo[COLONNES_MAP.DEADLINE] ? formatDate(todo[COLONNES_MAP.DEADLINE]) : '';
@@ -146,10 +150,13 @@ let CARTE_COMPACT = false;
     colonneElement.innerHTML = `
       <div class="entete-colonne" style="background-color: ${colonne.couleur}">
         <div class="titre-statut">${colonne.libelle} <span class="compteur-colonne">(0)</span></div>
+        ${(colonne.btajout && TABLE_KANBAN !== "-") ? `
+          <button class="bouton-ajouter-entete ${CARTE_COMPACT ? ' compact': ''}" onclick="creerNouvelleTache('${colonne.id}')">+</button>
+        ` : ''}
         <button class="bouton-toggle" onclick="toggleColonne(this.closest('.colonne-kanban'), event)">⇄</button>
       </div>
       ${(colonne.btajout && TABLE_KANBAN !== "-") ? `
-        <button class="bouton-ajouter" onclick="creerNouvelleTache('${colonne.id}')">+ Ajouter une tâche</button>
+        <button class="bouton-ajouter ${CARTE_COMPACT ? ' compact': ''}" onclick="creerNouvelleTache('${colonne.id}')">+ Ajouter une tâche</button>
       ` : ''}
       <div class="contenu-colonne" data-statut="${colonne.id}"></div>
     `;
@@ -179,8 +186,8 @@ let CARTE_COMPACT = false;
         return new Date(dateB) - new Date(dateA); // Plus récent en premier
       } else {
         // Pour les autres colonnes, tri par deadline
-        const dateA = a.querySelector('.deadline')?.textContent?.replace('📅 ', '') || '9999-12-31';
-        const dateB = b.querySelector('.deadline')?.textContent?.replace('📅 ', '') || '9999-12-31';
+        const dateA = a.getAttribute('data-deadline') || '9999-12-31';
+        const dateB = b.getAttribute('data-deadline') || '9999-12-31';
         return new Date(dateA) - new Date(dateB); // Plus urgent en premier
       }
     });
@@ -197,7 +204,7 @@ let CARTE_COMPACT = false;
     const carteCliquee = document.querySelector(`[data-todo-id="${todo.id}"]`);
     const infoColonne = COLONNES_AFFICHAGE.find((colonne) => {return colonne.id === todo[COLONNES_MAP.STATUT]});
     
-    if (TABLE_KANBAN === "-" || popup.classList.contains('visible') && currentId === todo.id.toString()) {
+    if (TABLE_KANBAN === "-") { //|| popup.classList.contains('visible') && currentId === todo.id.toString()) {
       fermerPopup();
       return;
     }
@@ -403,7 +410,7 @@ let CARTE_COMPACT = false;
   function afficherKanban(todos) {
     const conteneurKanban = document.getElementById('conteneur-kanban');
     conteneurKanban.innerHTML = '';
-  
+    
     // Création des colonnes
     COLONNES_AFFICHAGE.forEach(colonneConfig => {
       const colonne = creerColonneKanban(colonneConfig);
@@ -431,6 +438,7 @@ let CARTE_COMPACT = false;
             onEnd: async function(evt) {
               const todoId = evt.item.dataset.todoId;
               const colonneArrivee = evt.to.dataset.statut;
+              
               try {
                 await mettreAJourChamp(todoId, COLONNES_MAP.STATUT, colonneArrivee);
               } catch (erreur) {
@@ -561,7 +569,7 @@ let CARTE_COMPACT = false;
         return [target];
       }
     } else {
-      return target.split(";");
+      return [""].concat(target.split(";").filter(item => item.length > 0).sort());
     }    
   }
 
@@ -580,7 +588,8 @@ let CARTE_COMPACT = false;
       {name:'RESPONSABLE', title:'Tâche assignée à', type:'Any', optional:true}, 
       {name:'CREE_PAR', title:'Tâche créée par', type:'Any', optional:true}, 
       {name:'CREE_LE', title:'Tâche créée le', type:'DateTime', optional:true}, 
-      {name:'DERNIERE_MISE_A_JOUR', title:'Mis à jour le', type:'DateTime', optional:true}
+      {name:'DERNIERE_MISE_A_JOUR', title:'Mis à jour le', type:'DateTime', optional:true},
+      {name:'COULEUR', title:'Couleur carte', type:'Any', optional:true}
     ],
     onEditOptions() {
       ShowConfig(true);
@@ -611,11 +620,16 @@ let CARTE_COMPACT = false;
     else
       cartes.forEach(carte => {carte.classList.add('norotate')});
 
-    if (CARTE_COMPACT)
+    if (CARTE_COMPACT) {
       cartes.forEach(carte => {carte.classList.add('compact')});
-    else
+      document.querySelectorAll('.bouton-ajouter-entete').forEach(carte => {carte.classList.add('compact')});
+      document.querySelectorAll('.bouton-ajouter').forEach(carte => {carte.classList.add('compact')});
+    } else {
       cartes.forEach(carte => {carte.classList.remove('compact')});
-    
+      document.querySelectorAll('.bouton-ajouter-entete').forEach(carte => {carte.classList.remove('compact')});
+      document.querySelectorAll('.bouton-ajouter').forEach(carte => {carte.classList.remove('compact')});
+    }
+
     ShowConfig(false);
   });
   

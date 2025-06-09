@@ -1,0 +1,513 @@
+/* ========== VARIABLES PERSONNALISABLES ========== */
+:root {
+    --border-radius: 2px;            /* Coins des post-it */
+    --background-color: #f5f6f8;   /* Fond général */
+    --default-black: #2d3748;      /* Couleur noire de référence */
+  }
+
+  /* ===== RESET ET BASE ===== */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.4;
+    color: #333;
+    background: var(--background-color);
+  }
+
+  /* ===== STRUCTURE DU KANBAN ===== */
+  /* Conteneur principal avec scroll horizontal */
+  #conteneur-kanban {      
+    gap: 1rem;
+    padding: 1rem;
+    height: 100vh;
+    overflow-x: auto;
+    background: linear-gradient(to bottom, #e9ecef, #f8f9fa);
+  }
+
+  /* Structure des colonnes avec scroll vertical */
+  .colonne-kanban {
+    flex: 1;
+    min-width: 300px;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 2rem);
+    overflow: hidden;
+  }
+
+  /* État replié des colonnes */
+  .colonne-kanban.collapsed {
+    min-width: 60px;
+    width: 60px;   
+    flex: 0 0 auto;
+  }
+
+  .colonne-kanban.collapsed .entete-colonne {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    height: auto;
+    align-items: flex-start;
+    padding: 2.5rem 0.5rem 1rem 0.5rem;
+  }
+
+  .colonne-kanban.collapsed .bouton-toggle {
+    transform: rotate(90deg);
+    position: absolute;
+    top: 10px;
+    left: 20px;
+  }
+
+  .colonne-kanban.collapsed .contenu-colonne,
+  .colonne-kanban.collapsed .bouton-ajouter {
+    display: none;
+  }
+
+  /* En-têtes des colonnes */
+  .entete-colonne {
+    padding: 1rem;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    color: white;
+    border-radius: 8px 8px 0 0;
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* Zone de contenu des colonnes avec scroll */
+  .contenu-colonne {
+    flex: 1;
+    padding: 0.75rem;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  /* Espacement pour les colonnes sans bouton d'ajout TODO nettoyer */
+  .colonne-nobouton .contenu-colonne {
+    padding-top: 1.5rem;
+  }
+
+  /* ===== CARTES POST-IT ===== */
+  .carte {
+    background: #FFFFD1;
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    padding: 1.5rem;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    transform: rotate(var(--rotation));
+    transition: all 0.3s;
+    border: none;
+  }
+
+  /* Effet de brillance du post-it */
+  .carte::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.02), transparent);
+  }
+
+  /* Rotation aléatoire des post-it */
+  .carte:nth-child(odd) { --rotation: -1deg; }
+  .carte:nth-child(even) { --rotation: 1deg; }
+  .carte:nth-child(3n) { --rotation: -0.5deg; }
+  .carte:nth-child(5n) { --rotation: 0.5deg; }
+
+  /* Effets au survol et sélection */
+  .carte:hover, .carte.active {
+    transform: rotate(0deg) translateY(-5px);
+    box-shadow: 3px 3px 8px rgba(0,0,0,0.2);
+  }
+
+  .carte.norotate {
+    transform: rotate(0deg);
+  }
+
+  .carte.active {
+    background: #FFFFF0;
+  }
+
+  .carte.compact {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Éléments des cartes */
+  .projet-ref {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    color: var(--default-black);
+    border: 2px solid currentColor;
+    padding: 0.2em 0.5em;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 700;
+    background: rgba(255,255,255,0.25);
+    z-index: 2;
+  }
+
+  .type-tag {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(0,0,0,0.05);
+    margin-bottom: 0.5rem;
+  }
+
+  .description {
+    font-size: 0.95rem;
+    margin: 0.5rem 0;
+    color: var(--default-black);
+  }
+
+  .carte.compact .description {
+    margin: 0.25rem 0;
+  }
+
+  .deadline {
+    font-size: 0.8rem;
+    color: var(--default-black);
+    margin-top: 0.5rem;
+    font-weight: 500;
+  }
+
+  .deadline.late {
+    color: #e11d48;
+  }
+
+  .responsable-badge {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  /* Tampons terminé/annulé */
+  .tampon-termine, .tampon-annule {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-12deg);
+    font-size: 1.4rem;
+    font-weight: bold;
+    padding: 0.3rem 1rem;
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 2;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+    border: 2px solid currentColor;
+  }
+
+  /* ===== BOUTONS D'INTERFACE ===== */
+  .bouton-toggle, .bouton-ajouter-entete {      
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.2rem;
+    color: inherit;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .bouton-toggle:hover, .bouton-ajouter-entete:hover {
+    opacity: 1;
+  }
+
+  .bouton-ajouter-entete {
+    display: none;
+  }
+
+  .bouton-ajouter-entete.compact {
+    display: unset;
+  }
+
+  /* Bouton d'ajout */
+  .bouton-ajouter {
+    margin: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.9);
+    border: 2px dashed #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.2s;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    font-size: 0.9rem;
+  }
+
+  .bouton-ajouter:hover {
+    background: #fff;
+    border-color: #999;
+  }
+
+  .bouton-ajouter.compact {
+    display: none;
+  }
+
+  /* ===== POPUP ===== */
+  /* Conteneur du popup */
+  .popup {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    max-width: 600px;
+    height: 100vh;
+    background: white;
+    box-shadow: -2px 0 15px rgba(0,0,0,0.1);
+    transition: right 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    border-left: 4px solid transparent;
+    border-radius: 16px 0 0 16px;
+  }
+
+  .popup.visible {
+    right: 0;
+  }
+
+  /* En-tête du popup */
+  .popup-header {
+    padding: 1.5rem;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px 0 0 0;
+  }
+
+  /* Style du titre limité à 2 lignes avec hauteur corrigée */
+  .popup-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+    text-align: center;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    max-height: 4rem;     /* Augmenté pour permettre deux lignes complètes */
+    line-height: 1.5;
+    padding: 0.5rem 1rem; /* Ajusté pour centrer verticalement */
+    width: 100%;
+    white-space: normal;
+  }
+
+  /* Ajustement de l'en-tête pour accommoder le titre */
+  .popup-header {
+    padding: 1rem 1.5rem;
+    min-height: 5rem;    /* Hauteur minimale pour garantir l'espace */
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px 0 0 0;
+  }
+
+  /* Contenu du popup */
+  .popup-content {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background: #f8f9fa;
+  }
+
+  /* Styles des champs du formulaire */
+  .field {
+    background: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .field-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .field-row .field {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .field-label {
+    display: flex;
+    font-size: 0.85rem;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .field-input,
+  .field-select,
+  .field-button,
+  .field-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    background: white;
+  }
+
+  .field-input[type="checkbox"] {
+    width: unset;
+  }
+
+  .field-label-checkbox {
+    font-size: 0.85rem;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+    margin-left: 0.2rem;
+    font-weight: 500;
+  }
+
+  /* Champs auto-expandables */
+  .field-textarea.auto-expand {
+    min-height: 100px;
+    overflow: hidden;
+    resize: none;
+    transition: height 0.1s ease;
+  }
+
+  /* Bouton de fermeture */
+  .bouton-fermer {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    padding: 0.5rem;
+  }
+
+  .bouton-fermer:hover {
+    opacity: 1;
+  }
+
+  /* Bouton de suppression */
+  .popup-actions {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    gap: 1rem;
+    z-index: 100;
+  }
+
+  .popup-action-button {
+    display: none;  /* Masqué par défaut */
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  /* N'afficher que quand la popup est visible */
+  .popup.visible .popup-action-button {
+    display: flex;
+  }
+
+  .popup-action-button:hover {
+    transform: scale(1.1);
+    filter: brightness(1.1);
+  }
+
+  .bouton-supprimer {
+    background: #FF5252;
+  }
+
+  /* Info de création */
+  .info-creation {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #666;
+    text-align: center;
+  }
+
+  /* Styles pour l'impression */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    .popup, .popup * {
+      visibility: visible;
+    }
+    .popup {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    .popup-actions {
+      display: none;
+    }
+  }
+
+  /* Styles pour la configuration */
+  .config {
+    display: none;
+    flex-direction: column;
+  }
+
+  .config.visible {
+    display: flex;
+  }
+
+  .kanban {
+    display: none;
+  }
+
+  .kanban.visible {
+    display: flex;
+  }
