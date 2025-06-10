@@ -3,14 +3,19 @@
    Vous pouvez modifier ces paramètres selon vos besoins :
    - id : identifiant unique de la colonne (conservez les émojis)
    - libelle : texte affiché en haut de la colonne
-   - classe : nom CSS utilisé pour le style (doit correspondre au CSS)
+   - couleur : couleur (au format html) de la colonne
+   - btajout : vrai si la colonne doit avoir un bouton d'ajout
+   - isdone : vrai si la colonne est considérée comme une colonne d'actions terminées
+   - useconfetti : vrai si les confetti doivent être affichés quand une carte arrive dans la colonne
 */
 const COLONNES_AFFICHAGE_DEFAUT = [
-    { id: '🖐️ À faire', libelle: 'À faire', classe: 'a-faire', couleur: '#f95c5e', btajout: true, isdone: false, useconfetti: false },
-    { id: '♻️ En cours', libelle: 'En cours', classe: 'en-cours', couleur: '#417DC4', btajout: false, isdone: false, useconfetti: false },
-    { id: '✅ Fait', libelle: 'Fait', classe: 'fait', couleur: '#27a658', btajout: false, isdone: true, useconfetti: true },
-    { id: '❌ Annulé', libelle: 'Annulé', classe: 'annule', couleur: '#301717', btajout: false, isdone: true, useconfetti: false }
+    { id: '🖐️ À faire', libelle: 'À faire', couleur: '#f95c5e', btajout: true, isdone: false, useconfetti: false },
+    { id: '♻️ En cours', libelle: 'En cours', couleur: '#417DC4', btajout: false, isdone: false, useconfetti: false },
+    { id: '✅ Fait', libelle: 'Fait', couleur: '#27a658', btajout: false, isdone: true, useconfetti: true },
+    { id: '❌ Annulé', libelle: 'Annulé', couleur: '#301717', btajout: false, isdone: true, useconfetti: false }
   ];
+const DEADLINE_PRIORITE = new Date('3000-01-01');
+
 let COLONNES_AFFICHAGE;
 let TABLE_KANBAN;
 let COLONNES_MAP;
@@ -22,6 +27,7 @@ let TYPES;
 let TYPES_RAW;
 let ROTATE_CARTE = true;
 let CARTE_COMPACT = false;
+
 
   // ========== FONCTIONS UTILITAIRES ==========
   /* Gestion du repli/dépli des colonnes */
@@ -85,19 +91,24 @@ let CARTE_COMPACT = false;
   function formatDate(dateStr) {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
+    if (date >= DEADLINE_PRIORITE) return null;
+
     const day = date.getDate().toString().padStart(2, '0');
     const month = date.toLocaleDateString('fr-FR', { month: 'short' });
     const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
+     return `${day} ${month} ${year}`;
   }
   
   /* Formatage des dates pour les champs input */
   function formatDateForInput(dateStr) {
     if (!dateStr) return '';
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    //if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
     try {
       const date = new Date(dateStr);
-      return date.toISOString().split('T')[0];
+      if (date >= DEADLINE_PRIORITE)
+        return '';
+      else 
+        return date.toISOString().split('T')[0];
     } catch (e) {
       console.error('Erreur de formatage de date:', e);
       return '';
@@ -128,7 +139,7 @@ let CARTE_COMPACT = false;
       ${projetRef && projetRef.length > 0 ? `<div class="projet-ref">#${projetRef}</div>` : ''}
       ${type ? `<div class="type-tag">${type}</div>` : (projetRef && projetRef.length > 0 ? '<div>&nbsp;</div>':'')}
       <div class="description">${description}</div>
-      ${deadline ? `<div class="deadline${todo[COLONNES_MAP.DEADLINE] <= Date.now() ? ' late':''}">📅 ${deadline}</div>` : (responsable ? '<div>&nbsp;</div>':'')}
+      ${deadline ? `<div class="deadline${todo[COLONNES_MAP.DEADLINE] < Date.now() ? ' late':''}">📅 ${deadline}</div>` : (responsable ? '<div>&nbsp;</div>':'')}
       ${responsable ? `<div class="responsable-badge">${responsable}</div>` : ''}
       ${infoColonne?.isdone ? `<div class="tampon-termine" style="color: ${infoColonne?.couleur};">${todo[COLONNES_MAP.STATUT]}</div>` : ''}      
     `;
@@ -183,12 +194,26 @@ let CARTE_COMPACT = false;
         // Pour les colonnes Fait et Annulé, tri par date de dernière mise à jour
         const dateA = a.getAttribute('data-last-update') || '1970-01-01';
         const dateB = b.getAttribute('data-last-update') || '1970-01-01';
-        return new Date(dateB) - new Date(dateA); // Plus récent en premier
+        const delta = new Date(dateB) - new Date(dateA);
+        if (delta === 0) {
+          const idA = a.getAttribute('data-todo-id') || '0';
+          const idB = b.getAttribute('data-todo-id') || '0';
+          return idB - idA;
+        }
+        else 
+          return delta; // Plus récent en premier
       } else {
         // Pour les autres colonnes, tri par deadline
         const dateA = a.getAttribute('data-deadline') || '9999-12-31';
         const dateB = b.getAttribute('data-deadline') || '9999-12-31';
-        return new Date(dateA) - new Date(dateB); // Plus urgent en premier
+        const delta = new Date(dateA) - new Date(dateB);
+        if (delta === 0) {
+          const idA = a.getAttribute('data-todo-id') || '0';
+          const idB = b.getAttribute('data-todo-id') || '0';
+          return idB - idA;
+        }
+        else 
+          return delta; // Plus urgent en premier
       }
     });
     
@@ -436,14 +461,45 @@ let CARTE_COMPACT = false;
             group: 'kanban-todo',
             animation: 150,
             onEnd: async function(evt) {
-              const todoId = evt.item.dataset.todoId;
               const colonneArrivee = evt.to.dataset.statut;
+              // Déplacé dans la même colonne
+              if (colonneArrivee === evt.from.dataset.statut) {
+                let deadline = evt.item.dataset.deadline || '9999-12-31';
+
+                if (evt.oldIndex !== evt.newIndex && (new Date(deadline)) >= DEADLINE_PRIORITE) {
+                  let start = DEADLINE_PRIORITE.getFullYear();              
+                  let data = [];
+                  document.querySelectorAll('.contenu-colonne').forEach(colonne => { 
+                    if (colonne.getAttribute('data-statut') === colonneArrivee) {
+                      colonne.querySelectorAll('.carte').forEach(async carte => { 
+                        deadline = carte.getAttribute('data-deadline') || '9999-12-31';
+                        if ((new Date(deadline)) >= DEADLINE_PRIORITE) {
+                          deadline = `${start}-01-01`;
+                          carte.setAttribute('data-deadline', deadline);
+                          start += 1;
+
+                          data.push(['UpdateRecord', TABLE_KANBAN, parseInt(carte.getAttribute('data-todo-id')), {[COLONNES_MAP.DEADLINE]: deadline}]);                          
+                        }
+                      });
+                    }
+                  }); 
+                  
+                  try {
+                    await await grist.docApi.applyUserActions(data);
+                  } catch (erreur) {
+                    console.error('Erreur mise à jour statut:', erreur);
+                  }
+                }                
+              } else {
+                try {
+                  await mettreAJourChamp(evt.item.dataset.todoId, COLONNES_MAP.STATUT, colonneArrivee);
+                } catch (erreur) {
+                  console.error('Erreur mise à jour statut:', erreur);
+                }
+              } 
               
-              try {
-                await mettreAJourChamp(todoId, COLONNES_MAP.STATUT, colonneArrivee);
-              } catch (erreur) {
-                console.error('Erreur mise à jour statut:', erreur);
-              }
+              // Tri des cartes dans chaque colonne
+              trierTodo(colonne);
             }
           });
     
