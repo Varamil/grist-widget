@@ -14,7 +14,7 @@ function showError(msg) {
 }
 
 function updateDropdown(options) {
-  const uniqoptions = uniq(options).sort();
+  const uniqoptions = [""].concat(uniq(options).sort());
   
   // if (areArraysEqual(currentoptions, uniqoptions)) {
   //   return;
@@ -23,7 +23,17 @@ function updateDropdown(options) {
   // }
 
   const dropdown = document.getElementById('dropdown');
-  const currentvalue = uniqoptions.includes(dropdown.value) ? dropdown.value: undefined;
+  let currentvalue = uniqoptions.includes(dropdown.value) ? dropdown.value: undefined;
+  if (currentvalue === undefined && sessionID.length > 0) {
+     //if session ID defined, use it to auto select the dropdown value
+    const selection = sessionStorage.getItem(sessionID + "_Dropdownfilter_Item");
+    if (selection.length > 0) {
+      // const dropdown = document.getElementById('dropdown');
+      // dropdown.value = selection;
+      // dropdown.dispatchEvent(new Event('change'));
+      currentvalue = selection;
+    }
+  }
 
   dropdown.innerHTML = '';
   if (uniqoptions.length === 0) {
@@ -90,17 +100,7 @@ function initGrist() {
     }
     updateDropdown(options);
     
-    //if session ID defined, use it to auto select the dropdown value
-    if (sessionID.length > 0) {
-      const selection = sessionStorage.getItem(sessionID + "_Dropdownfilter_Item");
-      if (selection.length > 0) {
-        const dropdown = document.getElementById('dropdown');
-        dropdown.value = selection;
-        dropdown.dispatchEvent(new Event('change'));
-      }
-    } else {
-      grist.setSelectedRows(null);
-    } 
+   
   });
 
   document.getElementById('dropdown').addEventListener('change', function(event) {  
@@ -110,15 +110,19 @@ function initGrist() {
 }
 
  function selectRows(value) {
-  const rows = allRecords.filter((item) => item[column] === value).map(({id})=> id);
+  if (value.length === 0) {
+    grist.setSelectedRows(null);
+  } else {
+    const rows = allRecords.filter((item) => item[column] === value).map(({id})=> id);
     if (sessionID.length > 0) sessionStorage.setItem(sessionID + "_Dropdownfilter_Item", value);
     grist.setSelectedRows(rows);
+  }  
 }
 
 function uniq(a) {
   var seen = {};
   return a.filter(function(item) {
-      return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+      return (seen.hasOwnProperty(item) || item.length <= 0 )? false : (seen[item] = true);
   });
 }
 
