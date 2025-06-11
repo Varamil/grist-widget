@@ -33,12 +33,6 @@
     </div>
     <div class="field-row">
       <div class="field">
-        <label class="field-label">Table source :</label>
-        <select id="liste-table" class="field-select"></select>
-      </div>
-    </div>
-    <div class="field-row">
-      <div class="field">
         <label class="field-label">Colonnes :</label>
         <textarea id="liste-colonnes" class="field-textarea auto-expand" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
       </div>
@@ -73,6 +67,9 @@
       </div>
       <div class="field">        
         <input type="checkbox" id="card-compact" class="field-input"><label class="field-label-checkbox">Avoir un affichage plus compact des cartes</label></input>
+      </div>
+      <div class="field">        
+        <input type="checkbox" id="is-readonly" class="field-input"><label class="field-label-checkbox">Kanban en lecture seule</label></input>
       </div>
     </div>
   </div>

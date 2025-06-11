@@ -150,6 +150,13 @@
   }
 
   /* Éléments des cartes */
+  .truncate {
+    max-width: 50%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .projet-ref {
     position: absolute;
     top: 0.5rem;
