@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- Change the title by you widget name -->
+    <title>Kanban</title> 
+
+    <!-- Load grist API -->
+    <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+    <!-- Load WidgetSDK API and styles https://varamil.github.io/grist-widget-->
+    <script src="../../widgetSDK/min/widgetSDK.umd.js"></script>
+    <link rel="stylesheet" href="https://varamil.github.io/grist-widget/widgetSDK/min/widgetSDK.css">
+
+    <!-- Pour le trie des cartes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <!-- Ajout de la librairie pour les confettis -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- Place all your custom styles in this file -->
+    <link rel="stylesheet" href="widget.css">
+  </head>
+  <body>
+    <div id="main-view">
+        <!-- Place here the code for your widget, ensuring to stay in the div "main-view" -->
+      <div id="conteneur-kanban" class="kanban visible"></div>
+        <div id="popup-todo" class="popup">
+          <div class="popup-header">
+            <h2 class="popup-title"></h2>
+            <button class="bouton-fermer" onclick="fermerPopup()">×</button>
+          </div>
+          <div class="popup-content"></div>
+        </div>
+    </div>
+
+    <!-- div used to display the configuration to the user -->
+    <div id="config-view" class="grist-config" style="display: none;">
+    </div>
+
+    <!-- load the widget script -->
+    <script src="widget.js"></script>
+  </body>
+</html>

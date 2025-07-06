@@ -206,7 +206,7 @@ export default class WidgetSDK {
      * @param {string|Object} [json=null] - Path to the json file to be loaded, or the i18n object directly
      * @returns function to use for translation
      */
-    async loadTranslations(files, lang = 'en', json = null){
+    async loadTranslations(files = [], lang = 'en', json = null){
         this.translatedFiles = files;
         this.translatedFiles.push(this.urlSDK + '/min/widgetSDK.umd.js');
 
@@ -242,14 +242,14 @@ export default class WidgetSDK {
      * @param {object} [args=null] - Dynamic text to replace 
     */
     t(text, args = null) {
-        let trans = this.I18N[text] || text; //TODO if '' ?
-
+        let trans = text.replaceAll('\n', '\\n').replaceAll('  ', ' ');
+        trans = this.I18N[trans] || text; //TODO if '' ?
         if (args) {
             Object.entries(args).forEach(([k,v]) => {
                 trans = trans.replaceAll('%' + k, v);
             });
         }
-        return trans;
+        return trans.replaceAll('\\n', '\n');
     }
 
     /** Load listed files and look for translation function 
@@ -277,6 +277,10 @@ export default class WidgetSDK {
             this._parameters.forEach(opt => loc = {...loc, ...this.getOptionStrings(opt)});
         }
 
+        if (this.I18Ngrist) {
+            loc = {...loc, ...this.I18Ngrist};
+        }
+ 
         return loc;
     }
 
@@ -777,7 +781,7 @@ export default class WidgetSDK {
             html += `<div class="config-subtitle">${this.t(opt.subtitle)}</div>`;
             html += (!opt.inbloc?`<div class="config-value">${this.#getOptValueHtml(opt, value, idx, id)}</div>`:'')+ (idx>=0?'<div class="delete"></div>':'') + `</div>`;
             if (opt.collapse) {
-                html += `<div class="bloc" style="max-height: 0px;">` + (opt.description !== undefined?`<div class="details">${this.t(opt.description).replaceAll("\n", "<br>")}</div>`:'');
+                html += `<div class="bloc" style="max-height: 0px;">` + (opt.description !== undefined?`<div class="details">${this.t(opt.description).replaceAll("\n", "<br>").replaceAll("\\n", "<br>")}</div>`:'');
                 if (opt.type === 'template') {                    
                     html += `<div id="${opt.id}" class="config-dyn">`;
                     value?.forEach((v, i) => {
@@ -879,7 +883,7 @@ export default class WidgetSDK {
             keys.sort();
             keys.forEach(([k,v]) => {
                 html += `<div class="config-row"><div class="config-row-header"><div class="config-vo">${k.replaceAll("\n", '\\n')}</div>`;
-                html += `<div class="config-value large"><input class="config-input" value="${v}" data-key="${k}"></div></div></div>`;
+                html += `<div class="config-value large"><input class="config-input" value="${v.replaceAll("\n", '\\n').replaceAll("\"", '&quot;')}" data-key="${k.replaceAll("\n", '\\n').replaceAll("\"", '&quot;')}"></div></div></div>`;
             });
             html += `<div class="config-header"><button id="export-loc" class="config-button dyn">${this.t('Export')}</button></div>`;
         } else {
@@ -966,7 +970,7 @@ export default class WidgetSDK {
         const loc = this._config.querySelector('#config-loc');
         if (loc) {            
             loc.querySelectorAll("input.config-input")?.forEach(input => {
-                i18n[input.getAttribute('data-key')] = input.value;
+                i18n[input.getAttribute('data-key')] = input.value.replaceAll('\\n', '\n').replaceAll('&quot;', '"');
             });
         }
         return i18n;
@@ -987,6 +991,38 @@ export default class WidgetSDK {
     //==========================================================================================
     // Grist helper
     //==========================================================================================
+    /** Encapsulate grist.ready to ensure correct initialization and translation
+     * @param {Object} config - Usual object provided to grist.read
+     */
+    ready(config) {
+        if (config) {
+            if (config.columns) {
+                this.I18Ngrist = {};
+                config.columns.map(c => {
+                    if (c.title) {
+                        this.I18Ngrist[c.title] = '';
+                        c.title = this.t(c.title);}
+                    if (c.description) {
+                        this.I18Ngrist[c.description] = '';
+                        c.description = this.t(c.description);
+                    }
+                    return c;
+                });
+            }            
+            if (config.onEditOptions) {
+                this.onEditOptionsUser = config.onEditOptions
+            }
+            config.onEditOptions = this.onEditOptions.bind(this);
+        }
+
+        grist.ready(config);
+    }
+
+    async onEditOptions() {
+        await this.showConfig(); // manage the display of options when user click on "Open configuration" in Grist interface
+        if (this.onEditOptionsUser) await this.onEditOptionsUser.apply();
+    }
+
     /** Format record data for interaction with grist
      * @param {number} id - id of the record. Automatically parsed as integer
      * @param {object} data - Object with prop as column id and value
@@ -1030,13 +1066,27 @@ export default class WidgetSDK {
         return rec;
     }
 
-    /** Encapsulate gristOnRecords to ensure the correct timing between the options and mapping loading 
+    /** Encapsulate grist.OnRecords to ensure the correct timing between the options and mapping loading 
      * and the execution of the main function
      * @param {function} main - Function to call when loading is ended. 
-     * @param {Object} args - Grist object option for grist.OnRecords
+     * @param {Object} args - Grist object option for grist.onRecords
      */
     onRecords(main, args) {
         grist.onRecords(async (records, mappings) => {
+            this._ismapped = false;
+            // Wait for init finish to not miss the first onRecords
+            await this.isInit();
+            main(await this.mapData(records, mappings, args.mapRef));
+        }, args);
+    }
+
+    /** Encapsulate grist.OnRecord to ensure the correct timing between the options and mapping loading 
+     * and the execution of the main function
+     * @param {function} main - Function to call when loading is ended. 
+     * @param {Object} args - Grist object option for grist.onRecord
+     */
+    onRecord(main, args) {
+        grist.onRecord(async (records, mappings) => {
             this._ismapped = false;
             // Wait for init finish to not miss the first onRecords
             await this.isInit();

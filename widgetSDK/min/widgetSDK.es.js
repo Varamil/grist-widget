@@ -330,7 +330,7 @@ class h {
    * @param {string|Object} [json=null] - Path to the json file to be loaded, or the i18n object directly
    * @returns function to use for translation
    */
-  async loadTranslations(t, e = "en", s = null) {
+  async loadTranslations(t = [], e = "en", s = null) {
     if (this.translatedFiles = t, this.translatedFiles.push(this.urlSDK + "/min/widgetSDK.umd.js"), !s || typeof s == "string") {
       if (s = s || "i18n/" + this.culture + ".json", e !== this.culture && this.urlExists(s)) {
         let n = await fetch(s);
@@ -354,10 +354,12 @@ class h {
    * @param {object} [args=null] - Dynamic text to replace 
   */
   t(t, e = null) {
-    let s = this.I18N[t] || t;
-    return e && Object.entries(e).forEach(([n, a]) => {
+    let s = t.replaceAll(`
+`, "\\n").replaceAll("  ", " ");
+    return s = this.I18N[s] || t, e && Object.entries(e).forEach(([n, a]) => {
       s = s.replaceAll("%" + n, a);
-    }), s;
+    }), s.replaceAll("\\n", `
+`);
   }
   /** Load listed files and look for translation function 
    * @param {Array<string>} files - List of files to load and analyze
@@ -374,7 +376,7 @@ class h {
           r = this.grep(a, `(?<=[^a-zA-Z0-9_]${e}[(])${l}(.*?)(?<!\\\\)${l}(?=[),])`), r && (r = r.map((o) => [o.replace(/^['"`]|['"`]$/g, ""), ""]), s = { ...s, ...Object.fromEntries(r) });
         });
       }
-    })), this._parameters && this._parameters.forEach((n) => s = { ...s, ...this.getOptionStrings(n) }), s;
+    })), this._parameters && this._parameters.forEach((n) => s = { ...s, ...this.getOptionStrings(n) }), this.I18Ngrist && (s = { ...s, ...this.I18Ngrist }), s;
   }
   /** Get all options strings (for translation purpose)
    * @param {Object} opt - Option to get strings 
@@ -642,7 +644,7 @@ class h {
     if (!t.hidden) {
       const r = s >= 0 ? this.valuesList[t.id] ? this.valuesList[t.id][s] : this.t(t.title) + " #" + (s + 1) : this.t(t.title);
       a += '<div class="config-row"><div class="config-row-header"><div class="config-title', a += `${t.collapse ? '"><div class="collapse"></div>' : ' nocollapse">'}${r}</div>`, a += `<div class="config-subtitle">${this.t(t.subtitle)}</div>`, a += (t.inbloc ? "" : `<div class="config-value">${this.#l(t, e, s, n)}</div>`) + (s >= 0 ? '<div class="delete"></div>' : "") + "</div>", t.collapse && (a += '<div class="bloc" style="max-height: 0px;">' + (t.description !== void 0 ? `<div class="details">${this.t(t.description).replaceAll(`
-`, "<br>")}</div>` : ""), t.type === "template" ? (a += `<div id="${t.id}" class="config-dyn">`, e?.forEach((l, o) => {
+`, "<br>").replaceAll("\\n", "<br>")}</div>` : ""), t.type === "template" ? (a += `<div id="${t.id}" class="config-dyn">`, e?.forEach((l, o) => {
         a += this.#t(t.template, l, o, n + "_" + o);
       }), a += "</div>", a += this.valuesList[t.id] ? "" : `<div class="config-header"><button id="add-button" data-id="${t.id}" class="config-button dyn">+</button></div>`) : t.type === "templateform" ? (a += `<div id="${t.id}" class="config-dyn">`, e?.forEach((l, o) => {
         l && (a += `<div class="config-section"><div class="config-section-title">${this.valuesList[t.id][o]}</div>`, Object.entries(l).forEach(([c, u]) => {
@@ -706,7 +708,9 @@ class h {
     let t = "", e = this.I18Nuser ? Object.entries(this.I18Nuser) : [];
     return e = e.length > 0 ? e : Object.entries(this.I18N), e.length > 0 ? (e.sort(), e.forEach(([s, n]) => {
       t += `<div class="config-row"><div class="config-row-header"><div class="config-vo">${s.replaceAll(`
-`, "\\n")}</div>`, t += `<div class="config-value large"><input class="config-input" value="${n}" data-key="${s}"></div></div></div>`;
+`, "\\n")}</div>`, t += `<div class="config-value large"><input class="config-input" value="${n.replaceAll(`
+`, "\\n").replaceAll('"', "&quot;")}" data-key="${s.replaceAll(`
+`, "\\n").replaceAll('"', "&quot;")}"></div></div></div>`;
     }), t += `<div class="config-header"><button id="export-loc" class="config-button dyn">${this.t("Export")}</button></div>`) : t += `<div class="details">${this.t("No string to translate, please extract them before.")}</div>`, t;
   }
   getValueListOption(t, e) {
@@ -758,7 +762,8 @@ class h {
     let t = {};
     const e = this._config.querySelector("#config-loc");
     return e && e.querySelectorAll("input.config-input")?.forEach((s) => {
-      t[s.getAttribute("data-key")] = s.value;
+      t[s.getAttribute("data-key")] = s.value.replaceAll("\\n", `
+`).replaceAll("&quot;", '"');
     }), t;
   }
   /** Export to clipboard user translation */
@@ -772,6 +777,15 @@ Thanks a lot for your time !`));
   //==========================================================================================
   // Grist helper
   //==========================================================================================
+  /** Encapsulate grist.ready to ensure correct initialization and translation
+   * @param {Object} config - Usual object provided to grist.read
+   */
+  ready(t) {
+    t && (t.columns && (this.I18Ngrist = {}, t.columns.map((e) => (e.title && (this.I18Ngrist[e.title] = "", e.title = this.t(e.title)), e.description && (this.I18Ngrist[e.description] = "", e.description = this.t(e.description)), e))), t.onEditOptions && (this.onEditOptionsUser = t.onEditOptions), t.onEditOptions = this.onEditOptions.bind(this)), grist.ready(t);
+  }
+  async onEditOptions() {
+    await this.showConfig(), this.onEditOptionsUser && await this.onEditOptionsUser.apply();
+  }
   /** Format record data for interaction with grist
    * @param {number} id - id of the record. Automatically parsed as integer
    * @param {object} data - Object with prop as column id and value
@@ -796,13 +810,23 @@ Thanks a lot for your time !`));
   mapColumnNamesBack(t) {
     return t.fields = Object.fromEntries(Object.entries(t.fields).map((e) => [this.map[e[0]] ?? e[0], e[1]])), t;
   }
-  /** Encapsulate gristOnRecords to ensure the correct timing between the options and mapping loading 
+  /** Encapsulate grist.OnRecords to ensure the correct timing between the options and mapping loading 
    * and the execution of the main function
    * @param {function} main - Function to call when loading is ended. 
-   * @param {Object} args - Grist object option for grist.OnRecords
+   * @param {Object} args - Grist object option for grist.onRecords
    */
   onRecords(t, e) {
     grist.onRecords(async (s, n) => {
+      this._ismapped = !1, await this.isInit(), t(await this.mapData(s, n, e.mapRef));
+    }, e);
+  }
+  /** Encapsulate grist.OnRecord to ensure the correct timing between the options and mapping loading 
+   * and the execution of the main function
+   * @param {function} main - Function to call when loading is ended. 
+   * @param {Object} args - Grist object option for grist.onRecord
+   */
+  onRecord(t, e) {
+    grist.onRecord(async (s, n) => {
       this._ismapped = !1, await this.isInit(), t(await this.mapData(s, n, e.mapRef));
     }, e);
   }
