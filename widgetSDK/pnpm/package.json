@@ -16,6 +16,8 @@
     "files": [
         "widgetSDK.js",
         "widgetSDK.css",
+        "ColMetaFetcher.js",
+        "ColMeta.js",
         "README.md"
     ],
     "exports": {

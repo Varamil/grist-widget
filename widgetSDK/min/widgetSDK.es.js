@@ -1,3 +1,215 @@
+class f {
+  constructor(t, e) {
+    Object.assign(this, t), this._fullMeta = e;
+  }
+  /** For a Choice column, returns the background color of a given option
+   * @param {string} ref - The option on which get the background color 
+   * @returns color as HTML format #FFFFFF
+   */
+  getColor(t) {
+    return this.widgetOptions.choiceOptions?.[t]?.fillColor;
+  }
+  /** For a Choice column, returns the text color of a given option
+  * @param {string} ref - The option on which get the text color 
+  * @returns color as HTML format #000000
+  */
+  getTextColor(t) {
+    return this.widgetOptions.choiceOptions?.[t]?.textColor;
+  }
+  /** Check if the column is a formula column AND a formula is defined */
+  getIsFormula() {
+    return this.isFormula && this.formula?.trim();
+  }
+  async getChoices() {
+    const t = this.type.split(":");
+    if (t[0] === "Ref" || t[0] === "RefList") {
+      const e = await grist.docApi.fetchTable(t[1]), s = await this.getMeta(this.visibleCol);
+      return e[s.colId];
+    } else if (t[0] === "Choice")
+      return this.widgetOptions?.choices;
+    return null;
+  }
+  // async getRefMeta() {
+  //     const t = this.type.split(':');
+  //     if (t[0] === 'RefList' || t[0] === 'Ref') {
+  //         return [t[1], await this.getMeta(this.visibleCol)];
+  //     }
+  //     return null;
+  // }
+  /** Parse a given value based on column meta data. Replace values, whatever the encoding is, by their content.
+   * @param {*} value - Any value provided by Grist
+   * @returns Decoded value
+   */
+  async parse(t, e = null, s = null) {
+    const n = this.type.split(":");
+    if (n[0] === "RefList") {
+      if (t && t.length > 0 && (t[0] === "L" && (t = t.splice(0, 1)), t.length > 0 && typeof t[0] == "number")) {
+        const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol);
+        return t.map((o) => a?.id?.indexOf(o)).map((o) => a[r.colId][o]);
+      }
+    } else if (n[0] === "Ref") {
+      if (Array.isArray(t))
+        if (t[2] > 0)
+          if (this.visibleCol > 0) {
+            const a = e ?? await grist.docApi.fetchTable(t[1]), r = s ?? await this.getMeta(this.visibleCol), l = a?.id?.indexOf(t[2]);
+            return await this.parse(a[r.colId][l]);
+          } else return t[2];
+        else return;
+      else if (typeof t == "object")
+        if (t.rowId > 0)
+          if (this.visibleCol > 0) {
+            const a = e ?? await grist.docApi.fetchTable(t.tableId), r = s ?? await this.getMeta(this.visibleCol), l = a?.id?.indexOf(t.rowId);
+            return await this.parse(a[r.colId][l]);
+          } else return t.rowId;
+        else return;
+    }
+    return t;
+  }
+  /** Parse a given value ID based on column meta data. Replace references, whatever the encoding is, by their ID. 
+   * @param {*} value - Any value provided by Grist, but only Ref and Reflist are treated
+   * @returns Reference id(s)
+  */
+  async parseId(t, e = null, s = null) {
+    const n = this.type.split(":");
+    if (n[0] === "RefList") {
+      if (t && t.length > 0 && (t[0] === "L" && (t = t.splice(0, 1)), t.length > 0 && typeof t[0] != "number")) {
+        const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol);
+        return t.map((o) => a[r.colId]?.indexOf(o)).map((o) => a.id[o]);
+      }
+    } else if (n[0] === "Ref") {
+      if (Array.isArray(t))
+        return t[2];
+      if (typeof t == "object")
+        return t.rowId;
+      {
+        const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol), l = a[r.colId].indexOf(t);
+        return a.id[l];
+      }
+    }
+    return t;
+  }
+  /** Encode a given value to be compatible by Grist 
+   * @param {*} value - Any value that need to be encoded before being sent to Grist
+   * @returns Encoded value
+  */
+  async encode(t, e = null, s = null) {
+    const n = this.type.split(":");
+    if (n[0] === "RefList") {
+      if (Array.isArray(t) && t.length > 0 && typeof t[0] != "number") {
+        const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol);
+        return t.map((o) => a[r.colId]?.indexOf(o)).map((o) => a.id[o]);
+      }
+    } else if (n[0] === "Ref" && typeof t[0] != "number") {
+      const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol), l = a[r.colId].indexOf(t);
+      return a.id[l];
+    }
+    return t;
+  }
+  /** Get current column meta data */
+  async getMeta(t) {
+    return this._fullMeta.then(
+      (e) => e.col.find((s) => s.id === t)
+    );
+  }
+}
+class d {
+  /** Fetch columns meta data for all tables */
+  static async fetchMetas() {
+    const t = await grist.docApi.fetchTable("_grist_Tables_column"), e = Object.keys(t), n = t.parentId.map((l, o) => o).map((l) => {
+      let o = Object.fromEntries(e.map((c) => [c, t[c][l]]));
+      return o.widgetOptions = d.safeParse(o.widgetOptions), o;
+    }), a = await grist.docApi.fetchTable("_grist_Tables"), r = Object.fromEntries(a.tableId.map((l, o) => [l, a.id[o]]));
+    return { col: n, tab: r };
+  }
+  static getTableMeta(t, e) {
+    return t.col.filter((s) => s.parentId === t.tab[e]);
+  }
+  constructor() {
+    this._tableId = null, this._colIds = null, this._metaPromise = null, this._colPromise = null, this._col = null, this._accessLevel = "", this.loaded = !1, grist.on("message", (t) => {
+      t.settings && this._accessLevel !== t.settings.accessLevel && (this._accessLevel = t.settings.accessLevel, this.fetchColumns()), t.tableId && t.mappingsChange && (this._tableId = t.tableId, this.fetchColumns());
+    });
+  }
+  fetchColumns() {
+    this._accessLevel === "full" && (this._col = null, this._metaPromise = d.fetchMetas(this._tableId), this._colPromise = new Promise((t) => {
+      this._metaPromise.then((e) => t(d.getTableMeta(e, this._tableId)));
+    }));
+  }
+  mapColumns(t, e) {
+    return t;
+  }
+  async getTypes() {
+    return this._colPromise.then(
+      (t) => Object.fromEntries(t.map((e) => [e.colId, e?.type]))
+    );
+  }
+  async getColType(t) {
+    return this._colPromise.then(
+      (e) => e.find((s) => s.colId === t)?.type
+    );
+  }
+  async getOptions() {
+    return this._colPromise.then(
+      (t) => Object.fromEntries(t.map((e) => [e.colId, e?.widgetOptions]))
+    );
+  }
+  async getColOption(t) {
+    return this._colPromise.then(
+      (e) => e.find((s) => s.colId === t)?.widgetOptions
+    );
+  }
+  async IsFormula() {
+    return this._colPromise.then(
+      (t) => Object.fromEntries(t.map((e) => [e.colId, e?.isFormula && (e?.formula?.length ?? 0) !== 0]))
+    );
+  }
+  async IsColFormula(t) {
+    return this._colPromise.then(
+      (e) => {
+        const s = e.find((n) => n.colId === t);
+        return s?.isFormula && (s?.formula?.length ?? 0) !== 0;
+      }
+    );
+  }
+  async getColor(t, e) {
+    return this.getColOption(t)?.choiceOptions?.[e]?.fillColor;
+  }
+  /** Get current table columns meta data
+   * @returns Object with each entries as column Id
+   */
+  async getMeta() {
+    return this._col || (this._col = this._colPromise.then(
+      (t) => Object.fromEntries(t.map((e) => [e.colId, new f(e, this._metaPromise.then((s) => s))]))
+    )), this._col;
+  }
+  /** Get given column meta data
+   * @param {string} colId - Column Grist id
+   */
+  async getColMeta(t) {
+    return this._colPromise.then(
+      (e) => {
+        const s = e.find((n) => n.colId === t);
+        return s ? new f(s, this._metaPromise.value) : null;
+      }
+    );
+  }
+  // async getRawColMeta(colId) {
+  //     return this._colPromise.then(
+  //         types => { 
+  //             return types.find(t => t.colId === colId);
+  //           }
+  //     );
+  // }
+  isLoaded() {
+    return this._colPromise ? this._colPromise?.state !== "pending" : !1;
+  }
+  static safeParse(t) {
+    try {
+      return JSON.parse(t);
+    } catch {
+      return null;
+    }
+  }
+}
 class h {
   constructor() {
     const t = new URLSearchParams(window.location.search);
@@ -598,220 +810,6 @@ Thanks a lot for your time !`));
     return grist.mapColumnNames(e);
   }
 }
-class d {
-  /** Fetch columns meta data for all tables */
-  static async fetchMetas() {
-    const t = await grist.docApi.fetchTable("_grist_Tables_column"), e = Object.keys(t), n = t.parentId.map((l, o) => o).map((l) => {
-      let o = Object.fromEntries(e.map((c) => [c, t[c][l]]));
-      return o.widgetOptions = d.safeParse(o.widgetOptions), o;
-    }), a = await grist.docApi.fetchTable("_grist_Tables"), r = Object.fromEntries(a.tableId.map((l, o) => [l, a.id[o]]));
-    return { col: n, tab: r };
-  }
-  static getTableMeta(t, e) {
-    return t.col.filter((s) => s.parentId === t.tab[e]);
-  }
-  constructor() {
-    this._tableId = null, this._colIds = null, this._metaPromise = null, this._colPromise = null, this._col = null, this._accessLevel = "", this.loaded = !1, grist.on("message", (t) => {
-      t.settings && this._accessLevel !== t.settings.accessLevel && (this._accessLevel = t.settings.accessLevel, this.fetchColumns()), t.tableId && t.mappingsChange && (this._tableId = t.tableId, this.fetchColumns());
-    });
-  }
-  fetchColumns() {
-    this._accessLevel === "full" && (this._col = null, this._metaPromise = d.fetchMetas(this._tableId), this._colPromise = new Promise((t) => {
-      this._metaPromise.then((e) => t(d.getTableMeta(e, this._tableId)));
-    }));
-  }
-  mapColumns(t, e) {
-    return t;
-  }
-  async getTypes() {
-    return this._colPromise.then(
-      (t) => Object.fromEntries(t.map((e) => [e.colId, e?.type]))
-    );
-  }
-  async getColType(t) {
-    return this._colPromise.then(
-      (e) => e.find((s) => s.colId === t)?.type
-    );
-  }
-  async getOptions() {
-    return this._colPromise.then(
-      (t) => Object.fromEntries(t.map((e) => [e.colId, e?.widgetOptions]))
-    );
-  }
-  async getColOption(t) {
-    return this._colPromise.then(
-      (e) => e.find((s) => s.colId === t)?.widgetOptions
-    );
-  }
-  async IsFormula() {
-    return this._colPromise.then(
-      (t) => Object.fromEntries(t.map((e) => [e.colId, e?.isFormula && (e?.formula?.length ?? 0) !== 0]))
-    );
-  }
-  async IsColFormula(t) {
-    return this._colPromise.then(
-      (e) => {
-        const s = e.find((n) => n.colId === t);
-        return s?.isFormula && (s?.formula?.length ?? 0) !== 0;
-      }
-    );
-  }
-  async getColor(t, e) {
-    return this.getColOption(t)?.choiceOptions?.[e]?.fillColor;
-  }
-  /** Get current table columns meta data
-   * @returns Object with each entries as column Id
-   */
-  async getMeta() {
-    return this._col || (this._col = this._colPromise.then(
-      (t) => Object.fromEntries(t.map((e) => [e.colId, new f(e, this._metaPromise.then((s) => s))]))
-    )), this._col;
-  }
-  /** Get given column meta data
-   * @param {string} colId - Column Grist id
-   */
-  async getColMeta(t) {
-    return this._colPromise.then(
-      (e) => {
-        const s = e.find((n) => n.colId === t);
-        return s ? new f(s, this._metaPromise.value) : null;
-      }
-    );
-  }
-  // async getRawColMeta(colId) {
-  //     return this._colPromise.then(
-  //         types => { 
-  //             return types.find(t => t.colId === colId);
-  //           }
-  //     );
-  // }
-  isLoaded() {
-    return this._colPromise ? this._colPromise?.state !== "pending" : !1;
-  }
-  static safeParse(t) {
-    try {
-      return JSON.parse(t);
-    } catch {
-      return null;
-    }
-  }
-}
-class f {
-  constructor(t, e) {
-    Object.assign(this, t), this._fullMeta = e;
-  }
-  /** For a Choice column, returns the background color of a given option
-   * @param {string} ref - The option on which get the background color 
-   * @returns color as HTML format #FFFFFF
-   */
-  getColor(t) {
-    return this.widgetOptions.choiceOptions?.[t]?.fillColor;
-  }
-  /** For a Choice column, returns the text color of a given option
-  * @param {string} ref - The option on which get the text color 
-  * @returns color as HTML format #000000
-  */
-  getTextColor(t) {
-    return this.widgetOptions.choiceOptions?.[t]?.textColor;
-  }
-  /** Check if the column is a formula column AND a formula is defined */
-  getIsFormula() {
-    return this.isFormula && this.formula?.trim();
-  }
-  async getChoices() {
-    const t = this.type.split(":");
-    if (t[0] === "Ref" || t[0] === "RefList") {
-      const e = await grist.docApi.fetchTable(t[1]), s = await this.getMeta(this.visibleCol);
-      return e[s.colId];
-    } else if (t[0] === "Choice")
-      return this.widgetOptions?.choices;
-    return null;
-  }
-  // async getRefMeta() {
-  //     const t = this.type.split(':');
-  //     if (t[0] === 'RefList' || t[0] === 'Ref') {
-  //         return [t[1], await this.getMeta(this.visibleCol)];
-  //     }
-  //     return null;
-  // }
-  /** Parse a given value based on column meta data. Replace values, whatever the encoding is, by their content.
-   * @param {*} value - Any value provided by Grist
-   * @returns Decoded value
-   */
-  async parse(t, e = null, s = null) {
-    const n = this.type.split(":");
-    if (n[0] === "RefList") {
-      if (t && t.length > 0 && (t[0] === "L" && (t = t.splice(0, 1)), t.length > 0 && typeof t[0] == "number")) {
-        const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol);
-        return t.map((o) => a?.id?.indexOf(o)).map((o) => a[r.colId][o]);
-      }
-    } else if (n[0] === "Ref") {
-      if (Array.isArray(t))
-        if (t[2] > 0)
-          if (this.visibleCol > 0) {
-            const a = e ?? await grist.docApi.fetchTable(t[1]), r = s ?? await this.getMeta(this.visibleCol), l = a?.id?.indexOf(t[2]);
-            return await this.parse(a[r.colId][l]);
-          } else return t[2];
-        else return;
-      else if (typeof t == "object")
-        if (t.rowId > 0)
-          if (this.visibleCol > 0) {
-            const a = e ?? await grist.docApi.fetchTable(t.tableId), r = s ?? await this.getMeta(this.visibleCol), l = a?.id?.indexOf(t.rowId);
-            return await this.parse(a[r.colId][l]);
-          } else return t.rowId;
-        else return;
-    }
-    return t;
-  }
-  /** Parse a given value ID based on column meta data. Replace references, whatever the encoding is, by their ID. 
-   * @param {*} value - Any value provided by Grist, but only Ref and Reflist are treated
-   * @returns Reference id(s)
-  */
-  async parseId(t, e = null, s = null) {
-    const n = this.type.split(":");
-    if (n[0] === "RefList") {
-      if (t && t.length > 0 && (t[0] === "L" && (t = t.splice(0, 1)), t.length > 0 && typeof t[0] != "number")) {
-        const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol);
-        return t.map((o) => a[r.colId]?.indexOf(o)).map((o) => a.id[o]);
-      }
-    } else if (n[0] === "Ref") {
-      if (Array.isArray(t))
-        return t[2];
-      if (typeof t == "object")
-        return t.rowId;
-      {
-        const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol), l = a[r.colId].indexOf(t);
-        return a.id[l];
-      }
-    }
-    return t;
-  }
-  /** Encode a given value to be compatible by Grist 
-   * @param {*} value - Any value that need to be encoded before being sent to Grist
-   * @returns Encoded value
-  */
-  async encode(t, e = null, s = null) {
-    const n = this.type.split(":");
-    if (n[0] === "RefList") {
-      if (Array.isArray(t) && t.length > 0 && typeof t[0] != "number") {
-        const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol);
-        return t.map((o) => a[r.colId]?.indexOf(o)).map((o) => a.id[o]);
-      }
-    } else if (n[0] === "Ref" && typeof t[0] != "number") {
-      const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol), l = a[r.colId].indexOf(t);
-      return a.id[l];
-    }
-    return t;
-  }
-  /** Get current column meta data */
-  async getMeta(t) {
-    return this._fullMeta.then(
-      (e) => e.col.find((s) => s.id === t)
-    );
-  }
-}
 export {
-  f as ColMeta,
-  d as ColMetaFetcher,
-  h as WidgetSDK
+  h as default
 };

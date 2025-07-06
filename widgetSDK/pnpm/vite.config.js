@@ -5,7 +5,7 @@ export default defineConfig({
     build: {
         lib: {
             entry: resolve(__dirname, '../widgetSDK.js'),
-            name: 'widgetSDK',
+            name: 'WidgetSDK',
             fileName: 'widgetSDK',
         },
         outDir: '../min',
@@ -18,6 +18,6 @@ export default defineConfig({
             },
         },
     },
-    output: { interop: 'auto' },
+    output: { interop: 'auto', exports:"named" },
     server: { watch: { include: ['../min/*', '../*'] } }
 });
