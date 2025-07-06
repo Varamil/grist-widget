@@ -309,9 +309,10 @@ class h {
   }
   /** Assign sources properties to the target only if they are defined (i.e. if(value) is true) */
   assignDefined(t, ...e) {
-    for (const s of e)
-      for (const [n, a] of Object.entries(s))
-        a && (t[n] = a);
+    if (t)
+      for (const s of e)
+        for (const [n, a] of Object.entries(s))
+          a && (t[n] = a);
     return t;
   }
   /** Check if an object has defined properties (i.e. null, undefined, ''... are ignored) */

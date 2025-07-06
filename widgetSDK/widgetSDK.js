@@ -177,11 +177,13 @@ export default class WidgetSDK {
 
     /** Assign sources properties to the target only if they are defined (i.e. if(value) is true) */
     assignDefined(target, ...sources) {
-        for (const src of sources) {
-            for (const [k,v] of Object.entries(src)) {
-                if (v) target[k] = v;
+        if (target) {
+            for (const src of sources) {
+                for (const [k,v] of Object.entries(src)) {
+                    if (v) target[k] = v;
+                }
             }
-        }
+        }        
         return target;
     }
 
