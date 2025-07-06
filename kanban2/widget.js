@@ -716,3 +716,11 @@ function formatDateForInput(dateStr) {
         return '';
     }
 }
+
+// ========== EXPORT DES FONCTIONS GLOBALES ==========
+  window.toggleColonne = toggleColonne;
+  window.togglePopupTodo = togglePopupTodo;
+  window.fermerPopup = fermerPopup;
+  window.mettreAJourChamp = mettreAJourChamp;
+  window.creerNouvelleTache = creerNouvelleTache;
+  window.supprimerTodo = supprimerTodo;
