@@ -1,0 +1,1359 @@
+import './widgetSDK.css';
+
+// Config
+// object
+//  configID : container id for config
+//  mainViewID : container id for the main viex
+//  parameters Array[Object]: item = 1 paramètre de config
+//      id : identifiant (html, grist...)
+//      title : titre
+//      subtitle : short description
+//      description : long detailled explaination
+//      default : default value => gives the type
+//      type : boolean, number, string, longstring, dropdown, object=>JSON
+//      values : for select : Array, lookup
+//      format : function to format the raw value to a standard
+//      parse : function to format a standard value into raw value
+//      group : group title 
+//      hidden: true to not display it in UI
+//      template : Config Object (in group) or Array of Config Object (1 group dedicated)
+//  events : 
+//      onChange : event triggered when value is changed in the config
+//      onLoad : event triggered config is loaded
+//  opt : build object based on parameters with current values
+//  col : current table columns meta data
+//  meta : all grist culumns meta data (used mainly for references)
+//  valuesList : Object of Array to access dynamic list associated to an option (from reference, choice, or user defined)
+
+/**  */
+export class WidgetSDK {
+    constructor() {
+        const urlParams = new URLSearchParams(window.location.search);
+        this.cultureFull = urlParams.has('culture')?urlParams.get('culture'):'en-US';
+        this.culture = this.cultureFull.split('-')[0];
+        this.currency = urlParams.has('currency')?urlParams.get('currency'):'USD';
+        this.timeZone = urlParams.has('timeZone')?urlParams.get('timeZone'):'';
+        this._gristloaded = false;
+        this._optloaded = false;
+        this._ismapped = false;
+        this.initDone = false;
+        this.urlSDK = ''; //TODO
+
+        grist.on('message', async (e) => {
+            if (e.fromReady) {this._gristloaded = e.fromReady;}
+          });
+    }
+
+    //==========================================================================================
+    // Commons
+    //==========================================================================================
+    static async sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    triggerEvent(event, args) {
+        if (this.events['on' + event]) {
+            this.events['on' + event].apply(this, args);
+        }
+    }    
+
+    /** Provide a Promise that resolved when the full widget configuration and grist are loaded */
+    async isLoaded() {
+        return new Promise(async (resolved, rejected) => {
+            try {
+                if (this.meta) {
+                    while(!this.meta.isLoaded()) { //checked every time because may change at any time
+                        await WidgetSDK.sleep(50);
+                    }
+                    this.col = grist.mapColumnNames(await this.meta.getMeta());
+                } 
+                if (this.opt) {                    
+                    while(!this._optloaded) {
+                        await WidgetSDK.sleep(50);
+                    }
+                }
+                while(!this._gristloaded) {
+                    await WidgetSDK.sleep(50);
+                }
+                resolved(true);
+            } catch (err) { 
+                rejected(err);
+            }
+        });
+    }
+
+    /**  */
+    async isInit() {
+        if (this.initDone && await this.isLoaded())
+            return new Promise(resolve => resolve(true));
+        else 
+            return new Promise(async (resolved, rejected) => {
+                try {
+                    await this.isLoaded();
+                    while(!this.initDone) {
+                        await WidgetSDK.sleep(50);
+                    }
+                    resolved(true);
+                } catch (err) { 
+                    rejected(err);
+                }
+            });
+    }
+
+    async isMapped() {
+        if (!this.meta || this._ismapped) 
+            return new Promise(resolve => resolve(true));
+        else {
+            return new Promise(async (resolved, rejected) => {
+                try {
+                    while(!this._ismapped) {
+                        await WidgetSDK.sleep(50);
+                    }
+                    resolved(true);
+                } catch (err) { 
+                    rejected(err);
+                }
+            });
+        }
+    }
+
+    /** Manage the parsing of a reference or a list into an Array */
+    async getLookUpData(target) {        
+        if (!target) return [];
+        if (Array.isArray(target)) {
+            return target.sort();
+        } else if (!target.trim()) { //manage empty string
+            return [];
+        } else if (target.startsWith("$")) {
+            target = target.substring(1); //remove the first $
+            let data = target.split(".");
+            if (data.length === 1) {
+                //Only a ref to a table => 1st column used 
+                let records = await grist.docApi.fetchTable(data[0]);
+                let colonne = Object.keys(records || {}).filter(k => k !== 'id' && k !== 'manualSort');          
+                if (colonne.length > 0)
+                    return [""].concat(records[colonne[0]].filter(item => item.length > 0).sort());
+                else
+                    return [];
+            } else if (data.length > 1) {
+                //Ref to a table + ref to a column 
+                let records = await grist.docApi.fetchTable(data[0]);
+                records = records[data[1]];
+                if (records)
+                    return [""].concat(records.filter(item => item.length > 0).sort());
+                else
+                    return [];
+            } else {
+                return [target];
+            }
+        } else {
+            return [""].concat(target.split(";").filter(item => item.length > 0).sort());
+        }    
+    }
+
+    /** Function that mimics basic GNU/Linux grep command;
+     * @param  {String} multiLineString      The multiline string
+     * @param  {String} patternToSearch      The RegEx pattern to search for
+     * @return {Array}                       An Array containing all the matching row(s) for patternToSearch in multiLineString
+     */
+    grep(string, patternToSearch) {
+        var regexPatternToSearch = new RegExp(patternToSearch, "img");
+        return string.match(regexPatternToSearch);
+    }
+
+
+    /** Checks if a file exist on server side
+     * @param {string} url - absolute or relative url
+     */
+    urlExists(url)
+    {
+        if (!url) return false;
+        var http = new XMLHttpRequest();
+        http.open('HEAD', url, false);
+        http.send();
+        return http.status!=404;
+    }
+
+    /** Assign sources properties to the target only if they are defined (i.e. if(value) is true) */
+    assignDefined(target, ...sources) {
+        for (const src of sources) {
+            for (const [k,v] of Object.entries(src)) {
+                if (v) target[k] = v;
+            }
+        }
+        return target;
+    }
+
+    /** Check if an object has defined properties (i.e. null, undefined, ''... are ignored) */
+    isObjectEmpty(value) {
+        for (let prop in value) {
+            if (value.hasOwnProperty(prop) && prop) return false;
+        }
+        return true;
+    }
+
+
+    //==========================================================================================
+    // Localization
+    //==========================================================================================
+
+    /** Load translation data
+     * @param {Array<string>} files - List of files that use the translation. Use relative path to the main script
+     * @param {string} [lang='en'] - Default language used to write keys
+     * @param {string|Object} [json=null] - Path to the json file to be loaded, or the i18n object directly
+     * @returns function to use for translation
+     */
+    async loadTranslations(files, lang = 'en', json = null){
+        this.translatedFiles = files;
+        this.translatedFiles.push(this.urlSDK + '/widgetSDK.js');
+
+        if (!json || typeof json === 'string') {
+            json=json?json:('i18n/' + this.culture + '.json');
+            if (lang !== this.culture && this.urlExists(json)) {
+                let response = await fetch(json);
+                if (response.ok) {
+                    const data = await response.text();            
+                    this.I18N = JSON.parse(data);
+                } // use default          
+            }      
+        } else if (typeof json === 'object') {
+            this.I18N = json;
+        }
+        else 
+            console.error("Loading translation error");
+
+        if (lang !== this.culture && this.urlExists(this.urlSDK + '/i18n/' + this.culture + '.json')) {
+            let response = await fetch(this.urlSDK + '/i18n/' + this.culture + '.json');
+            if (response.ok) {
+                const data = await response.text();            
+                this.assignDefined(this.I18N, JSON.parse(data));
+            } 
+        }
+        
+        if (!this.I18N) this.I18N = {}; 
+        return this.t.bind(this);
+    }
+
+    /** Provide translated text 
+     * @param {string} text - Original text
+     * @param {object} [args=null] - Dynamic text to replace 
+    */
+    t(text, args = null) {
+        let trans = this.I18N[text] || text; //TODO if '' ?
+
+        if (args) {
+            Object.entries(args).forEach(([k,v]) => {
+                trans = trans.replaceAll('%' + k, v);
+            });
+        }
+        return trans;
+    }
+
+    /** Load listed files and look for translation function 
+     * @param {Array<string>} files - List of files to load and analyze
+     * @param {string} [f='t'] - The translation function name used
+    */
+    async extractTranslations(files, f = 't' ) {
+        let loc = {};
+        await Promise.all(files.map(async file => {
+            let rep = await fetch(file);
+            if (rep.ok) {
+                rep = await rep.text();
+                let data;
+                ["'", '"', '`'].forEach(q => {
+                    data = this.grep(rep, `(?<=[^a-zA-Z0-9_]${f}[(])${q}(.*?)(?<!\\\\)${q}(?=[),])`);
+                    if (data) {
+                        data = data.map(d => [d.replace(/^['"`]|['"`]$/g, ''), '']);
+                        loc = {...loc, ...Object.fromEntries(data)};
+                    }                    
+                });                
+            }            
+        }));
+
+        if (this._parameters) {
+            this._parameters.forEach(opt => loc = {...loc, ...this.getOptionStrings(opt)});
+        }
+
+        return loc;
+    }
+
+    /** Get all options strings (for translation purpose)
+     * @param {Object} opt - Option to get strings 
+     */
+    getOptionStrings(opt) {
+        let i18n = {}
+        if (opt) {            
+            if (opt.title) i18n[opt.title] = '';
+            if (opt.subtitle) i18n[opt.subtitle] = '';
+            if (opt.description) i18n[opt.description] = '';
+            if (opt.group) i18n[opt.group] = '';
+            if (opt.template) {
+                if (Array.isArray(opt.template))
+                    opt.template.forEach(t => i18n = {...i18n, ...this.getOptionStrings(t)});
+                else
+                    i18n = {...i18n, ...this.getOptionStrings(opt.template)};
+            }
+        }
+        return i18n;
+    }
+
+    saveTranslations() {
+        
+    }
+
+    //==========================================================================================
+    // Columns Meta Data
+    //==========================================================================================
+
+    /** Initialize column meta data fetcher */
+    initMetaData() {
+        this.meta = new ColMetaFetcher();
+        return this.meta;
+    }
+
+    /** Save mappings and map records
+     * @param {*} records - raw records provided by grist.onRecords
+     * @param {*} mappings - mappings provided by grist.onRecords
+     * @returns mapped records
+     */
+    async mapData(rec, map, mapdata = false){
+        this.dataMapped = mapdata;
+        return new Promise(async resolve => {
+            this.map = map;
+            await this.mapOptions();            
+            if (this.meta) {                
+                if (mapdata) {
+                    let r = grist.mapColumnNames(rec);
+                    let fetch = {};
+                    if (Array.isArray(r)) {
+                        //format:rows => r = Array                    
+                        // need to await this map, else code will continue before reference will be managed
+                        await Promise.all(Object.entries(this.col).map( ([c,v]) => {
+                            return new Promise(async res => {
+                                if (v) {
+                                    if (Array.isArray(v)) {
+                                        await Promise.all(v.map(async sv => {
+                                            await this.#mapRowData(r, c, sv);
+                                        }));
+                                    } else {
+                                        await this.#mapRowData(r, c, v);
+                                    }                                    
+                                }
+                                res(true);
+                            });
+                        }));            
+                    } else {
+                        //format:columns => r = Object
+                        // need to await this map, else code will continue before reference will be managed
+                        await Promise.all(Object.entries(this.col).map(async ([c,v]) => {
+                            if (v) {
+                                if (Array.isArray(v)) {
+                                    await Promise.all(v.map(async sv => {
+                                        await this.#mapColumnData(r, c, sv);
+                                    }));
+                                } else {
+                                    await this.#mapColumnData(r,c,v);
+                                }
+                            }
+                        }));
+                    }
+                    this._ismapped = true;
+                    resolve(r);
+                }
+            }
+            this._ismapped = true;
+            resolve(grist.mapColumnNames(rec, map));
+        });        
+    }
+
+    async #mapRowData(r, c, v) {
+        const t = v.type.split(':');
+        if ((t[0] === 'RefList' || t[0] === 'Ref') && v.visibleCol > 0) {                                
+            if (!fetch[t[1]]) fetch[t[1]] = await grist.docApi.fetchTable(t[1]);                               
+            const cmeta = await v.getMeta(v.visibleCol);
+            r = r.map(async item => {
+                item[c] = await v.parse(item[c], fetch[t[1]], cmeta);
+                item[c + '_id'] = await v.parseId(item[c], fetch[t[1]], cmeta);
+                return item;
+            });                                        
+        } else {
+            r = r.map(async item => {
+                item[c] = await v.parse(item[c]);
+                return item;
+            });
+        }
+
+        r = await Promise.all(r); // need to wait at each loop, else item will be a Promise for the next loop
+    }
+
+    async #mapColumnData(r, c, v) {
+        const t = v.type.split(':');
+        if ((t[0] === 'RefList' || t[0] === 'Ref') && v.visibleCol > 0) { 
+            if (!fetch[t[1]]) fetch[t[1]] = await grist.docApi.fetchTable(t[1]);                               
+            const cmeta = await v.getMeta(v.visibleCol);
+            r[c + '_id'] = r[c].map(async item => await v.parseId(item, fetch[t[1]], cmeta));
+            r[c] = r[c].map(async item => await v.parse(item, fetch[t[1]], cmeta));                                
+            r[c + '_id'] = await Promise.all(r[c + '_id']); 
+        } else {                                
+            r[c] = r[c].map(async item => await v.parse(item));
+        }  
+        r[c] = await Promise.all(r[c]);    
+    }
+
+    /** Encode data to prepare them before sending to Grist. Manage properly references 
+     * @param {*} rec - Array of data (object) or record ({id: 0, fields:{data}})
+     * @returns same object but with data properly encoded
+    */
+    async encodeData(rec) {
+        return new Promise(async resolve => {
+            if (this.meta) {
+                let fetch = {};
+                if (Array.isArray(rec)) { // array of records
+                    await Promise.all(Object.entries(this.col).map( ([c,v]) => {
+                        return new Promise(async res => {
+                            if (v) {
+                                const t = v.type.split(':');
+                                
+                                if ((t[0] === 'RefList' || t[0] === 'Ref') && v.visibleCol > 0) {    
+                                    if (!fetch[t[1]]) fetch[t[1]] = await grist.docApi.fetchTable(t[1]);                               
+                                    const cmeta = await v.getMeta(v.visibleCol);
+
+                                    rec = rec.map(async r => {
+                                        if (r.fields)
+                                            if (r.fields[c] !== undefined) r.fields[c] = await v.encode(r.fields[c], fetch[t[1]], cmeta);
+                                        else 
+                                            if (r[c] !== undefined) r[c] = await v.encode(r[c], fetch[t[1]], cmeta);
+                                        return r;
+                                    });
+                                    
+                                } else {
+                                    rec = rec.map(async r => {
+                                        if (r.fields)
+                                            if (r.fields[c] !== undefined) r.fields[c] = await v.encode(r.fields[c]);
+                                        else 
+                                        if (r[c] !== undefined) r[c] = await v.encode(r[c]);
+                                        return r;
+                                    });
+                                }
+                                rec = await Promise.all(rec); // need to wait at each loop, else item will be a Promise for the next loop
+                            }
+                            res(true);
+                        });
+                    }));
+                } else { // one record
+                    let r = rec.fields ?? rec // one full record {id: i, fields:{data}} OR one record with data only                    
+                    // need to await this map, else code will continue before reference will be managed
+                    await Promise.all(Object.entries(this.col).map(async ([c,v]) => {
+                        if (v && r[c] !== undefined) {
+                            const t = v.type.split(':');
+                            if ((t[0] === 'RefList' || t[0] === 'Ref') && v.visibleCol > 0) {
+                                if (!fetch[t[1]]) fetch[t[1]] = await grist.docApi.fetchTable(t[1]);                               
+                                const cmeta = await v.getMeta(v.visibleCol);
+                                r[c] = await v.encode(r[c], fetch[t[1]], cmeta);
+                            } else {
+                                r[c] = await v.encode(r[c]);
+                            }       
+                        }
+                    }));
+                    if (rec.fields) rec.fields = r;
+                    resolve(rec)
+                }
+            }
+            resolve(rec); //else nothing to do
+        });
+    }
+
+    //==========================================================================================
+    // Settings
+    //==========================================================================================
+
+    /** Initialize Options management 
+     * @param {(object|[object])} para - Options configuration object
+     * @param {(string|HTMLElement)} [configID='#config-view'] 
+     * @param {(string|HTMLElement)} [mainViewID='#main-view'] 
+     * @param {object} [events={}] 
+    */
+    configureOptions(para, configID = '#config-view', mainViewID = '#main-view', events = {}) {   
+        // Look for configID
+        // CSS Selector is passed
+        if (typeof configID === 'string') {
+            let el = document.querySelector(configID);
+            if (!el) {
+                throw new ReferenceError(
+                    `CSS selector "${configID}" could not be found in DOM`,
+                );
+            }
+            configID = el;
+        }
+        if (configID instanceof HTMLElement) {
+            this._config = configID;
+        } else {
+            throw new TypeError(
+                "Widget Config only supports usage of a string CSS selector or HTML DOM element element for the 'configID' parameter",
+            );
+        }
+        // Look for mainViewID
+        if (typeof mainViewID === 'string') {
+            let el = document.querySelector(mainViewID);
+            if (!el) {
+                throw new ReferenceError(
+                    `CSS selector "${mainViewID}" could not be found in DOM`,
+                );
+            }
+            mainViewID = el;
+        }
+        if (mainViewID instanceof HTMLElement) {
+            this._mainview = mainViewID;
+        } else {
+            this._mainview = null;
+        }
+        // Check parameters
+        if (!para || para === undefined) {
+            throw new TypeError(
+                "Parameters argument for Widget Config is not defined ",
+            );
+        }
+        if (!Array.isArray(para)) para = [para];
+        this._parameters = para;        
+        this.#parseOptions();        
+        this.#reset();
+
+        if (!this._config.classList.contains('grist-config'))
+            this._config.classList.add('grist-config'); 
+        
+        this.events = events;
+        grist.onOptions(function(customOptions, _) {
+            this.loadOptions(customOptions);
+        }.bind(this));
+        grist.on('message', async (e) => {
+            if (!this._optloaded && e.fromReady) {this.loadOptions(await grist.widgetApi.getOptions())}
+          });
+    }
+
+    /** Provide a simple setting option 
+     * @param {string} id - Unique id to identify the option, use only alpha numeric caracters
+     * @param {*} defValue - Default value to assign to the option
+     * @param {string} title - Main string used to present the option to the user
+     * @param {string} [subtitle=undefined] - Short description for the option
+     * @param {string} [group=''] - Group name to attach the option
+    */
+    static newItem(id,  defValue, title, subtitle=undefined, group = '', others = {}) {
+        return {id: id, default:defValue, title:title, subtitle:subtitle, group:group, ...others};
+    }    
+
+    /** Define handler for options changed trigger */
+    onOptChange(handler) {
+        if (typeof handler === 'function') this.events.onChange = handler;
+    }
+
+    /** Define handler for options loaded trigger */
+    onOptLoad(handler) {
+        if (typeof handler === 'function') this.events.onLoad = handler;
+    } 
+
+    #parseOptions() {        
+        this._parameters.forEach(opt => {
+            if (opt.template !== undefined) {
+                if (Array.isArray(opt.template)) {
+                    opt.type = 'templateform';
+                    opt.collapse = true;
+                    opt.inbloc = true;
+                    opt.default = {};
+                    opt.template.forEach(t => {
+                        this.#parseOption(t);
+                        opt.default[t.id] = t.default;
+                        //t.id=opt.id;
+                    });                    
+                } else { //object
+                    opt.type = 'template';
+                    opt.collapse = true;
+                    opt.inbloc = true;
+                    this.#parseOption(opt.template); 
+                    opt.default = opt.template.default;
+                    //opt.template.id = opt.id;                 
+                }
+            } else {
+                this.#parseOption(opt);
+            }            
+        });
+    }
+
+    #parseOption(opt) {
+        if (opt.type === undefined) {
+            if(opt.columnId) {
+                opt.type = 'dropdown';
+            } else if(typeof opt.default === 'boolean') {
+                opt.type = 'boolean';
+            } else if (typeof opt.default === 'number') {
+                opt.type = opt.values === undefined ? 'number': 'dropdown';
+            } else if (typeof opt.default === 'object') {
+                opt.type = 'object'; //Array.isArray(opt.default)? 'array':
+            } else { //if (typeof opt.default === 'string') {
+                opt.type = opt.values === undefined ? 'string': 'dropdown';
+            }
+        } // else let it as it is
+        // collapsible ?
+        opt.inbloc = opt.type === 'longstring' || opt.type === 'object' || opt.type === 'template' || opt.type === 'templateform';
+        opt.collapse = (opt.description !== undefined && opt.description.trim().length > 0) || opt.inbloc;
+    }
+
+    /** Load options from Grist into the object
+     * @param {object} options - Grist object provided by grist.onOptions or grist.widgetApi.getOptions()
+     */
+    async loadOptions(options) {
+        this._optloaded = false;
+        try {
+            options = options || {};
+            // Options
+            const widget = options.options || {};
+            this._parameters.forEach(opt => {
+                this.opt[opt.id] = widget[opt.id] ?? (opt.type === 'template' || opt.type === 'templateform' ? []:opt.default);                
+            });
+            // Localization
+            if (this.I18N) {
+                this.I18Nuser = options.localization || {};
+                this.assignDefined(this.I18N, this.I18Nuser);
+            }
+
+            this.triggerEvent('OptLoad', [this.opt]);
+        } catch (err) {
+            console.error('Error occurs on loading options:', err);
+        }
+        this._optloaded = true;
+    }
+
+    async mapOptions() {
+        if (this._parameters) {
+            //Wait for loading and mapping
+            await this.isLoaded();
+            this.valuesList = {};
+
+            this._parameters.forEach(async opt => {                
+                let values;
+                if (opt.columnId) {
+                    const cmeta = await this.col[opt.columnId];
+                    values = await cmeta?.getChoices();
+                    if(!values && opt.type !== 'template' && opt.type !== 'templateform') values = await this.getLookUpData(this.opt[opt.id]);   
+                } else if (opt.values) {
+                    values = Array.isArray(opt.values) ? opt.values : await this.getLookUpData(opt.values);                    
+                }
+
+                this.valuesList[opt.id] = (values && values.length > 0) ? values : undefined;
+                if(opt.type === 'template' || opt.type === 'templateform') {
+                    if ((values)) {
+                        const count = this.opt[opt.id].length;
+                        this.opt[opt.id].length = values.length;
+                        if (count < values.length) {
+                            this.opt[opt.id].fill((opt.type === 'template'? opt.default:{...opt.default}), count); //TODO if default is object ?
+                        }
+                    } else {
+                        this.opt[opt.id] = [];
+                    }
+                }
+            });
+            await Promise.all(this._parameters);
+        }
+    }
+
+    /** Called when configuration modification is applied */
+    async saveOptions() {
+        try {
+            this._parameters.forEach(opt => {
+                const elmt = this._config.querySelector('#' + opt.id);
+                if (elmt) {
+                    this.opt[opt.id] = this.#getOptValue(opt, elmt, this.opt[opt.id]);              
+                }
+            });    
+            await grist.widgetApi.setOption('options', this.opt);
+
+            const i18n =this.getUserTranslations();
+            if (!this.isObjectEmpty(i18n)) {
+                this.I18Nuser = i18n;
+                this.assignDefined(this.I18N, i18n);
+                await grist.widgetApi.setOption('localization', i18n);
+            }
+
+            this.showConfig(false);
+            this.triggerEvent('OptChange', [this.opt]);
+        } catch (err) {
+            console.error('Error occurs on saving options:', err);
+        }        
+    }
+
+    #reset() {
+        this.opt = {};
+        this._parameters.forEach(opt => {
+            this.opt[opt.id] = (opt.type === 'template' || opt.type === 'templateform' ? []:opt.default);
+        });
+    }
+
+    /** Reset all options to default values */
+    async resetOptions() {
+        this.#reset();
+        await this.mapOptions();
+        await grist.widgetApi.setOption('options', this.opt);
+        await grist.widgetApi.setOption('localization', {});
+        this.showConfig(false);
+        this.triggerEvent('OptChange', [this.opt]);
+    }
+
+    /** Manage the display of the config form */
+    async showConfig(show = true) {
+        if (show) {
+            await this.isMapped();
+
+            if (this._mainview) this._mainview.style = 'display: none';
+            this._config.style = '';
+            // Build UI and load data 
+            let html = `<div class="config-header"><button id="apply-button" class="config-button">${this.t('Apply')}</button><button id="close-button" class="config-button">${this.t('Close')}</button></div>`;
+            Object.entries(this.#groupBy(this._parameters, 'group')).forEach(([gp, opts]) => {
+                html += `<div class="config-section"><div class="config-section-title">${this.t(gp)}</div>`; //if gp not null
+                opts.forEach(opt => {
+                    html += this.#getOptHtml(opt, this.opt[opt.id], -1, opt.id);      
+                });
+                html += `</div>`;
+            });
+
+            //localization
+            if (this.I18N) {
+                html += `<div class="config-section"><div class="config-section-title">${this.t('Localization')}</div>`;
+                html += `<div class="config-row"><div class="config-row-header"><div class="config-title"><div class="collapse"></div>${this.t('Extract strings')}</div>`;
+                html += `<div class="config-subtitle">${this.t('Click on the button to parse widget files and list all strings to translate.')}</div>`;
+                html += `<div class="config-value"><button id="extract-loc" class="config-button dyn">${this.t('Extract')}</button></div></div> `;
+                html += `<div class="bloc" style="max-height: 0px;"><div id="config-loc">`;
+                html += this.#getLocHtml();                              
+                html += `</div></div></div></div>`;
+            }
+
+            this._config.innerHTML = html + `<div class="config-header"><button id="reset-button" class="config-button">${this.t('Reset')}</button></div>`;;
+
+            // events
+            this._config.querySelectorAll("div.config-switch")?.forEach(element => {
+                element.addEventListener('click', function(event) {this.toggleswitch(event);}.bind(this));
+            });
+            this._config.querySelectorAll("div.collapse")?.forEach(element => {
+                element.parentElement.parentElement.addEventListener('click', function(event) {this.togglecollapse(event);}.bind(this));
+            });
+            this._config.querySelectorAll("#add-button")?.forEach(element => {
+                element.addEventListener('click', function(event) {this.addItem(event);}.bind(this));
+            });
+            this._config.querySelector('#apply-button')?.addEventListener('click', function() {this.saveOptions();}.bind(this));
+            this._config.querySelector('#close-button')?.addEventListener('click', function() {this.showConfig(false);}.bind(this));
+            this._config.querySelector('#reset-button')?.addEventListener('click', function() {this.resetOptions();}.bind(this));
+            this._config.querySelector('#extract-loc')?.addEventListener('click', function() {this.extractLocStrings();}.bind(this));
+            this._config.querySelector('#export-loc')?.addEventListener('click', function() {this.exportLocStrings();}.bind(this));
+
+
+            // Auto-expandables fields init
+            setTimeout(() => {
+                const textareas = document.querySelectorAll('.auto-expand');
+                textareas.forEach(textarea => {
+                textarea.style.height = '';
+                textarea.style.height = textarea.scrollHeight + 'px';
+                });
+            }, 0);
+        } else {
+            if (this._mainview) this._mainview.style = '';
+            this._config.style = 'display: none';
+        }
+    }
+
+    #groupBy = function(xs, key) {
+        return xs.reduce(function(rv, x) {
+            (rv[x[key]] ??= []).push(x);
+            return rv;
+        }, {});
+    };
+
+    #getOptHtml(opt, value, idx = -1, id = '') {
+        let html = '';
+        if (!opt.hidden) {
+            const title = idx >= 0 ? (this.valuesList[opt.id]?this.valuesList[opt.id][idx]:(this.t(opt.title) + ' #'+(idx+1))) : this.t(opt.title);
+            html += `<div class="config-row"><div class="config-row-header"><div class="config-title`
+            html += `${opt.collapse?`"><div class="collapse"></div>`:' nocollapse">'}${title}</div>`;
+            html += `<div class="config-subtitle">${this.t(opt.subtitle)}</div>`;
+            html += (!opt.inbloc?`<div class="config-value">${this.#getOptValueHtml(opt, value, idx, id)}</div>`:'')+ (idx>=0?'<div class="delete"></div>':'') + `</div>`;
+            if (opt.collapse) {
+                html += `<div class="bloc" style="max-height: 0px;">` + (opt.description !== undefined?`<div class="details">${this.t(opt.description).replaceAll("\n", "<br>")}</div>`:'');
+                if (opt.type === 'template') {                    
+                    html += `<div id="${opt.id}" class="config-dyn">`;
+                    value?.forEach((v, i) => {
+                        html += this.#getOptHtml(opt.template, v, i, id + '_' + i);
+                    });
+                    html += `</div>`;
+                    html += this.valuesList[opt.id]? '' : `<div class="config-header"><button id="add-button" data-id="${opt.id}" class="config-button dyn">+</button></div>`;
+                } else if (opt.type === 'templateform') {
+                    html += `<div id="${opt.id}" class="config-dyn">`;
+                    value?.forEach((v, i) => {
+                        if (v) {
+                            html += `<div class="config-section"><div class="config-section-title">${this.valuesList[opt.id][i]}</div>`;
+                            Object.entries(v).forEach(([tk,tv]) => {
+                                html += this.#getOptHtml(opt.template.find(t => t.id === tk), tv, -1, id + '_' + i + '_' + tk); 
+                            });
+                            html += `</div>`;
+                        }                        
+                    });
+                    html += `</div>`;
+                    html += this.valuesList[opt.id]? '': `<div class="config-header"><button id="add-button" data-id="${opt.id}" class="config-button dyn">+</button></div>`;
+                } else if (opt.inbloc) {
+                    html += this.#getOptValueHtml(opt, value, idx, id);   
+                }
+                html += `${opt.type !== 'templateform'?`<div class="bloc-bottom">`:''}</div></div>`;
+            }
+            html += `</div>`;
+        }
+        return html;  
+    }
+
+    #getOptValueHtml(opt, value, idx = -1, vid = '') {
+        const val = this.#formatValue(opt, value);
+        const id = `id="${vid}" ${idx>=0?`data-idx="${idx}" `:''}`;
+        switch (opt.type) { //TODO add : button, 
+            case 'boolean':
+                return `<div ${id}class="config-switch switch_transition ${val? 'switch_on':''}">
+<div class="switch_slider"></div><div class="switch_circle"></div></div>`;
+
+            case 'number':
+                return `<input ${id}type="number" class="config-input" value="${val}">`;
+
+           
+            case 'longstring':
+                return `<textarea ${id}class="config-textarea auto-expand" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${val}</textarea>`;
+
+            case 'object':
+                return `<textarea ${id}class="config-textarea auto-expand" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${JSON.stringify(val, null, 2)}</textarea>`;
+
+
+            case 'dropdown': //keep it before default
+                if(this.valuesList[opt.id]) {
+                    let html = `<select ${id}class="field-select">`;
+                    this.valuesList[opt.id].forEach(v => {html += `<option value="${v}" ${v === val ? 'selected':''}>${v}</option>`}); //TODO if in template with values ?
+                    return html + '</select>';
+                } //else default                
+    
+            default: //string
+                return `<input ${id}class="config-input" value="${val}">`;
+        }
+    }
+
+    #getOptValue(opt, elmt, v) {
+        switch (opt.type) {
+            case 'boolean':
+                return this.#parseValue(opt, elmt.classList?.contains('switch_on'));
+            case 'number':
+                return this.#parseValue(opt, parseFloat(elmt.value));
+            case 'object':
+                return this.#parseValue(opt, JSON.parse(elmt.value));
+            case 'template':
+                var r = [];
+                v.forEach((_, i) => {
+                    let e = elmt.querySelector('#' + elmt.id + '_' + i);
+                    if (e) r.push(this.#getOptValue(opt.template, e));
+                    else r.push(undefined);
+                });
+                return r; 
+            case 'templateform':
+                //var r = [];
+                v.forEach((sv, i) => {
+                    //let ri = [];
+                    Object.keys(sv).forEach(tk => {
+                        let e = elmt.querySelector('#' + elmt.id + '_' + i + '_' + tk);
+                        if (e) sv[tk] = this.#getOptValue(opt.template.find(t => t.id === tk), e);
+                        else sv[tk] = undefined;
+                    });     
+                });
+                return v;
+            default:  //number, dropdown, string, longstring
+                return this.#parseValue(opt, elmt.value);
+        }
+    }
+
+    #getLocHtml() {
+        let html = '';
+        let keys = this.I18Nuser ? Object.entries(this.I18Nuser) : [];
+        keys = keys.length > 0 ? keys : Object.entries(this.I18N);
+        if (keys.length > 0) {
+            keys.sort();
+            keys.forEach(([k,v]) => {
+                html += `<div class="config-row"><div class="config-row-header"><div class="config-vo">${k.replaceAll("\n", '\\n')}</div>`;
+                html += `<div class="config-value large"><input class="config-input" value="${v}" data-key="${k}"></div></div></div>`;
+            });
+            html += `<div class="config-header"><button id="export-loc" class="config-button dyn">${this.t('Export')}</button></div>`;
+        } else {
+            html += `<div class="details">${this.t('No string to translate, please extract them before.')}</div>`;
+        }  
+        return html;
+    }
+
+    getValueListOption(id, value) {
+        return this.opt[id][this.valuesList[id].indexOf(value)];
+    }
+
+    #parseValue(opt, v) {
+        if (opt.parse !== undefined) return opt.parse(v);
+        return v;
+    }
+
+    #formatValue(opt, v) {
+        if (opt.format !== undefined) return opt.format(v);
+        return v;
+    }
+
+    toggleswitch(event) {
+        if (event.currentTarget.classList.contains('switch_on')) event.currentTarget.classList.remove('switch_on');
+        else event.currentTarget .classList.add('switch_on');
+    }
+
+    togglecollapse(event) {
+        if (event.target.getAttribute('id')) return;
+        const elmt = event.currentTarget;
+        const bloc = elmt.parentElement.querySelector('div.bloc');
+        if (elmt.classList.contains('open')) {
+            elmt.classList.remove('open');
+            bloc.style = 'max-height: 0px;';
+        }
+        else { 
+            elmt.classList.add('open');
+            bloc.style = 'max-height: unset;';
+        }
+    }
+
+    addItem(event) {
+        const elmt = event.currentTarget;
+        const bloc = elmt.parentElement.parentElement.querySelector('div.config-dyn');
+        const id = elmt.getAttribute('data-id');
+        const opt = this._parameters.find(e => e.id === id);
+        if (opt.type === 'template') {
+            const newDiv = document.createElement('div');
+            newDiv.innerHTML = this.#getOptHtml(opt.template, opt.default, this.opt[opt.id].length, opt.id + '_' + (this.opt[opt.id].length+1));
+            bloc.appendChild(newDiv); // need to add child and not change directly innerHTML to not erase other element values
+            bloc.querySelector('div.collapse:last-of-type')?.parentElement.parentElement.addEventListener('click', function(event) {this.togglecollapse(event);}.bind(this));
+            this.opt[opt.id].push(opt.default);
+        }
+        else if (opt.type === 'templateform') {
+            const newDiv = document.createElement('div');
+            let html = `<div class="config-section"><div class="config-section-title">${this.t(opt.title) + ' #' + (this.opt[opt.id].length+1)}</div>`;
+            Object.entries(opt.template).forEach(([tk,tv]) => {
+                html += this.#getOptHtml(tv, opt.default[tk], -1, id + '_' + i + '_' + tk); 
+            });
+            newDiv.innerHTML = html + `</div>`;
+            bloc.appendChild(newDiv);
+            newDiv.querySelectorAll("div.collapse")?.forEach(element => {
+                element.parentElement.parentElement.addEventListener('click', function(event) {this.togglecollapse(event);}.bind(this));
+            });
+            this.opt[opt.id].push(opt.default);
+        }            
+        // else shouldn't happen
+    }
+
+    /** Find string in the scripts and generate a form for the user to let translate them */
+    async extractLocStrings() {
+        this.I18Nuser = this.assignDefined(await this.extractTranslations(this.translatedFiles), this.I18Nuser);
+        
+        const loc = this._config.querySelector('#config-loc');
+        if (loc) {
+            loc.innerHTML = this.#getLocHtml();
+            this._config.querySelector('#export-loc')?.addEventListener('click', function() {this.exportLocStrings();}.bind(this));
+        }
+    }
+
+    /** Get user translation from the options form */
+    getUserTranslations() {
+        let i18n = {};
+        const loc = this._config.querySelector('#config-loc');
+        if (loc) {            
+            loc.querySelectorAll("input.config-input")?.forEach(input => {
+                i18n[input.getAttribute('data-key')] = input.value;
+            });
+        }
+        return i18n;
+    }
+
+    /** Export to clipboard user translation */
+    exportLocStrings() {
+        const i18n = this.getUserTranslations();
+        if (!this.isObjectEmpty(i18n)) {
+            navigator.clipboard.writeText(JSON.stringify(i18n, null, 2)).then(() => {
+                alert(this.t('Your translation has been copied to the clipboard, share it with the widget creator throw the Grist forum or his Github.\nThanks a lot for your time !'));
+            })
+        } else {
+            alert(this.t('No new translation found.'));
+        }
+    }
+
+    //==========================================================================================
+    // Grist helper
+    //==========================================================================================
+    /** Format record data for interaction with grist
+     * @param {number} id - id of the record. Automatically parsed as integer
+     * @param {object} data - Object with prop as column id and value
+     */
+    formatRecord(id, data) {
+        return {id: parseInt(id), fields:data};
+    }
+
+    /** Update the current Grist table with given data 
+     * @param {object|[object]} rec - Object with prop as column id and value as new value
+     * @returns the answer of the update or null
+    */
+    async updateRecords(rec, encode) {       
+        encode = encode ?? this.dataMapped;
+        if(!this.table) this.table = grist.getTable();
+
+        if (encode) rec = await this.encodeData(rec); //encode data if needed
+        rec = Array.isArray(rec)? rec.map(item => this.mapColumnNamesBack(item)):this.mapColumnNamesBack(rec);
+
+        return await this.table?.update(rec);
+    }
+
+    async createRecords(rec, encode) {
+        encode = encode ?? this.dataMapped;        
+        if(!this.table) this.table = grist.getTable();
+
+        if (encode) rec = await this.encodeData(rec); //encode data if needed
+        rec = Array.isArray(rec)? rec.map(item => this.mapColumnNamesBack(item)):this.mapColumnNamesBack(rec);
+      
+        return await this.table?.create(rec);
+    }
+
+    async destroyRecords(id) {
+        if(!this.table) this.table = grist.getTable();
+        return Array.isArray(id) ? await this.table?.destroy(id.map(i => parseInt(i))) : await this.table?.destroy(id);     
+    }
+
+    /** Maps back properly records columns to be compatible with Grist */
+    mapColumnNamesBack(rec) {
+        rec.fields = Object.fromEntries(Object.entries(rec.fields).map((kv) => [this.map[kv[0]] ?? kv[0], kv[1]]));
+        return rec;
+    }
+
+    /** Encapsulate gristOnRecords to ensure the correct timing between the options and mapping loading 
+     * and the execution of the main function
+     * @param {function} main - Function to call when loading is ended. 
+     * @param {Object} args - Grist object option for grist.OnRecords
+     */
+    onRecords(main, args) {
+        grist.onRecords(async (records, mappings) => {
+            this._ismapped = false;
+            // Wait for init finish to not miss the first onRecords
+            await this.isInit();
+            main(await this.mapData(records, mappings, args.mapRef));
+        }, args);
+    }
+
+    async fetchSelectedRecord(id) {
+        let rec = await grist.fetchSelectedRecord(id); 
+        return grist.mapColumnNames(rec); //TODO mapData ?
+    }
+}
+
+//==========================================================================================
+// ColMetaFetcher class
+//==========================================================================================
+
+/** Class helper to manage Grist columns metadata 
+ * @remark - Based on the work of Raphael Guenot : https://github.com/rague
+*/
+export class ColMetaFetcher {
+    /** Fetch columns meta data for all tables */
+    static async fetchMetas() {
+        const columns = await grist.docApi.fetchTable('_grist_Tables_column');
+        const fields = Object.keys(columns);    
+        const colIndexes = columns.parentId.map((id, i) => i);
+        const types = colIndexes.map(index => {
+            let t = Object.fromEntries(fields.map(f => [f, columns[f][index]]));
+            t.widgetOptions = ColMetaFetcher.safeParse(t.widgetOptions);
+            return t;
+        });
+
+        const tables = await grist.docApi.fetchTable('_grist_Tables');
+        const tableRef = Object.fromEntries(tables.tableId.map((id, i) => [id, tables.id[i]]));
+        return {col:types, tab:tableRef};
+    }
+
+    static getTableMeta(meta, tableId) {
+        return meta.col.filter(item => item.parentId === meta.tab[tableId]);
+    }
+  
+    constructor() {
+      this._tableId = null;
+      this._colIds = null;
+      this._metaPromise = null; //Promise.resolve([null, null]);
+      this._colPromise = null;
+      this._col = null;
+      this._accessLevel = '';
+      this.loaded = false;
+
+      grist.on('message', (e) => {
+        if (e.settings && this._accessLevel !== e.settings.accessLevel) {
+            this._accessLevel = e.settings.accessLevel;
+            this.fetchColumns();
+        }
+        if (e.tableId && e.mappingsChange) {
+            this._tableId = e.tableId;
+            this.fetchColumns(); 
+        }
+      });
+    }
+
+    fetchColumns() {
+      // Can't fetch metadata when no full access.
+      if (this._accessLevel !== 'full') { return; }
+      this._col = null;
+      this._metaPromise = ColMetaFetcher.fetchMetas(this._tableId);
+      this._colPromise = new Promise((r) => {this._metaPromise.then(res => r(ColMetaFetcher.getTableMeta(res, this._tableId)))})
+    }
+
+    mapColumns(col, map) {
+        return col
+    }
+  
+    async getTypes() {
+      return this._colPromise.then(
+        types => Object.fromEntries(types.map(t => [t.colId, t?.type]))
+      );
+    }
+
+    async getColType(colId) {
+        return this._colPromise.then(
+          types => types.find(t => t.colId === colId)?.type
+        );
+      }
+  
+    async getOptions() {
+      return this._colPromise.then(
+        types => Object.fromEntries(types.map(t => [t.colId, t?.widgetOptions]))
+      );
+    }
+
+    async getColOption(colId) {
+        return this._colPromise.then(
+          types => types.find(t => t.colId === colId)?.widgetOptions
+        );
+    }
+  
+    async IsFormula() {
+      return this._colPromise.then(
+        types => Object.fromEntries(types.map(t => [t.colId, t?.isFormula && (t?.formula?.length ?? 0) !== 0]))
+      );
+    }
+
+    async IsColFormula(colId) {
+        return this._colPromise.then(
+          types => { 
+            const t = types.find(t => t.colId === colId);
+            return t?.isFormula && (t?.formula?.length ?? 0) !== 0;
+          }
+        );
+      }
+
+    async getColor(colId, ref) {
+        return this.getColOption(colId)?.choiceOptions?.[ref]?.fillColor;
+    }
+  
+    /** Get current table columns meta data
+     * @returns Object with each entries as column Id
+     */
+    async getMeta() {
+        if(!this._col) {
+            this._col =  this._colPromise.then(
+                types => Object.fromEntries(types.map(t => [t.colId, new ColMeta(t, this._metaPromise.then(v => v))]))
+            );
+        }        
+        return this._col;
+    }
+
+    /** Get given column meta data
+     * @param {string} colId - Column Grist id
+     */
+    async getColMeta(colId) {
+        return this._colPromise.then(
+            types => { 
+                const t = types.find(t => t.colId === colId);
+                return t? new ColMeta(t, this._metaPromise.value):null;
+              }
+        );
+    }
+
+    // async getRawColMeta(colId) {
+    //     return this._colPromise.then(
+    //         types => { 
+    //             return types.find(t => t.colId === colId);
+    //           }
+    //     );
+    // }
+    
+    isLoaded() {
+        return this._colPromise ? this._colPromise?.state !== 'pending' : false;
+    }
+
+    static safeParse(value) {
+        try {
+          return JSON.parse(value);
+        } catch (err) {
+          return null;
+        }
+    }
+}
+
+//==========================================================================================
+// ColMeta class
+//==========================================================================================
+
+/** Column meta data with some helper functions */
+export class ColMeta {
+    constructor(colMeta, meta) {
+        Object.assign(this, colMeta);
+        this._fullMeta = meta;
+    }
+
+    /** For a Choice column, returns the background color of a given option
+     * @param {string} ref - The option on which get the background color 
+     * @returns color as HTML format #FFFFFF
+     */
+    getColor(ref) {
+        return this.widgetOptions.choiceOptions?.[ref]?.fillColor;
+    }
+
+     /** For a Choice column, returns the text color of a given option
+     * @param {string} ref - The option on which get the text color 
+     * @returns color as HTML format #000000
+     */
+    getTextColor(ref) {
+        return this.widgetOptions.choiceOptions?.[ref]?.textColor;
+    }
+
+    /** Check if the column is a formula column AND a formula is defined */
+    getIsFormula() {
+        return this.isFormula && this.formula?.trim();
+    }
+
+    async getChoices() {
+        const t = this.type.split(':');
+        if (t[0] === 'Ref' || t[0] === 'RefList') {
+            const recs = await grist.docApi.fetchTable(t[1]);
+            const col = await this.getMeta(this.visibleCol);
+            return recs[col.colId]
+        } else if (t[0] === 'Choice') {
+            return this.widgetOptions?.choices;
+        }
+        return null;
+    }
+
+    // async getRefMeta() {
+    //     const t = this.type.split(':');
+    //     if (t[0] === 'RefList' || t[0] === 'Ref') {
+    //         return [t[1], await this.getMeta(this.visibleCol)];
+    //     }
+    //     return null;
+    // }
+
+    /** Parse a given value based on column meta data. Replace values, whatever the encoding is, by their content.
+     * @param {*} value - Any value provided by Grist
+     * @returns Decoded value
+     */
+    async parse(value, data = null, meta = null) {
+        const t = this.type.split(':');
+        if (t[0] === 'RefList') {
+            if (value && value.length > 0) {
+                if (value[0] === 'L') value = value.splice(0,1);
+                if (value.length > 0 && typeof value[0] === 'number') {
+                    const recs = data ?? await grist.docApi.fetchTable(t[1]);
+                    const col = meta ?? await this.getMeta(this.visibleCol);
+                    const idx = value.map(v => recs?.id?.indexOf(v));
+                    return idx.map(i => recs[col.colId][i]); //TODO Parse each value
+                } //TODO if visibleCol = 0              
+            } 
+        } else if (t[0] === 'Ref') {
+            if (Array.isArray(value)) {
+                //encoded: [ "R", "TableID", id ]
+                if (value[2] > 0) {
+                    if (this.visibleCol > 0) {
+                        const recs = data ?? await grist.docApi.fetchTable(value[1]);
+                        const col = meta ?? await this.getMeta(this.visibleCol);
+                        const idx = recs?.id?.indexOf(value[2]);
+                        return await this.parse(recs[col.colId][idx]);//recs[col.colId][idx]; 
+                    } else return value[2];                   
+                } else return undefined;
+            } else if (typeof value === 'object') {
+                //Object { tableId: "TableID", rowId: id }
+                if (value.rowId > 0) { 
+                    if (this.visibleCol > 0) {
+                        const recs = data ?? await grist.docApi.fetchTable(value.tableId);
+                        const col = meta ?? await this.getMeta(this.visibleCol);
+                        const idx = recs?.id?.indexOf(value.rowId);
+                        return await this.parse(recs[col.colId][idx]); //recs[col.colId][idx];
+                    } else return value.rowId;              
+                } else return undefined;                
+            }
+        } //TODO manage other encoded data (if keepEncode === false)
+        return value; //else
+    }
+
+    /** Parse a given value ID based on column meta data. Replace references, whatever the encoding is, by their ID. 
+     * @param {*} value - Any value provided by Grist, but only Ref and Reflist are treated
+     * @returns Reference id(s)
+    */
+    async parseId(value, data = null, meta = null) {
+        const t = this.type.split(':');
+        if (t[0] === 'RefList') {
+            if (value && value.length > 0) {
+                if (value[0] === 'L') value = value.splice(0,1);
+                if (value.length > 0 && typeof value[0] !== 'number') {
+                    const recs = data ?? await grist.docApi.fetchTable(t[1]);
+                    const col = meta ?? await this.getMeta(this.visibleCol);
+                    const idx = value.map(v => recs[col.colId]?.indexOf(v));
+                    return idx.map(i => recs.id[i]);
+                } //TODO if visibleCol = 0 
+            }
+        } else if (t[0] === 'Ref') {
+            if (Array.isArray(value)) { 
+                //encoded: [ "R", "TableID", id ]
+                return value[2];
+            } else if (typeof value === 'object') {
+                //Object { tableId: "TableID", rowId: id }
+                return value.rowId;
+            } else {
+                const recs = data ?? await grist.docApi.fetchTable(t[1]);
+                const col = meta ?? await this.getMeta(this.visibleCol);
+                const idx = recs[col.colId].indexOf(value);
+                return recs.id[idx];
+            } //TODO if visibleCol = 0 
+        }
+        return value;
+    }
+
+    /** Encode a given value to be compatible by Grist 
+     * @param {*} value - Any value that need to be encoded before being sent to Grist
+     * @returns Encoded value
+    */
+    async encode(value, data = null, meta = null) {
+        const t = this.type.split(':');
+        if (t[0] === 'RefList') { 
+            if (Array.isArray(value) && value.length > 0 && typeof value[0] !== 'number') {
+                const recs = data ?? await grist.docApi.fetchTable(t[1]);
+                const col = meta ?? await this.getMeta(this.visibleCol);
+                const idx = value.map(v => recs[col.colId]?.indexOf(v));
+                return idx.map(i => recs.id[i]);
+            } //TODO if visibleCol = 0 
+        } else if (t[0] === 'Ref') {
+            if (typeof value[0] !== 'number') {
+                //look for id
+                const recs = data ?? await grist.docApi.fetchTable(t[1]);
+                const col = meta ?? await this.getMeta(this.visibleCol);
+                const idx = recs[col.colId].indexOf(value);
+                return recs.id[idx];
+            } //TODO if visibleCol = 0 
+        }
+        return value;
+    }
+
+    /** Get current column meta data */
+    async getMeta(colId) {
+        return this._fullMeta.then(
+            meta => { 
+                return meta.col.find(t => t.id === colId);
+              }
+        );
+    }
+}

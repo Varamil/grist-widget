@@ -1,0 +1,46 @@
+{
+    "name": "widget-sdk",
+    "version": "1.0.0",
+    "description": "A library to sipplify Grist widget development",
+    "main": "widgetSDK.js",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build-dev": "vite build --watch",
+        "build": "vite build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Varamil/grist-widget.git"
+    },
+    "files": [
+        "widgetSDK.js",
+        "widgetSDK.css",
+        "README.md"
+    ],
+    "exports": {
+        ".": {
+            "style": "../min/widgetSDK.css",
+            "require": "../min/widgetSDK.umd.js",
+            "import": "../min/widgetSDK.es.js"            
+        }
+    },
+    "keywords": [
+        "widget",
+        "Grist",
+        "SDK",
+        "widget development helper"
+    ],
+    "author": "Varamil",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/Varamil/grist-widget/issues"
+    },
+    "homepage": "https://github.com/Varamil/grist-widget/tree/main/widgetSDK",
+    "devDependencies": {
+        "vite": "^7.0.2"
+    },
+    "sideEffects": [
+        "*.css"
+    ]
+}

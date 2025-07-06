@@ -1,0 +1,13 @@
+{
+  "Apply": "Appliquer",
+  "Click on the button to parse widget files and list all strings to translate.": "Cliquer sur le bouton pour analyser les fichiers du widget et lister tous les textes à traduire.",
+  "Close": "Fermer",
+  "Export": "Exporter",
+  "Extract strings": "Extraire les textes",
+  "Extract": "Extraire",
+  "Localization": "Localisation",
+  "No new translation found.": "Aucune nouvelle traduction n'a été trouvée",
+  "No string to translate, please extract them before.": "Aucun texte à traduire, merci de faire une extraction au préalable.",
+  "Reset": "Réinitialiser",
+  "Your translation has been copied to the clipboard, share it with the widget creator throw the Grist forum or his Github.\\nThanks a lot for your time !": "Votre traduction a été copiée dans le presse-papier, partagez la avec le créateur du widget sur le form Grist ou sur son Github.\\nMerci pour le temps passé !"
+}

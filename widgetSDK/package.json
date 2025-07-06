@@ -1,0 +1,23 @@
+{
+    "name": "@varamil/widget-sdk",
+    "description": "Widget SDK to simplfy Grist widget development",
+    "homePage": "https://github.com/gristlabs/grist-widget",
+    "version": "1.0",
+    "grist": {
+      "name": "Widget SDK",
+      "url": "https://github.com/Varamil/grist-widget/tree/main/widgetSDK",
+      "widgetId": "@varamil/widget-sdk",
+      "published": true,
+      "accessLevel": "full",
+      "renderAfterReady": true,
+      "description": "Widget SDK to simplfy Grist widget development",
+      "authors": [
+        {
+          "name": "Varamil",
+          "url": "https://github.com/Varamil/grist-widget/tree/main/widgetSDK"
+        }
+      ],
+      "isGristLabsMaintained": false
+    }
+  }
+  

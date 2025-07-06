@@ -64,3 +64,5 @@ pivottable/.eslintrc.yml
 
 # generated bundles
 dist
+
+pnpm-lock.yaml
