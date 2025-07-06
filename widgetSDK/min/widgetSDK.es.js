@@ -213,7 +213,7 @@ class d {
 class h {
   constructor() {
     const t = new URLSearchParams(window.location.search);
-    this.cultureFull = t.has("culture") ? t.get("culture") : "en-US", this.culture = this.cultureFull.split("-")[0], this.currency = t.has("currency") ? t.get("currency") : "USD", this.timeZone = t.has("timeZone") ? t.get("timeZone") : "", this._gristloaded = !1, this._optloaded = !1, this._ismapped = !1, this.initDone = !1, this.urlSDK = "", grist.on("message", async (e) => {
+    this.cultureFull = t.has("culture") ? t.get("culture") : "en-US", this.culture = this.cultureFull.split("-")[0], this.currency = t.has("currency") ? t.get("currency") : "USD", this.timeZone = t.has("timeZone") ? t.get("timeZone") : "", this._gristloaded = !1, this._optloaded = !1, this._ismapped = !1, this.initDone = !1, this.urlSDK = "https://varamil.github.io/grist-widget/widgetSDK", grist.on("message", async (e) => {
       e.fromReady && (this._gristloaded = e.fromReady);
     });
   }
@@ -330,7 +330,7 @@ class h {
    * @returns function to use for translation
    */
   async loadTranslations(t, e = "en", s = null) {
-    if (this.translatedFiles = t, this.translatedFiles.push(this.urlSDK + "/widgetSDK.js"), !s || typeof s == "string") {
+    if (this.translatedFiles = t, this.translatedFiles.push(this.urlSDK + "/min/widgetSDK.umd.js"), !s || typeof s == "string") {
       if (s = s || "i18n/" + this.culture + ".json", e !== this.culture && this.urlExists(s)) {
         let n = await fetch(s);
         if (n.ok) {
