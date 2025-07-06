@@ -38,7 +38,7 @@ export default class WidgetSDK {
         this._optloaded = false;
         this._ismapped = false;
         this.initDone = false;
-        this.urlSDK = ''; //TODO
+        this.urlSDK = 'https://varamil.github.io/grist-widget/widgetSDK';
 
         grist.on('message', async (e) => {
             if (e.fromReady) {this._gristloaded = e.fromReady;}
@@ -206,7 +206,7 @@ export default class WidgetSDK {
      */
     async loadTranslations(files, lang = 'en', json = null){
         this.translatedFiles = files;
-        this.translatedFiles.push(this.urlSDK + '/widgetSDK.js');
+        this.translatedFiles.push(this.urlSDK + '/min/widgetSDK.umd.js');
 
         if (!json || typeof json === 'string') {
             json=json?json:('i18n/' + this.culture + '.json');
