@@ -130,6 +130,7 @@ export default class ColMeta {
      * @returns Encoded value
     */
     async encode(value, data = null, meta = null) {
+        if (value === null || value === undefined) return value
         const t = this.type.split(':');
         if (t[0] === 'RefList') { 
             if (Array.isArray(value) && value.length > 0 && typeof value[0] !== 'number') {

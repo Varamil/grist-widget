@@ -93,6 +93,7 @@ class f {
    * @returns Encoded value
   */
   async encode(t, e = null, s = null) {
+    if (t == null) return t;
     const n = this.type.split(":");
     if (n[0] === "RefList") {
       if (Array.isArray(t) && t.length > 0 && typeof t[0] != "number") {
@@ -225,6 +226,10 @@ class h {
   }
   triggerEvent(t, e) {
     this.events["on" + t] && this.events["on" + t].apply(this, e);
+  }
+  /** Returns true is not undefined and not nul */
+  is(t) {
+    return t != null;
   }
   /** Provide a Promise that resolved when the full widget configuration and grist are loaded */
   async isLoaded() {
@@ -451,9 +456,9 @@ class h {
               if ((l[0] === "RefList" || l[0] === "Ref") && a.visibleCol > 0) {
                 s[l[1]] || (s[l[1]] = await grist.docApi.fetchTable(l[1]));
                 const o = await a.getMeta(a.visibleCol);
-                t = t.map(async (c) => (c.fields && (c.fields[n] !== void 0 ? c.fields[n] = await a.encode(c.fields[n], s[l[1]], o) : c[n] !== void 0 && (c[n] = await a.encode(c[n], s[l[1]], o))), c));
+                t = t.map(async (c) => (c.fields && (this.is(c.fields[n]) ? c.fields[n] = await a.encode(c.fields[n], s[l[1]], o) : this.is(c[n]) && (c[n] = await a.encode(c[n], s[l[1]], o))), c));
               } else
-                t = t.map(async (o) => (o.fields && (o.fields[n] !== void 0 ? o.fields[n] = await a.encode(o.fields[n]) : o[n] !== void 0 && (o[n] = await a.encode(o[n]))), o));
+                t = t.map(async (o) => (o.fields && (this.is(o.fields[n]) ? o.fields[n] = await a.encode(o.fields[n]) : this.is(o[n]) && (o[n] = await a.encode(o[n]))), o));
               t = await Promise.all(t);
             }
             r(!0);
@@ -461,7 +466,7 @@ class h {
         else {
           let n = t.fields ?? t;
           await Promise.all(Object.entries(this.col).map(async ([a, r]) => {
-            if (r && n[a] !== void 0) {
+            if (r && this.is(n[a])) {
               const l = r.type.split(":");
               if ((l[0] === "RefList" || l[0] === "Ref") && r.visibleCol > 0) {
                 s[l[1]] || (s[l[1]] = await grist.docApi.fetchTable(l[1]));
@@ -508,7 +513,7 @@ class h {
         );
       s = a;
     }
-    if (s instanceof HTMLElement ? this._mainview = s : this._mainview = null, !t || t === void 0)
+    if (s instanceof HTMLElement ? this._mainview = s : this._mainview = null, !t)
       throw new TypeError(
         "Parameters argument for Widget Config is not defined "
       );
@@ -538,13 +543,13 @@ class h {
   }
   #c() {
     this._parameters.forEach((t) => {
-      t.template !== void 0 ? Array.isArray(t.template) ? (t.type = "templateform", t.collapse = !0, t.inbloc = !0, t.default = {}, t.template.forEach((e) => {
+      this.is(t.template) ? Array.isArray(t.template) ? (t.type = "templateform", t.collapse = !0, t.inbloc = !0, t.default = {}, t.template.forEach((e) => {
         this.#i(e), t.default[e.id] = e.default;
       })) : (t.type = "template", t.collapse = !0, t.inbloc = !0, this.#i(t.template), t.default = t.template.default) : this.#i(t);
     });
   }
   #i(t) {
-    t.type === void 0 && (t.columnId ? t.type = "dropdown" : typeof t.default == "boolean" ? t.type = "boolean" : typeof t.default == "number" ? t.type = t.values === void 0 ? "number" : "dropdown" : typeof t.default == "object" ? t.type = "object" : t.type = t.values === void 0 ? "string" : "dropdown"), t.inbloc = t.type === "longstring" || t.type === "object" || t.type === "template" || t.type === "templateform", t.collapse = t.description !== void 0 && t.description.trim().length > 0 || t.inbloc;
+    this.is(t.type) || (t.columnId ? t.type = "dropdown" : typeof t.default == "boolean" ? t.type = "boolean" : typeof t.default == "number" ? t.type = this.is(t.values) ? "dropdown" : "number" : typeof t.default == "object" ? t.type = "object" : t.type = this.is(t.values) ? "dropdown" : "string"), t.inbloc = t.type === "longstring" || t.type === "object" || t.type === "template" || t.type === "templateform", t.collapse = this.is(t.description) && t.description.trim().length > 0 || t.inbloc;
   }
   /** Load options from Grist into the object
    * @param {object} options - Grist object provided by grist.onOptions or grist.widgetApi.getOptions()
@@ -643,7 +648,7 @@ class h {
     let a = "";
     if (!t.hidden) {
       const r = s >= 0 ? this.valuesList[t.id] ? this.valuesList[t.id][s] : this.t(t.title) + " #" + (s + 1) : this.t(t.title);
-      a += '<div class="config-row"><div class="config-row-header"><div class="config-title', a += `${t.collapse ? '"><div class="collapse"></div>' : ' nocollapse">'}${r}</div>`, a += `<div class="config-subtitle">${this.t(t.subtitle)}</div>`, a += (t.inbloc ? "" : `<div class="config-value">${this.#l(t, e, s, n)}</div>`) + (s >= 0 ? '<div class="delete"></div>' : "") + "</div>", t.collapse && (a += '<div class="bloc" style="max-height: 0px;">' + (t.description !== void 0 ? `<div class="details">${this.t(t.description).replaceAll(`
+      a += '<div class="config-row"><div class="config-row-header"><div class="config-title', a += `${t.collapse ? '"><div class="collapse"></div>' : ' nocollapse">'}${r}</div>`, a += `<div class="config-subtitle">${this.t(t.subtitle)}</div>`, a += (t.inbloc ? "" : `<div class="config-value">${this.#l(t, e, s, n)}</div>`) + (s >= 0 ? '<div class="delete"></div>' : "") + "</div>", t.collapse && (a += '<div class="bloc" style="max-height: 0px;">' + (this.is(t.description) ? `<div class="details">${this.t(t.description).replaceAll(`
 `, "<br>").replaceAll("\\n", "<br>")}</div>` : ""), t.type === "template" ? (a += `<div id="${t.id}" class="config-dyn">`, e?.forEach((l, o) => {
         a += this.#t(t.template, l, o, n + "_" + o);
       }), a += "</div>", a += this.valuesList[t.id] ? "" : `<div class="config-header"><button id="add-button" data-id="${t.id}" class="config-button dyn">+</button></div>`) : t.type === "templateform" ? (a += `<div id="${t.id}" class="config-dyn">`, e?.forEach((l, o) => {
@@ -717,10 +722,10 @@ class h {
     return this.opt[t][this.valuesList[t].indexOf(e)];
   }
   #e(t, e) {
-    return t.parse !== void 0 ? t.parse(e) : e;
+    return this.is(t.parse) ? t.parse(e) : e;
   }
   #d(t, e) {
-    return t.format !== void 0 ? t.format(e) : e;
+    return this.is(t.format) ? t.format(e) : e;
   }
   toggleswitch(t) {
     t.currentTarget.classList.contains("switch_on") ? t.currentTarget.classList.remove("switch_on") : t.currentTarget.classList.add("switch_on");

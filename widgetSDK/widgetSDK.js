@@ -56,7 +56,12 @@ export default class WidgetSDK {
         if (this.events['on' + event]) {
             this.events['on' + event].apply(this, args);
         }
-    }    
+    }
+
+    /** Returns true is not undefined and not nul */
+    is(value) {
+        return !(value === undefined || value === null);
+    }
 
     /** Provide a Promise that resolved when the full widget configuration and grist are loaded */
     async isLoaded() {
@@ -427,18 +432,18 @@ export default class WidgetSDK {
 
                                     rec = rec.map(async r => {
                                         if (r.fields)
-                                            if (r.fields[c] !== undefined) r.fields[c] = await v.encode(r.fields[c], fetch[t[1]], cmeta);
+                                            if (this.is(r.fields[c])) r.fields[c] = await v.encode(r.fields[c], fetch[t[1]], cmeta);
                                         else 
-                                            if (r[c] !== undefined) r[c] = await v.encode(r[c], fetch[t[1]], cmeta);
+                                            if (this.is(r[c])) r[c] = await v.encode(r[c], fetch[t[1]], cmeta);
                                         return r;
                                     });
                                     
                                 } else {
                                     rec = rec.map(async r => {
                                         if (r.fields)
-                                            if (r.fields[c] !== undefined) r.fields[c] = await v.encode(r.fields[c]);
+                                            if (this.is(r.fields[c])) r.fields[c] = await v.encode(r.fields[c]);
                                         else 
-                                        if (r[c] !== undefined) r[c] = await v.encode(r[c]);
+                                        if (this.is(r[c])) r[c] = await v.encode(r[c]);
                                         return r;
                                     });
                                 }
@@ -451,7 +456,7 @@ export default class WidgetSDK {
                     let r = rec.fields ?? rec // one full record {id: i, fields:{data}} OR one record with data only                    
                     // need to await this map, else code will continue before reference will be managed
                     await Promise.all(Object.entries(this.col).map(async ([c,v]) => {
-                        if (v && r[c] !== undefined) {
+                        if (v && this.is(r[c])) {
                             const t = v.type.split(':');
                             if ((t[0] === 'RefList' || t[0] === 'Ref') && v.visibleCol > 0) {
                                 if (!fetch[t[1]]) fetch[t[1]] = await grist.docApi.fetchTable(t[1]);                               
@@ -515,7 +520,7 @@ export default class WidgetSDK {
             this._mainview = null;
         }
         // Check parameters
-        if (!para || para === undefined) {
+        if (!para) {
             throw new TypeError(
                 "Parameters argument for Widget Config is not defined ",
             );
@@ -560,7 +565,7 @@ export default class WidgetSDK {
 
     #parseOptions() {        
         this._parameters.forEach(opt => {
-            if (opt.template !== undefined) {
+            if (this.is(opt.template)) {
                 if (Array.isArray(opt.template)) {
                     opt.type = 'templateform';
                     opt.collapse = true;
@@ -586,22 +591,22 @@ export default class WidgetSDK {
     }
 
     #parseOption(opt) {
-        if (opt.type === undefined) {
+        if (!this.is(opt.type)) {
             if(opt.columnId) {
                 opt.type = 'dropdown';
             } else if(typeof opt.default === 'boolean') {
                 opt.type = 'boolean';
             } else if (typeof opt.default === 'number') {
-                opt.type = opt.values === undefined ? 'number': 'dropdown';
+                opt.type = !this.is(opt.values) ? 'number': 'dropdown';
             } else if (typeof opt.default === 'object') {
                 opt.type = 'object'; //Array.isArray(opt.default)? 'array':
             } else { //if (typeof opt.default === 'string') {
-                opt.type = opt.values === undefined ? 'string': 'dropdown';
+                opt.type = !this.is(opt.values) ? 'string': 'dropdown';
             }
         } // else let it as it is
         // collapsible ?
         opt.inbloc = opt.type === 'longstring' || opt.type === 'object' || opt.type === 'template' || opt.type === 'templateform';
-        opt.collapse = (opt.description !== undefined && opt.description.trim().length > 0) || opt.inbloc;
+        opt.collapse = (this.is(opt.description) && opt.description.trim().length > 0) || opt.inbloc;
     }
 
     /** Load options from Grist into the object
@@ -781,7 +786,7 @@ export default class WidgetSDK {
             html += `<div class="config-subtitle">${this.t(opt.subtitle)}</div>`;
             html += (!opt.inbloc?`<div class="config-value">${this.#getOptValueHtml(opt, value, idx, id)}</div>`:'')+ (idx>=0?'<div class="delete"></div>':'') + `</div>`;
             if (opt.collapse) {
-                html += `<div class="bloc" style="max-height: 0px;">` + (opt.description !== undefined?`<div class="details">${this.t(opt.description).replaceAll("\n", "<br>").replaceAll("\\n", "<br>")}</div>`:'');
+                html += `<div class="bloc" style="max-height: 0px;">` + (this.is(opt.description)?`<div class="details">${this.t(opt.description).replaceAll("\n", "<br>").replaceAll("\\n", "<br>")}</div>`:'');
                 if (opt.type === 'template') {                    
                     html += `<div id="${opt.id}" class="config-dyn">`;
                     value?.forEach((v, i) => {
@@ -897,12 +902,12 @@ export default class WidgetSDK {
     }
 
     #parseValue(opt, v) {
-        if (opt.parse !== undefined) return opt.parse(v);
+        if (this.is(opt.parse)) return opt.parse(v);
         return v;
     }
 
     #formatValue(opt, v) {
-        if (opt.format !== undefined) return opt.format(v);
+        if (this.is(opt.format)) return opt.format(v);
         return v;
     }
 
