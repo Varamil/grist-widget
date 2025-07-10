@@ -25,6 +25,7 @@
   "In charge": "Responsable",
   "Is done": "Fait",
   "Last update date": "Date de dernière mise à jour",
+  "Last update on %on": "Dernière mise à jour le %on",
   "List of people that can be in charge of the task.": "Liste des personnes qui peuvent être responsable de tâche.",
   "List of task references available.": "Liste des références possibles.",
   "List of task types available.": "Liste des types de tâche possibles.",

@@ -518,9 +518,11 @@ function togglePopupTodo(todo) {
           </div>
         `;
     }
-    if ((W.map.CREE_LE && todo.CREE_LE) || (W.map.CREE_PAR && todo.CREE_PAR)) {
+    if ((W.map.CREE_LE && todo.CREE_LE) || (W.map.CREE_PAR && todo.CREE_PAR) || (W.map.DERNIERE_MISE_A_JOUR && todo.DERNIERE_MISE_A_JOUR)) {
         form += `<div class="info-creation">
-                ${T('Created')} ${(W.map.CREE_LE && todo.CREE_LE) ? T('on %on', {on:formatDate(todo.CREE_LE)}): ''} ${(W.map.CREE_PAR && todo.CREE_PAR) ? T('by %by', {on:(todo.CREE_PAR || '-')}): ''}
+                ${T('Created')} ${(W.map.CREE_LE && todo.CREE_LE) ? T('on %on', {on:formatDate(todo.CREE_LE)}): ''} 
+                ${(W.map.CREE_PAR && todo.CREE_PAR) ? T('by %by', {by:(todo.CREE_PAR || '-')}): ''}
+                ${(W.map.DERNIERE_MISE_A_JOUR && todo.DERNIERE_MISE_A_JOUR) ? ('<br>' + T('Last update on %on', {on:(todo.DERNIERE_MISE_A_JOUR || '-')})): ''}
             </div>
         `;
     }
