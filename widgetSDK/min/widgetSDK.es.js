@@ -20,14 +20,24 @@ class f {
   getIsFormula() {
     return this.isFormula && this.formula?.trim();
   }
+  /** Gets the list of possible choices for the column. If the column type is 'Choice' or 'ChoiceList', 
+   * return the choice list. If the column type is 'Ref' or 'RefList', return the linked
+   * column content
+   */
   async getChoices() {
     const t = this.type.split(":");
     if (t[0] === "Ref" || t[0] === "RefList") {
       const e = await grist.docApi.fetchTable(t[1]), s = await this.getMeta(this.visibleCol);
       return e[s.colId];
-    } else if (t[0] === "Choice")
+    } else if (t[0] === "Choice" || t[0] === "ChoiceList")
       return this.widgetOptions?.choices;
     return null;
+  }
+  /** For attachment column, return the url for the given id 
+   * @param {number} id - id of the attachment
+  */
+  async getURL(t) {
+    return this.type.split(":")[0] === "Attachments" ? await this._fullMeta.getURL(t) : null;
   }
   // async getRefMeta() {
   //     const t = this.type.split(':');
@@ -131,7 +141,7 @@ class d {
     });
   }
   fetchColumns() {
-    this._accessLevel === "full" && (this._col = null, this._metaPromise = d.fetchMetas(this._tableId), this._colPromise = new Promise((t) => {
+    this._accessLevel === "full" && (this._col = null, this._metaPromise = d.fetchMetas(), this._colPromise = new Promise((t) => {
       this._metaPromise.then((e) => t(d.getTableMeta(e, this._tableId)));
     }));
   }
@@ -173,6 +183,13 @@ class d {
   }
   async getColor(t, e) {
     return this.getColOption(t)?.choiceOptions?.[e]?.fillColor;
+  }
+  /** get URL for attachment id or array of id
+   * @param {Number|Array<Number>} id - attachment id or array of attachment id
+   */
+  async getURL(t) {
+    const e = await grist.docApi.getAccessToken({ readOnly: !0 });
+    return Array.isArray(t) ? t.map((s) => `${e.baseUrl}/attachments/${s}/download?auth=${e.token}`) : `${e.baseUrl}/attachments/${t}/download?auth=${e.token}`;
   }
   /** Get current table columns meta data
    * @returns Object with each entries as column Id
