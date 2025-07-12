@@ -88,6 +88,8 @@ window.addEventListener('load', async (event) => {
                     {description:lookup_details, columnId:'TYPE', type:'lookup'}),
             WidgetSDK.newItem('incharge', '', 'In charge', 'List of people that can be in charge of the task.', 'Cards options', 
                     {description:lookup_details, columnId:'RESPONSABLE', type:'lookup'}),
+            WidgetSDK.newItem('cardcolor', '', 'Card color', 'List of color available for card background.', 'Cards options', 
+                {description:lookup_details, columnId:'COULEUR', type:'lookup'}),
             WidgetSDK.newItem('rotation', true, 'Tilt',  'If checked, cards are randomly tilted.', 'Display'),
             WidgetSDK.newItem('compact', false, 'Compact',  'If checked, use a compact rendering.', 'Display'),
             WidgetSDK.newItem('readonly', false, 'Read only', 'If checked, kanban is ready only.', 'Display'),
@@ -499,7 +501,11 @@ function togglePopupTodo(todo) {
             count += 1;
             if (count % 2 === 0) form += `</div><div class="field-row">`;
         });
-    }   
+    }
+    if (W.map.COULEUR) {
+        form += insererChamp(todo.id, todo.COULEUR, W.valuesList.cardcolor, T('Card color'), 'COULEUR');
+        count += 1;   
+    }
 
     form += `</div>
         <div class="field">
