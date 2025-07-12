@@ -286,7 +286,7 @@ async function optionsChanged(opts) {
 function creerColonneKanban(colonne, idx) {
     const opt = W.opt.columns[idx];
     const colonneElement = document.createElement('div');
-    colonneElement.className = `colonne-kanban ${opt.addbutton? '': 'colonne-nobouton'}`; //colonne
+    colonneElement.className = `colonne-kanban${(!opt.addbutton && !W.opt.compact)? ' colonne-nobouton':''}`; //colonne
     colonneElement.id = colonne;
     
     const savedState = localStorage.getItem(`column-todo-${colonne}`); //colonne.libelle
