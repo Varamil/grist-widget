@@ -127,12 +127,12 @@ class u {
     );
   }
 }
-class d {
+class f {
   /** Fetch columns meta data for all tables */
   static async fetchMetas() {
     const t = await grist.docApi.fetchTable("_grist_Tables_column"), e = Object.keys(t), n = t.parentId.map((l, o) => o).map((l) => {
       let o = Object.fromEntries(e.map((c) => [c, t[c][l]]));
-      return o.widgetOptions = d.safeParse(o.widgetOptions), o;
+      return o.widgetOptions = f.safeParse(o.widgetOptions), o;
     }), a = await grist.docApi.fetchTable("_grist_Tables"), r = Object.fromEntries(a.tableId.map((l, o) => [l, a.id[o]]));
     return { col: n, tab: r };
   }
@@ -145,8 +145,8 @@ class d {
     });
   }
   fetchColumns() {
-    this._accessLevel === "full" && (this._col = null, this._metaPromise = d.fetchMetas(), this._colPromise = new Promise((t) => {
-      this._metaPromise.then((e) => t(d.getTableMeta(e, this._tableId)));
+    this._accessLevel === "full" && (this._col = null, this._metaPromise = f.fetchMetas(), this._colPromise = new Promise((t) => {
+      this._metaPromise.then((e) => t(f.getTableMeta(e, this._tableId)));
     }));
   }
   mapColumns(t, e) {
@@ -232,9 +232,9 @@ class d {
     }
   }
 }
-class h {
+class d {
   constructor() {
-    console.log("WidgetSDK: 1.1.0.57");
+    console.log("WidgetSDK: 1.1.0.58");
     const t = new URLSearchParams(window.location.search);
     this.cultureFull = t.has("culture") ? t.get("culture") : "en-US", this.culture = this.cultureFull.split("-")[0], this.currency = t.has("currency") ? t.get("currency") : "USD", this.timeZone = t.has("timeZone") ? t.get("timeZone") : "", this._gristloaded = !1, this._optloaded = !1, this._ismapped = !1, this.initDone = !1, this.urlSDK = "https://varamil.github.io/grist-widget/widgetSDK", grist.on("message", async (e) => {
       e.fromReady && (this._gristloaded = e.fromReady);
@@ -259,14 +259,14 @@ class h {
       try {
         if (this.meta) {
           for (; !this.meta.isLoaded(); )
-            await h.sleep(50);
+            await d.sleep(50);
           this.col = grist.mapColumnNames(await this.meta.getMeta());
         }
         if (this.opt)
           for (; !this._optloaded; )
-            await h.sleep(50);
+            await d.sleep(50);
         for (; !this._gristloaded; )
-          await h.sleep(50);
+          await d.sleep(50);
         t(!0);
       } catch (s) {
         e(s);
@@ -278,7 +278,7 @@ class h {
     return this.initDone && await this.isLoaded() ? new Promise((t) => t(!0)) : new Promise(async (t, e) => {
       try {
         for (await this.isLoaded(); !this.initDone; )
-          await h.sleep(50);
+          await d.sleep(50);
         t(!0);
       } catch (s) {
         e(s);
@@ -289,7 +289,7 @@ class h {
     return !this.meta || this._ismapped ? new Promise((t) => t(!0)) : new Promise(async (t, e) => {
       try {
         for (; !this._ismapped; )
-          await h.sleep(50);
+          await d.sleep(50);
         t(!0);
       } catch (s) {
         e(s);
@@ -419,7 +419,7 @@ class h {
   //==========================================================================================
   /** Initialize column meta data fetcher */
   initMetaData() {
-    return this.meta = new d(), this.meta;
+    return this.meta = new f(), this.meta;
   }
   /** Save mappings and map records
    * @param {*} records - raw records provided by grist.onRecords
@@ -431,8 +431,8 @@ class h {
       if (e && (this.map = e), await this.mapOptions(), this.meta && s) {
         let a = grist.mapColumnNames(t), r = {};
         Array.isArray(a) ? await Promise.all(Object.entries(this.col).map(([l, o]) => new Promise(async (c) => {
-          o && (Array.isArray(o) ? await Promise.all(o.map(async (f) => {
-            await this.#n(r, a, l, f);
+          o && (Array.isArray(o) ? await Promise.all(o.map(async (h) => {
+            await this.#n(r, a, l, h);
           })) : await this.#n(r, a, l, o)), c(!0);
         }))) : await Promise.all(Object.entries(this.col).map(async ([l, o]) => {
           o && (Array.isArray(o) ? await Promise.all(o.map(async (c) => {
@@ -473,30 +473,29 @@ class h {
         let s = {};
         if (Array.isArray(t))
           await Promise.all(Object.entries(this.col).map(([n, a]) => new Promise(async (r) => {
-            if (a) {
-              const l = a.type.split(":");
-              if ((l[0] === "RefList" || l[0] === "Ref") && a.visibleCol > 0) {
-                s[l[1]] || (s[l[1]] = await grist.docApi.fetchTable(l[1]));
-                const o = await a.getMeta(a.visibleCol);
-                t = t.map(async (c) => (c.fields && (this.is(c.fields[n]) ? c.fields[n] = await a.encode(c.fields[n], s[l[1]], o) : this.is(c[n]) && (c[n] = await a.encode(c[n], s[l[1]], o))), c));
+            a && (Array.isArray(a) || (a = [a]), await Promise.all(a.map(async (l) => {
+              const o = l.type.split(":");
+              if ((o[0] === "RefList" || o[0] === "Ref") && l.visibleCol > 0) {
+                s[o[1]] || (s[o[1]] = await grist.docApi.fetchTable(o[1]));
+                const c = await l.getMeta(l.visibleCol);
+                t = t.map(async (h) => (h.fields && (this.is(h.fields[n]) ? h.fields[n] = await l.encode(h.fields[n], s[o[1]], c) : this.is(h[n]) && (h[n] = await l.encode(h[n], s[o[1]], c))), h));
               } else
-                t = t.map(async (o) => (o.fields && (this.is(o.fields[n]) ? o.fields[n] = await a.encode(o.fields[n]) : this.is(o[n]) && (o[n] = await a.encode(o[n]))), o));
+                t = t.map(async (c) => (c.fields && (this.is(c.fields[n]) ? c.fields[n] = await l.encode(c.fields[n]) : this.is(c[n]) && (c[n] = await l.encode(c[n]))), c));
               t = await Promise.all(t);
-            }
-            r(!0);
+            }))), r(!0);
           })));
         else {
           let n = t.fields ?? t;
           await Promise.all(Object.entries(this.col).map(async ([a, r]) => {
-            if (r && this.is(n[a])) {
-              const l = r.type.split(":");
-              if ((l[0] === "RefList" || l[0] === "Ref") && r.visibleCol > 0) {
-                s[l[1]] || (s[l[1]] = await grist.docApi.fetchTable(l[1]));
-                const o = await r.getMeta(r.visibleCol);
-                n[a] = await r.encode(n[a], s[l[1]], o);
+            r && this.is(n[a]) && (Array.isArray(r) || (r = [r]), await Promise.all(r.map(async (l) => {
+              const o = l.type.split(":");
+              if ((o[0] === "RefList" || o[0] === "Ref") && l.visibleCol > 0) {
+                s[o[1]] || (s[o[1]] = await grist.docApi.fetchTable(o[1]));
+                const c = await l.getMeta(l.visibleCol);
+                n[a] = await l.encode(n[a], s[o[1]], c);
               } else
-                n[a] = await r.encode(n[a]);
-            }
+                n[a] = await l.encode(n[a]);
+            })));
           })), t.fields && (t.fields = n), e(t);
         }
       }
@@ -674,8 +673,8 @@ class h {
 `, "<br>").replaceAll("\\n", "<br>")}</div>` : ""), t.type === "template" ? (a += `<div id="${t.id}" class="config-dyn">`, e?.forEach((l, o) => {
         a += this.#t(t.template, l, o, n + "_" + o);
       }), a += "</div>", a += this.valuesList[t.id] ? "" : `<div class="config-header"><button id="add-button" data-id="${t.id}" class="config-button dyn">+</button></div>`) : t.type === "templateform" ? (a += `<div id="${t.id}" class="config-dyn">`, e?.forEach((l, o) => {
-        l && (a += `<div class="config-section"><div class="config-section-title">${this.valuesList[t.id][o]}</div>`, Object.entries(l).forEach(([c, f]) => {
-          a += this.#t(t.template.find((p) => p.id === c), f, -1, n + "_" + o + "_" + c);
+        l && (a += `<div class="config-section"><div class="config-section-title">${this.valuesList[t.id][o]}</div>`, Object.entries(l).forEach(([c, h]) => {
+          a += this.#t(t.template.find((p) => p.id === c), h, -1, n + "_" + o + "_" + c);
         }), a += "</div>");
       }), a += "</div>", a += this.valuesList[t.id] ? "" : `<div class="config-header"><button id="add-button" data-id="${t.id}" class="config-button dyn">+</button></div>`) : t.inbloc && (a += this.#o(t, e, s, n)), a += `${t.type !== "templateform" ? '<div class="bloc-bottom">' : ""}</div></div>`), a += "</div>";
     }
@@ -887,5 +886,5 @@ Thanks a lot for your time !`));
   }
 }
 export {
-  h as default
+  d as default
 };

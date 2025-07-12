@@ -29,7 +29,7 @@ import './widgetSDK.css';
 /**  */
 export default class WidgetSDK {
     constructor() {
-        console.log("WidgetSDK: 1.1.0.57");
+        console.log("WidgetSDK: 1.1.0.58");
         const urlParams = new URLSearchParams(window.location.search);
         this.cultureFull = urlParams.has('culture')?urlParams.get('culture'):'en-US';
         this.culture = this.cultureFull.split('-')[0];
@@ -422,33 +422,36 @@ export default class WidgetSDK {
             if (this.meta) {
                 let fetch = {};
                 if (Array.isArray(rec)) { // array of records
-                    await Promise.all(Object.entries(this.col).map( ([c,v]) => {
+                    await Promise.all(Object.entries(this.col).map(([c,vc]) => {
                         return new Promise(async res => {
-                            if (v) {
-                                const t = v.type.split(':');
-                                
-                                if ((t[0] === 'RefList' || t[0] === 'Ref') && v.visibleCol > 0) {    
-                                    if (!fetch[t[1]]) fetch[t[1]] = await grist.docApi.fetchTable(t[1]);                               
-                                    const cmeta = await v.getMeta(v.visibleCol);
-
-                                    rec = rec.map(async r => {
-                                        if (r.fields)
-                                            if (this.is(r.fields[c])) r.fields[c] = await v.encode(r.fields[c], fetch[t[1]], cmeta);
-                                        else 
-                                            if (this.is(r[c])) r[c] = await v.encode(r[c], fetch[t[1]], cmeta);
-                                        return r;
-                                    });
+                            if (vc) {
+                                if (!Array.isArray(vc)) vc = [vc];
+                                await Promise.all(vc.map(async v => {
+                                    const t = v.type.split(':');
                                     
-                                } else {
-                                    rec = rec.map(async r => {
-                                        if (r.fields)
-                                            if (this.is(r.fields[c])) r.fields[c] = await v.encode(r.fields[c]);
-                                        else 
-                                        if (this.is(r[c])) r[c] = await v.encode(r[c]);
-                                        return r;
-                                    });
-                                }
-                                rec = await Promise.all(rec); // need to wait at each loop, else item will be a Promise for the next loop
+                                    if ((t[0] === 'RefList' || t[0] === 'Ref') && v.visibleCol > 0) {    
+                                        if (!fetch[t[1]]) fetch[t[1]] = await grist.docApi.fetchTable(t[1]);                               
+                                        const cmeta = await v.getMeta(v.visibleCol);
+
+                                        rec = rec.map(async r => {
+                                            if (r.fields)
+                                                if (this.is(r.fields[c])) r.fields[c] = await v.encode(r.fields[c], fetch[t[1]], cmeta);
+                                            else 
+                                                if (this.is(r[c])) r[c] = await v.encode(r[c], fetch[t[1]], cmeta);
+                                            return r;
+                                        });
+                                        
+                                    } else {
+                                        rec = rec.map(async r => {
+                                            if (r.fields)
+                                                if (this.is(r.fields[c])) r.fields[c] = await v.encode(r.fields[c]);
+                                            else 
+                                            if (this.is(r[c])) r[c] = await v.encode(r[c]);
+                                            return r;
+                                        });
+                                    }
+                                    rec = await Promise.all(rec); // need to wait at each loop, else item will be a Promise for the next loop
+                                }));                                
                             }
                             res(true);
                         });
@@ -456,16 +459,19 @@ export default class WidgetSDK {
                 } else { // one record
                     let r = rec.fields ?? rec // one full record {id: i, fields:{data}} OR one record with data only                    
                     // need to await this map, else code will continue before reference will be managed
-                    await Promise.all(Object.entries(this.col).map(async ([c,v]) => {
-                        if (v && this.is(r[c])) {
-                            const t = v.type.split(':');
-                            if ((t[0] === 'RefList' || t[0] === 'Ref') && v.visibleCol > 0) {
-                                if (!fetch[t[1]]) fetch[t[1]] = await grist.docApi.fetchTable(t[1]);                               
-                                const cmeta = await v.getMeta(v.visibleCol);
-                                r[c] = await v.encode(r[c], fetch[t[1]], cmeta);
-                            } else {
-                                r[c] = await v.encode(r[c]);
-                            }       
+                    await Promise.all(Object.entries(this.col).map(async ([c,vc]) => {
+                        if (vc && this.is(r[c])) {
+                            if (!Array.isArray(vc)) vc = [vc];
+                            await Promise.all(vc.map(async v => {
+                                const t = v.type.split(':');
+                                if ((t[0] === 'RefList' || t[0] === 'Ref') && v.visibleCol > 0) {
+                                    if (!fetch[t[1]]) fetch[t[1]] = await grist.docApi.fetchTable(t[1]);                               
+                                    const cmeta = await v.getMeta(v.visibleCol);
+                                    r[c] = await v.encode(r[c], fetch[t[1]], cmeta);
+                                } else {
+                                    r[c] = await v.encode(r[c]);
+                                } 
+                            }));                                  
                         }
                     }));
                     if (rec.fields) rec.fields = r;
