@@ -409,7 +409,7 @@ function trierTodo(conteneur) {
             if (delta === 0) {
                 const idA = parseInt(a.getAttribute('data-todo-id')) || 0;
                 const idB = parseInt(b.getAttribute('data-todo-id')) || 0;
-                return idB - idA;
+                return idA - idB;
             }
             else 
                 return delta; // Plus récent en premier
@@ -421,7 +421,7 @@ function trierTodo(conteneur) {
             if (delta === 0) {
                 const idA = parseInt(a.getAttribute('data-todo-id')) || 0;
                 const idB = parseInt(b.getAttribute('data-todo-id')) || 0;
-                return idB - idA;
+                return idA - idB;
             }
             else 
                 return delta; // Plus urgent en premier
@@ -473,7 +473,7 @@ function togglePopupTodo(todo) {
     let form = '<div class="field-row">';
     form += `
         <div class="field">
-          <label class="field-label">Date limite</label>
+          <label class="field-label">${T('Deadline')}</label>
           <input type="date" class="field-input" 
                  value="${formatDateForInput(todo.DEADLINE)}"
                  onchange="mettreAJourChamp(${todo.id}, 'DEADLINE', this.value, event)">
