@@ -6,7 +6,7 @@
 *(it replaces the previous version also available on this server)*.
 
 ## Features
-* Dynamic columns: list, order, title and color depend directly on board configuration.
+* Dynamic columns: list, order, title and color depend directly on Grist table configuration.
 * Possibility of adding new tasks directly in the widget
 * Possibility of editing tasks directly in the widget
 * Drag-and-drop cards from one column to another
@@ -16,6 +16,8 @@
 ![image](images/kanban.png)
 
 <img src="images/edit.png" width="300" align="center">
+
+*Example available on [Grist](https://docs.getgrist.com/i7qAzQSXzeYe/Kanban?utm_id=share-doc).*
 
 ## Installation
 1. Prepare your table to be compatible with the widget:
@@ -87,7 +89,7 @@ Varamil - [GitHub](https://github.com/Varamil) - who took care of Grist integrat
 *(il remplace la précédente version disponible également sur ce serveur)*
 
 ## Fonctionnalités
-* Colonnes dynamiques, la liste, l'ordre, le titre, la couleur dépend directement de la configuration du tableau
+* Colonnes dynamiques, la liste, l'ordre, le titre, la couleur dépend directement de la configuration du tableau Grist
 * Possibilité d'ajouter directement de nouvelle tâche dans le widget
 * Possibilité d'éditer les tâches directement dans le widget
 * Déplacement des cartes d'une colonne à l'autre par glisser-déposer
@@ -97,6 +99,8 @@ Varamil - [GitHub](https://github.com/Varamil) - who took care of Grist integrat
 ![image](images/kanban.png)
 
 <img src="images/edit.png" width="300" align="center">
+
+*Exemple disponible sur [Grist](https://docs.getgrist.com/i7qAzQSXzeYe/Kanban?utm_id=share-doc)*
 
 ## Installation
 1. Préparer votre tableau pour être compatible avec le widget :
