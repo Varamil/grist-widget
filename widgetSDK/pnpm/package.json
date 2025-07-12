@@ -5,9 +5,7 @@
     "main": "widgetSDK.js",
     "type": "module",
     "scripts": {
-        "dev": "vite",
-        "build-dev": "vite build --watch",
-        "build": "vite build"
+        "build": "node vite.config.mjs"
     },
     "repository": {
         "type": "git",

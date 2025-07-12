@@ -1,4 +1,4 @@
-class f {
+class u {
   constructor(t, e) {
     Object.assign(this, t), this._fullMeta = e;
   }
@@ -72,7 +72,11 @@ class f {
             return await this.parse(a[r.colId][l]);
           } else return t.rowId;
         else return;
-    }
+    } else if (n[0] === "Date") {
+      if (Array.isArray(t))
+        return t[1] > 0 ? new Date(t[1] * 1e3) : void 0;
+    } else if (n[0] === "DateTime" && Array.isArray(t))
+      return t[1] > 0 ? new Date(t[1] * 1e3) : void 0;
     return t;
   }
   /** Parse a given value ID based on column meta data. Replace references, whatever the encoding is, by their ID. 
@@ -196,7 +200,7 @@ class d {
    */
   async getMeta() {
     return this._col || (this._col = this._colPromise.then(
-      (t) => Object.fromEntries(t.map((e) => [e.colId, new f(e, this._metaPromise.then((s) => s))]))
+      (t) => Object.fromEntries(t.map((e) => [e.colId, new u(e, this._metaPromise.then((s) => s))]))
     )), this._col;
   }
   /** Get given column meta data
@@ -206,7 +210,7 @@ class d {
     return this._colPromise.then(
       (e) => {
         const s = e.find((n) => n.colId === t);
-        return s ? new f(s, this._metaPromise.value) : null;
+        return s ? new u(s, this._metaPromise.value) : null;
       }
     );
   }
@@ -230,6 +234,7 @@ class d {
 }
 class h {
   constructor() {
+    console.log("WidgetSDK: 1.1.0.57");
     const t = new URLSearchParams(window.location.search);
     this.cultureFull = t.has("culture") ? t.get("culture") : "en-US", this.culture = this.cultureFull.split("-")[0], this.currency = t.has("currency") ? t.get("currency") : "USD", this.timeZone = t.has("timeZone") ? t.get("timeZone") : "", this._gristloaded = !1, this._optloaded = !1, this._ismapped = !1, this.initDone = !1, this.urlSDK = "https://varamil.github.io/grist-widget/widgetSDK", grist.on("message", async (e) => {
       e.fromReady && (this._gristloaded = e.fromReady);
@@ -423,40 +428,40 @@ class h {
    */
   async mapData(t, e, s = !1) {
     return this.dataMapped = s, new Promise(async (n) => {
-      if (this.map = e, await this.mapOptions(), this.meta && s) {
-        let a = grist.mapColumnNames(t);
-        Array.isArray(a) ? await Promise.all(Object.entries(this.col).map(([r, l]) => new Promise(async (o) => {
-          l && (Array.isArray(l) ? await Promise.all(l.map(async (c) => {
-            await this.#a(a, r, c);
-          })) : await this.#a(a, r, l)), o(!0);
-        }))) : await Promise.all(Object.entries(this.col).map(async ([r, l]) => {
-          l && (Array.isArray(l) ? await Promise.all(l.map(async (o) => {
-            await this.#n(a, r, o);
-          })) : await this.#n(a, r, l));
+      if (e && (this.map = e), await this.mapOptions(), this.meta && s) {
+        let a = grist.mapColumnNames(t), r = {};
+        Array.isArray(a) ? await Promise.all(Object.entries(this.col).map(([l, o]) => new Promise(async (c) => {
+          o && (Array.isArray(o) ? await Promise.all(o.map(async (f) => {
+            await this.#n(r, a, l, f);
+          })) : await this.#n(r, a, l, o)), c(!0);
+        }))) : await Promise.all(Object.entries(this.col).map(async ([l, o]) => {
+          o && (Array.isArray(o) ? await Promise.all(o.map(async (c) => {
+            await this.#r(r, a, l, c);
+          })) : await this.#r(r, a, l, o));
         })), this._ismapped = !0, n(a);
       }
       this._ismapped = !0, n(grist.mapColumnNames(t, e));
     });
   }
-  async #a(t, e, s) {
-    const n = s.type.split(":");
-    if ((n[0] === "RefList" || n[0] === "Ref") && s.visibleCol > 0) {
-      fetch[n[1]] || (fetch[n[1]] = await grist.docApi.fetchTable(n[1]));
-      const a = await s.getMeta(s.visibleCol);
-      t = t.map(async (r) => (r[e] = await s.parse(r[e], fetch[n[1]], a), r[e + "_id"] = await s.parseId(r[e], fetch[n[1]], a), r));
+  async #n(t, e, s, n) {
+    const a = n.type.split(":");
+    if ((a[0] === "RefList" || a[0] === "Ref") && n.visibleCol > 0) {
+      t[a[1]] || (t[a[1]] = await grist.docApi.fetchTable(a[1]));
+      const r = await n.getMeta(n.visibleCol);
+      e = e.map(async (l) => (l[s] = await n.parse(l[s], t[a[1]], r), l[s + "_id"] = await n.parseId(l[s], t[a[1]], r), l));
     } else
-      t = t.map(async (a) => (a[e] = await s.parse(a[e]), a));
-    t = await Promise.all(t);
+      e = e.map(async (r) => (r[s] = await n.parse(r[s]), r));
+    e = await Promise.all(e);
   }
-  async #n(t, e, s) {
-    const n = s.type.split(":");
-    if ((n[0] === "RefList" || n[0] === "Ref") && s.visibleCol > 0) {
-      fetch[n[1]] || (fetch[n[1]] = await grist.docApi.fetchTable(n[1]));
-      const a = await s.getMeta(s.visibleCol);
-      t[e + "_id"] = t[e].map(async (r) => await s.parseId(r, fetch[n[1]], a)), t[e] = t[e].map(async (r) => await s.parse(r, fetch[n[1]], a)), t[e + "_id"] = await Promise.all(t[e + "_id"]);
+  async #r(t, e, s, n) {
+    const a = n.type.split(":");
+    if ((a[0] === "RefList" || a[0] === "Ref") && n.visibleCol > 0) {
+      t[a[1]] || (t[a[1]] = await grist.docApi.fetchTable(a[1]));
+      const r = await n.getMeta(n.visibleCol);
+      e[s + "_id"] = e[s].map(async (l) => await n.parseId(l, t[a[1]], r)), e[s] = e[s].map(async (l) => await n.parse(l, t[a[1]], r)), e[s + "_id"] = await Promise.all(e[s + "_id"]);
     } else
-      t[e] = t[e].map(async (a) => await s.parse(a));
-    t[e] = await Promise.all(t[e]);
+      e[s] = e[s].map(async (r) => await n.parse(r));
+    e[s] = await Promise.all(e[s]);
   }
   /** Encode data to prepare them before sending to Grist. Manage properly references 
    * @param {*} rec - Array of data (object) or record ({id: 0, fields:{data}})
@@ -534,7 +539,7 @@ class h {
       throw new TypeError(
         "Parameters argument for Widget Config is not defined "
       );
-    Array.isArray(t) || (t = [t]), this._parameters = t, this.#c(), this.#r(), this._config.classList.contains("grist-config") || this._config.classList.add("grist-config"), this.events = n, grist.onOptions((function(a, r) {
+    Array.isArray(t) || (t = [t]), this._parameters = t, this.#h(), this.#l(), this._config.classList.contains("grist-config") || this._config.classList.add("grist-config"), this.events = n, grist.onOptions((function(a, r) {
       this.loadOptions(a);
     }).bind(this)), grist.on("message", async (a) => {
       !this._optloaded && a.fromReady && this.loadOptions(await grist.widgetApi.getOptions());
@@ -558,7 +563,7 @@ class h {
   onOptLoad(t) {
     typeof t == "function" && (this.events.onLoad = t);
   }
-  #c() {
+  #h() {
     this._parameters.forEach((t) => {
       this.is(t.template) ? Array.isArray(t.template) ? (t.type = "templateform", t.collapse = !0, t.inbloc = !0, t.default = {}, t.template.forEach((e) => {
         this.#i(e), t.default[e.id] = e.default;
@@ -608,25 +613,25 @@ class h {
       console.error("Error occurs on saving options:", t);
     }
   }
-  #r() {
+  #l() {
     this.opt = {}, this._parameters.forEach((t) => {
       this.opt[t.id] = t.type === "template" || t.type === "templateform" ? [] : t.default;
     });
   }
   /** Reset all options to default values */
   async resetOptions() {
-    this.#r(), await this.mapOptions(), await grist.widgetApi.setOption("options", this.opt), await grist.widgetApi.setOption("localization", {}), this.showConfig(!1), this.triggerEvent("OptChange", [this.opt]);
+    this.#l(), await this.mapOptions(), await grist.widgetApi.setOption("options", this.opt), await grist.widgetApi.setOption("localization", {}), this.showConfig(!1), this.triggerEvent("OptChange", [this.opt]);
   }
   /** Manage the display of the config form */
   async showConfig(t = !0) {
     if (t) {
       await this.isMapped(), this._mainview && (this._mainview.style = "display: none"), this._config.style = "";
       let e = `<div class="config-header"><button id="apply-button" class="config-button">${this.t("Apply")}</button><button id="close-button" class="config-button">${this.t("Close")}</button></div>`;
-      Object.entries(this.#h(this._parameters, "group")).forEach(([s, n]) => {
+      Object.entries(this.#d(this._parameters, "group")).forEach(([s, n]) => {
         e += `<div class="config-section"><div class="config-section-title">${this.t(s)}</div>`, n.forEach((a) => {
           e += this.#t(a, this.opt[a.id], -1, a.id);
         }), e += "</div>";
-      }), this.I18N && (e += `<div class="config-section"><div class="config-section-title">${this.t("Localization")}</div>`, e += `<div class="config-row"><div class="config-row-header"><div class="config-title"><div class="collapse"></div>${this.t("Extract strings")}</div>`, e += `<div class="config-subtitle">${this.t("Click on the button to parse widget files and list all strings to translate.")}</div>`, e += `<div class="config-value"><button id="extract-loc" class="config-button dyn">${this.t("Extract")}</button></div></div> `, e += '<div class="bloc" style="max-height: 0px;"><div id="config-loc">', e += this.#o(), e += "</div></div></div></div>"), this._config.innerHTML = e + `<div class="config-header"><button id="reset-button" class="config-button">${this.t("Reset")}</button></div>`, this._config.querySelectorAll("div.config-switch")?.forEach((s) => {
+      }), this.I18N && (e += `<div class="config-section"><div class="config-section-title">${this.t("Localization")}</div>`, e += `<div class="config-row"><div class="config-row-header"><div class="config-title"><div class="collapse"></div>${this.t("Extract strings")}</div>`, e += `<div class="config-subtitle">${this.t("Click on the button to parse widget files and list all strings to translate.")}</div>`, e += `<div class="config-value"><button id="extract-loc" class="config-button dyn">${this.t("Extract")}</button></div></div> `, e += '<div class="bloc" style="max-height: 0px;"><div id="config-loc">', e += this.#c(), e += "</div></div></div></div>"), this._config.innerHTML = e + `<div class="config-header"><button id="reset-button" class="config-button">${this.t("Reset")}</button></div>`, this._config.querySelectorAll("div.config-switch")?.forEach((s) => {
         s.addEventListener("click", (function(n) {
           this.toggleswitch(n);
         }).bind(this));
@@ -656,7 +661,7 @@ class h {
     } else
       this._mainview && (this._mainview.style = ""), this._config.style = "display: none";
   }
-  #h = function(t, e) {
+  #d = function(t, e) {
     return t.reduce(function(s, n) {
       return (s[n[e]] ??= []).push(n), s;
     }, {});
@@ -665,19 +670,19 @@ class h {
     let a = "";
     if (!t.hidden) {
       const r = s >= 0 ? this.valuesList[t.id] ? this.valuesList[t.id][s] : this.t(t.title) + " #" + (s + 1) : this.t(t.title);
-      a += '<div class="config-row"><div class="config-row-header"><div class="config-title', a += `${t.collapse ? '"><div class="collapse"></div>' : ' nocollapse">'}${r}</div>`, a += `<div class="config-subtitle">${this.t(t.subtitle)}</div>`, a += (t.inbloc ? "" : `<div class="config-value">${this.#l(t, e, s, n)}</div>`) + (s >= 0 ? '<div class="delete"></div>' : "") + "</div>", t.collapse && (a += '<div class="bloc" style="max-height: 0px;">' + (this.is(t.description) ? `<div class="details">${this.t(t.description).replaceAll(`
+      a += '<div class="config-row"><div class="config-row-header"><div class="config-title', a += `${t.collapse ? '"><div class="collapse"></div>' : ' nocollapse">'}${r}</div>`, a += `<div class="config-subtitle">${this.t(t.subtitle)}</div>`, a += (t.inbloc ? "" : `<div class="config-value">${this.#o(t, e, s, n)}</div>`) + (s >= 0 ? '<div class="delete"></div>' : "") + "</div>", t.collapse && (a += '<div class="bloc" style="max-height: 0px;">' + (this.is(t.description) ? `<div class="details">${this.t(t.description).replaceAll(`
 `, "<br>").replaceAll("\\n", "<br>")}</div>` : ""), t.type === "template" ? (a += `<div id="${t.id}" class="config-dyn">`, e?.forEach((l, o) => {
         a += this.#t(t.template, l, o, n + "_" + o);
       }), a += "</div>", a += this.valuesList[t.id] ? "" : `<div class="config-header"><button id="add-button" data-id="${t.id}" class="config-button dyn">+</button></div>`) : t.type === "templateform" ? (a += `<div id="${t.id}" class="config-dyn">`, e?.forEach((l, o) => {
-        l && (a += `<div class="config-section"><div class="config-section-title">${this.valuesList[t.id][o]}</div>`, Object.entries(l).forEach(([c, u]) => {
-          a += this.#t(t.template.find((p) => p.id === c), u, -1, n + "_" + o + "_" + c);
+        l && (a += `<div class="config-section"><div class="config-section-title">${this.valuesList[t.id][o]}</div>`, Object.entries(l).forEach(([c, f]) => {
+          a += this.#t(t.template.find((p) => p.id === c), f, -1, n + "_" + o + "_" + c);
         }), a += "</div>");
-      }), a += "</div>", a += this.valuesList[t.id] ? "" : `<div class="config-header"><button id="add-button" data-id="${t.id}" class="config-button dyn">+</button></div>`) : t.inbloc && (a += this.#l(t, e, s, n)), a += `${t.type !== "templateform" ? '<div class="bloc-bottom">' : ""}</div></div>`), a += "</div>";
+      }), a += "</div>", a += this.valuesList[t.id] ? "" : `<div class="config-header"><button id="add-button" data-id="${t.id}" class="config-button dyn">+</button></div>`) : t.inbloc && (a += this.#o(t, e, s, n)), a += `${t.type !== "templateform" ? '<div class="bloc-bottom">' : ""}</div></div>`), a += "</div>";
     }
     return a;
   }
-  #l(t, e, s = -1, n = "") {
-    const a = this.#d(t, e), r = `id="${n}" ${s >= 0 ? `data-idx="${s}" ` : ""}`;
+  #o(t, e, s = -1, n = "") {
+    const a = this.#f(t, e), r = `id="${n}" ${s >= 0 ? `data-idx="${s}" ` : ""}`;
     switch (t.type) {
       //TODO add : button, 
       case "boolean":
@@ -726,7 +731,7 @@ class h {
         return this.#e(t, e.value);
     }
   }
-  #o() {
+  #c() {
     let t = "", e = this.I18Nuser ? Object.entries(this.I18Nuser) : [];
     return e = e.length > 0 ? e : Object.entries(this.I18N), e.length > 0 ? (e.sort(), e.forEach(([s, n]) => {
       t += `<div class="config-row"><div class="config-row-header"><div class="config-vo">${s.replaceAll(`
@@ -741,7 +746,7 @@ class h {
   #e(t, e) {
     return this.is(t.parse) ? t.parse(e) : e;
   }
-  #d(t, e) {
+  #f(t, e) {
     return this.is(t.format) ? t.format(e) : e;
   }
   toggleswitch(t) {
@@ -775,7 +780,7 @@ class h {
   async extractLocStrings() {
     this.I18Nuser = this.assignDefined(await this.extractTranslations(this.translatedFiles), this.I18Nuser);
     const t = this._config.querySelector("#config-loc");
-    t && (t.innerHTML = this.#o(), this._config.querySelector("#export-loc")?.addEventListener("click", (function() {
+    t && (t.innerHTML = this.#c(), this._config.querySelector("#export-loc")?.addEventListener("click", (function() {
       this.exportLocStrings();
     }).bind(this)));
   }
@@ -815,18 +820,41 @@ Thanks a lot for your time !`));
   formatRecord(t, e) {
     return { id: parseInt(t), fields: e };
   }
+  /** Get Grist current table reference */
+  #a() {
+    return this.table || (this.table = grist.getTable()), !!this.table;
+  }
   /** Update the current Grist table with given data 
    * @param {object|[object]} rec - Object with prop as column id and value as new value
+   * @param {boolean} encode - True if data need to be encoded before
    * @returns the answer of the update or null
   */
   async updateRecords(t, e) {
-    return e = e ?? this.dataMapped, this.table || (this.table = grist.getTable()), e && (t = await this.encodeData(t)), t = Array.isArray(t) ? t.map((s) => this.mapColumnNamesBack(s)) : this.mapColumnNamesBack(t), await this.table?.update(t);
+    return e = e ?? this.dataMapped, this.#a() ? (e && (t = await this.encodeData(t)), t = Array.isArray(t) ? t.map((s) => this.mapColumnNamesBack(s)) : this.mapColumnNamesBack(t), this.applyModificationOnGrist(async () => this.table.update(t))) : null;
   }
+  /** Create a new record in the current Grist table
+   * @param {object|[object]} rec - Object with prop as column id and value as new value
+   * @param {boolean} encode - True if data need to be encoded before
+   * @returns the answer of the create or null
+   */
   async createRecords(t, e) {
-    return e = e ?? this.dataMapped, this.table || (this.table = grist.getTable()), e && (t = await this.encodeData(t)), t = Array.isArray(t) ? t.map((s) => this.mapColumnNamesBack(s)) : this.mapColumnNamesBack(t), await this.table?.create(t);
+    return e = e ?? this.dataMapped, this.#a() ? (e && (t = await this.encodeData(t)), t = Array.isArray(t) ? t.map((s) => this.mapColumnNamesBack(s)) : this.mapColumnNamesBack(t), this.applyModificationOnGrist(async () => this.table.create(t))) : null;
   }
+  /** Delete given record(s) in the current Grist table
+   * @param {number|Array<number>} id - id(s) to remove from the table
+   * @returns the answer of the delete
+   */
   async destroyRecords(t) {
-    return this.table || (this.table = grist.getTable()), Array.isArray(t) ? await this.table?.destroy(t.map((e) => parseInt(e))) : await this.table?.destroy(t);
+    return this.#a() ? this.applyModificationOnGrist(async () => Array.isArray(t) ? await this.table.destroy(t.map((e) => parseInt(e))) : await this.table.destroy(t)) : null;
+  }
+  /** When applying modification on Grist table, ensure that data mapping
+   * is correctly performed
+   */
+  async applyModificationOnGrist(t) {
+    if (!t) return null;
+    this.dataMapped && (this._ismapped = !1);
+    const e = await t();
+    return this.dataMapped && await this.isMapped(), e;
   }
   /** Maps back properly records columns to be compatible with Grist */
   mapColumnNamesBack(t) {
@@ -854,7 +882,8 @@ Thanks a lot for your time !`));
   }
   async fetchSelectedRecord(t) {
     let e = await grist.fetchSelectedRecord(t);
-    return grist.mapColumnNames(e);
+    const s = grist.mapColumnNames(e);
+    return this.dataMapped && await this.isMapped(), s;
   }
 }
 export {

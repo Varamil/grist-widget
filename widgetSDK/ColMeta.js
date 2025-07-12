@@ -103,7 +103,22 @@ export default class ColMeta {
                     } else return value.rowId;              
                 } else return undefined;                
             }
-        } //TODO manage other encoded data (if keepEncode === false), all possible list is : Int (Integer column), Numeric (Numeric column), Text, Date, DateTime, Bool (Toggle column), Choice, ChoiceList, Ref (Reference column), RefList (Reference List), Attachments.
+        } else if(t[0] === 'Date') {
+            if (Array.isArray(value)) {
+                if (value[1] > 0) {
+                    return new Date(value[1] * 1000);
+                } else return undefined;
+            } // else return value
+        } else if(t[0] === 'DateTime') {
+            if (Array.isArray(value)) {
+                if (value[1] > 0) {
+                    return new Date(value[1] * 1000); // todo manage time zone
+                } else return undefined;
+            } // else return value
+        }       
+        
+        //TODO manage other encoded data (if keepEncode === false), all possible list is : Int (Integer column), Numeric (Numeric column), Text, Date, DateTime, Bool (Toggle column), Choice, ChoiceList, Ref (Reference column), RefList (Reference List), Attachments.
+        
         return value; //else
     }
 

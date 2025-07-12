@@ -29,6 +29,7 @@ import './widgetSDK.css';
 /**  */
 export default class WidgetSDK {
     constructor() {
+        console.log("WidgetSDK: 1.1.0.57");
         const urlParams = new URLSearchParams(window.location.search);
         this.cultureFull = urlParams.has('culture')?urlParams.get('culture'):'en-US';
         this.culture = this.cultureFull.split('-')[0];
@@ -331,7 +332,7 @@ export default class WidgetSDK {
     async mapData(rec, map, mapdata = false){
         this.dataMapped = mapdata;
         return new Promise(async resolve => {
-            this.map = map;
+            if(map) this.map = map;
             await this.mapOptions();            
             if (this.meta) {                
                 if (mapdata) {
@@ -345,10 +346,10 @@ export default class WidgetSDK {
                                 if (v) {
                                     if (Array.isArray(v)) {
                                         await Promise.all(v.map(async sv => {
-                                            await this.#mapRowData(r, c, sv);
+                                            await this.#mapRowData(fetch, r, c, sv);
                                         }));
                                     } else {
-                                        await this.#mapRowData(r, c, v);
+                                        await this.#mapRowData(fetch,r, c, v);
                                     }                                    
                                 }
                                 res(true);
@@ -361,10 +362,10 @@ export default class WidgetSDK {
                             if (v) {
                                 if (Array.isArray(v)) {
                                     await Promise.all(v.map(async sv => {
-                                        await this.#mapColumnData(r, c, sv);
+                                        await this.#mapColumnData(fetch,r, c, sv);
                                     }));
                                 } else {
-                                    await this.#mapColumnData(r,c,v);
+                                    await this.#mapColumnData(fetch,r,c,v);
                                 }
                             }
                         }));
@@ -378,14 +379,14 @@ export default class WidgetSDK {
         });        
     }
 
-    async #mapRowData(r, c, v) {
+    async #mapRowData(f, r, c, v) {
         const t = v.type.split(':');
         if ((t[0] === 'RefList' || t[0] === 'Ref') && v.visibleCol > 0) {                                
-            if (!fetch[t[1]]) fetch[t[1]] = await grist.docApi.fetchTable(t[1]);                               
+            if (!f[t[1]]) f[t[1]] = await grist.docApi.fetchTable(t[1]);                               
             const cmeta = await v.getMeta(v.visibleCol);
             r = r.map(async item => {
-                item[c] = await v.parse(item[c], fetch[t[1]], cmeta);
-                item[c + '_id'] = await v.parseId(item[c], fetch[t[1]], cmeta);
+                item[c] = await v.parse(item[c], f[t[1]], cmeta);
+                item[c + '_id'] = await v.parseId(item[c], f[t[1]], cmeta);
                 return item;
             });                                        
         } else {
@@ -398,13 +399,13 @@ export default class WidgetSDK {
         r = await Promise.all(r); // need to wait at each loop, else item will be a Promise for the next loop
     }
 
-    async #mapColumnData(r, c, v) {
+    async #mapColumnData(f, r, c, v) {
         const t = v.type.split(':');
         if ((t[0] === 'RefList' || t[0] === 'Ref') && v.visibleCol > 0) { 
-            if (!fetch[t[1]]) fetch[t[1]] = await grist.docApi.fetchTable(t[1]);                               
+            if (!f[t[1]]) f[t[1]] = await grist.docApi.fetchTable(t[1]);                               
             const cmeta = await v.getMeta(v.visibleCol);
-            r[c + '_id'] = r[c].map(async item => await v.parseId(item, fetch[t[1]], cmeta));
-            r[c] = r[c].map(async item => await v.parse(item, fetch[t[1]], cmeta));                                
+            r[c + '_id'] = r[c].map(async item => await v.parseId(item, f[t[1]], cmeta));
+            r[c] = r[c].map(async item => await v.parse(item, f[t[1]], cmeta));                                
             r[c + '_id'] = await Promise.all(r[c + '_id']); 
         } else {                                
             r[c] = r[c].map(async item => await v.parse(item));
@@ -638,6 +639,7 @@ export default class WidgetSDK {
         if (this._parameters) {
             //Wait for loading and mapping
             await this.isLoaded();
+
             this.valuesList = {};
 
             this._parameters.forEach(async opt => {                
@@ -1033,36 +1035,61 @@ export default class WidgetSDK {
      * @param {object} data - Object with prop as column id and value
      */
     formatRecord(id, data) {
-        return {id: parseInt(id), fields:data};
+        return {id: parseInt(id), fields:data}; //TODO manage encoding
+    }
+
+    /** Get Grist current table reference */
+    #getTable() {
+        if(!this.table) this.table = grist.getTable();
+        return this.table?true:false;
     }
 
     /** Update the current Grist table with given data 
      * @param {object|[object]} rec - Object with prop as column id and value as new value
+     * @param {boolean} encode - True if data need to be encoded before
      * @returns the answer of the update or null
     */
     async updateRecords(rec, encode) {       
         encode = encode ?? this.dataMapped;
-        if(!this.table) this.table = grist.getTable();
+        if(!this.#getTable()) return null;
 
         if (encode) rec = await this.encodeData(rec); //encode data if needed
         rec = Array.isArray(rec)? rec.map(item => this.mapColumnNamesBack(item)):this.mapColumnNamesBack(rec);
-
-        return await this.table?.update(rec);
+        return this.applyModificationOnGrist(async () => this.table.update(rec));
     }
 
+    /** Create a new record in the current Grist table
+     * @param {object|[object]} rec - Object with prop as column id and value as new value
+     * @param {boolean} encode - True if data need to be encoded before
+     * @returns the answer of the create or null
+     */
     async createRecords(rec, encode) {
         encode = encode ?? this.dataMapped;        
-        if(!this.table) this.table = grist.getTable();
+        if(!this.#getTable()) return null;
 
         if (encode) rec = await this.encodeData(rec); //encode data if needed
         rec = Array.isArray(rec)? rec.map(item => this.mapColumnNamesBack(item)):this.mapColumnNamesBack(rec);
-      
-        return await this.table?.create(rec);
+        return this.applyModificationOnGrist(async () => this.table.create(rec));
     }
 
+    /** Delete given record(s) in the current Grist table
+     * @param {number|Array<number>} id - id(s) to remove from the table
+     * @returns the answer of the delete
+     */
     async destroyRecords(id) {
-        if(!this.table) this.table = grist.getTable();
-        return Array.isArray(id) ? await this.table?.destroy(id.map(i => parseInt(i))) : await this.table?.destroy(id);     
+        if(!this.#getTable()) return null;
+        return this.applyModificationOnGrist(async () => Array.isArray(id) ? await this.table.destroy(id.map(i => parseInt(i))) : await this.table.destroy(id));     
+    }
+
+    /** When applying modification on Grist table, ensure that data mapping
+     * is correctly performed
+     */
+    async applyModificationOnGrist(f) {
+        if(!f) return null;
+        if(this.dataMapped) this._ismapped = false;
+        const res = await f();
+        if(this.dataMapped) await this.isMapped();
+        return res;
     }
 
     /** Maps back properly records columns to be compatible with Grist */
@@ -1101,7 +1128,9 @@ export default class WidgetSDK {
 
     async fetchSelectedRecord(id) {
         let rec = await grist.fetchSelectedRecord(id); 
-        return grist.mapColumnNames(rec); //TODO mapData ?
+        const res = grist.mapColumnNames(rec); //TODO mapData ? await this.mapData(rec, null, true); //
+        if(this.dataMapped) await this.isMapped();
+        return res;
     }
 }
 
