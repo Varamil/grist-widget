@@ -345,7 +345,7 @@ function creerCarteTodo(todo) {
     carte.setAttribute('data-deadline', todo.DEADLINE || '');
     if (todo.COULEUR) {
         if (W.col.COULEUR.type === 'Choice')
-            if (W.col.COULEUR.getColor(todo.COULEUR)) carte.setAttribute('style', `background-color: ${(todo.COULEUR.startsWith("#")? '': '#') + todo.COULEUR}`);
+            if (W.col.COULEUR.getColor(todo.COULEUR)) carte.setAttribute('style', `background-color: ${W.col.COULEUR.getColor(todo.COULEUR)}`);
         else
             carte.setAttribute('style', `background-color: ${(todo.COULEUR.startsWith("#")? '': '#') + todo.COULEUR}`);        
     }
@@ -465,7 +465,7 @@ function togglePopupTodo(todo) {
     const popupheader = popup.querySelector('.popup-header');
     popupheader.style = `background-color: ${W.col.STATUT.getColor(todo.STATUT) ?? BACKCOLOR};color:${W.col.STATUT.getTextColor(todo.STATUT) ?? TEXTCOLOR}`;
     
-    popupTitle.textContent = todo.DESCRIPTION || 'Nouvelle tâche';
+    popupTitle.textContent = todo.DESCRIPTION || T('New task');
 
     let count = 1;
     let form = '<div class="field-row">';
@@ -522,7 +522,7 @@ function togglePopupTodo(todo) {
         form += `<div class="info-creation">
                 ${T('Created')} ${(W.map.CREE_LE && todo.CREE_LE) ? T('on %on', {on:formatDate(todo.CREE_LE)}): ''} 
                 ${(W.map.CREE_PAR && todo.CREE_PAR) ? T('by %by', {by:(todo.CREE_PAR || '-')}): ''}
-                ${(W.map.DERNIERE_MISE_A_JOUR && todo.DERNIERE_MISE_A_JOUR) ? ('<br>' + T('Last update on %on', {on:(todo.DERNIERE_MISE_A_JOUR || '-')})): ''}
+                ${(W.map.DERNIERE_MISE_A_JOUR && todo.DERNIERE_MISE_A_JOUR) ? ('<br>' + T('Last update on %on', {on:(formatDate(todo.DERNIERE_MISE_A_JOUR) || '-')})): ''}
             </div>
         `;
     }
