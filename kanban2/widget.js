@@ -473,7 +473,7 @@ function togglePopupTodo(todo) {
     let form = '<div class="field-row">';
     form += `
         <div class="field">
-          <label class="field-label">${T('Deadline')}</label>
+          <label class="field-label">${W.map.DEADLINE}</label>
           <input type="date" class="field-input" 
                  value="${formatDateForInput(todo.DEADLINE)}"
                  onchange="mettreAJourChamp(${todo.id}, 'DEADLINE', this.value, event)">
@@ -481,35 +481,35 @@ function togglePopupTodo(todo) {
     `;
 
     if (W.map.REFERENCE_PROJET) {
-        form += insererChamp(todo.id, todo.REFERENCE_PROJET, W.valuesList.ref, T('Reference'), 'REFERENCE_PROJET');
+        form += insererChamp(todo.id, todo.REFERENCE_PROJET, W.valuesList.ref, W.map.REFERENCE_PROJET, 'REFERENCE_PROJET', W.col.REFERENCE_PROJET.getIsFormula()); 
         count += 1;
     }
     if (count % 2 === 0) form += `</div><div class="field-row">`;
     if (W.map.TYPE) {
-        form += insererChamp(todo.id, todo.TYPE, W.valuesList.types, T('Type'), 'TYPE');
+        form += insererChamp(todo.id, todo.TYPE, W.valuesList.types, W.map.TYPE, 'TYPE', W.col.TYPE.getIsFormula());
         count += 1; 
     }
     if (count % 2 === 0) form += `</div><div class="field-row">`;
     if (W.map.RESPONSABLE) {
-        form += insererChamp(todo.id, todo.RESPONSABLE, W.valuesList.incharge, T('In charge'), 'RESPONSABLE');
+        form += insererChamp(todo.id, todo.RESPONSABLE, W.valuesList.incharge, W.map.RESPONSABLE, 'RESPONSABLE', W.col.RESPONSABLE.getIsFormula());
         count += 1;   
     }
     if (count % 2 === 0) form += `</div><div class="field-row">`;
     if (W.map.TAGS) {
         W.map.TAGS.forEach((t, i) => {
-            form += insererChamp(todo.id, todo.TAGS[i], TAGSLIST[i], t, t); // TODO get column title
+            form += insererChamp(todo.id, todo.TAGS[i], TAGSLIST[i], t, t, W.col[t].getIsFormula()); // TODO get column title
             count += 1;
             if (count % 2 === 0) form += `</div><div class="field-row">`;
         });
     }
     if (W.map.COULEUR) {
-        form += insererChamp(todo.id, todo.COULEUR, W.valuesList.cardcolor, T('Card color'), 'COULEUR');
+        form += insererChamp(todo.id, todo.COULEUR, W.valuesList.cardcolor, W.map.COULEUR, 'COULEUR'), W.col.COULEUR.getIsFormula();
         count += 1;   
     }
 
     form += `</div>
         <div class="field">
-            <label class="field-label">${T('Description')}</label>
+            <label class="field-label">${W.map.DESCRIPTION}</label>
             <textarea class="field-textarea auto-expand" 
                     onchange="mettreAJourChamp(${todo.id}, 'DESCRIPTION', this.value, event)"
                     oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${todo.DESCRIPTION || ''}</textarea>
@@ -517,7 +517,7 @@ function togglePopupTodo(todo) {
     `;
     if (W.map.NOTES) {
         form += `<div class="field">
-            <label class="field-label">${T('Notes')}</label>
+            <label class="field-label">${W.map.NOTES}</label>
             <textarea class="field-textarea auto-expand" 
                       onchange="mettreAJourChamp(${todo.id}, 'NOTES', this.value, event)"
                       oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${todo.NOTES || ''}</textarea>
@@ -556,7 +556,7 @@ function togglePopupTodo(todo) {
 }
 
 /** Insert a field in the todo form as text or a dropdown */
-function insererChamp(id, value, list, title, col) {
+function insererChamp(id, value, list, title, col, disable) {
     let form='';
     if (list?.length > 0) {
         if( list.length < 10) {
@@ -564,7 +564,7 @@ function insererChamp(id, value, list, title, col) {
                 <div class="field">
                     <label class="field-label">${title}</label>
                     <select class="field-select" onchange="mettreAJourChamp(${id}, '${col}', this.value, event)">
-                    <option value=""></option>`;
+                    <option value="" ${disable?"disabled":""}></option>`;
             list.forEach(element => {
                 form += `<option value="${element}" ${value === element ? 'selected' : ''}>${element}</option>`;  
             });
@@ -575,7 +575,7 @@ function insererChamp(id, value, list, title, col) {
             form += `
                 <div class="field">
                     <label class="field-label">${title}</label>
-                    <input type="text" list="list-${col}" class="field-select" onchange="mettreAJourChamp(${id}, '${col}', this.value, event)" />
+                    <input type="text" list="list-${col}" class="field-select" onchange="mettreAJourChamp(${id}, '${col}', this.value, event)" ${disable?"disabled":""}/>
                     <datalist id="list-${col}">`;
             list.forEach(element => {
                 form += `<option value="${element}" ${value === element ? 'selected' : ''}>${element}</option>`;  
@@ -589,7 +589,7 @@ function insererChamp(id, value, list, title, col) {
             <div class="field">
                 <label class="field-label">${title}</label>
                 <input type="text" class="field-input" value="${value || ''}" 
-                    onchange="mettreAJourChamp(${id}, '${col}', this.value, event)">
+                    onchange="mettreAJourChamp(${id}, '${col}', this.value, event)" ${disable?"disabled":""}>
             </div>
         `;
     }
@@ -630,10 +630,10 @@ document.addEventListener('click', (e) => {
 async function creerNouvelleTache(colonneId) {
     try {
         let data = {DESCRIPTION: '', STATUT: colonneId};
-        if (W.map.TYPE) data.TYPE = '';
-        if (W.map.REFERENCE_PROJET) data.REFERENCE_PROJET = null;
-        if (W.map.DERNIERE_MISE_A_JOUR) data.DERNIERE_MISE_A_JOUR = new Date().toISOString();
-        if (W.map.CREE_LE) data.CREE_LE = new Date().toISOString();
+        if (W.map.TYPE && !W.col.TYPE.getIsFormula()) data.TYPE = '';
+        if (W.map.REFERENCE_PROJET && !W.col.REFERENCE_PROJET.getIsFormula()) data.REFERENCE_PROJET = null;
+        if (W.map.DERNIERE_MISE_A_JOUR && !W.col.DERNIERE_MISE_A_JOUR.getIsFormula()) data.DERNIERE_MISE_A_JOUR = new Date().toISOString();
+        if (W.map.CREE_LE && !W.col.CREE_LE.getIsFormula()) data.CREE_LE = new Date().toISOString();
 
         const res = await W.createRecords({fields: data});
         if (res.id && res.id > 0) {
