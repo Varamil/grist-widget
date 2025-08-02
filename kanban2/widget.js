@@ -93,6 +93,7 @@ window.addEventListener('load', async (event) => {
             WidgetSDK.newItem('rotation', true, 'Tilt',  'If checked, cards are randomly tilted.', 'Display'),
             WidgetSDK.newItem('compact', false, 'Compact',  'If checked, use a compact rendering.', 'Display'),
             WidgetSDK.newItem('readonly', false, 'Read only', 'If checked, kanban is ready only.', 'Display'),
+            WidgetSDK.newItem('hideedit', false, 'Hide editing form', 'If checked, hide the editing form when click on a card.', 'Display'),
         ], 
         '#config-view', // DOM element or ID where insert options interface
         '#main-view', // DOM element or ID where the widget is encapsuled, used to hide it when option are shown
@@ -109,6 +110,7 @@ window.addEventListener('load', async (event) => {
     /** Initialize widget subscription to Grist */
     W.ready({
         requiredAccess: 'full', // can be also 'readonly'
+        allowSelectBy: true,
         columns: [
             /** List of object that defines all columns linkable to the widget. Be carefull that
              * only column linked will be accessible, if you need to access all of them, let the
@@ -372,7 +374,10 @@ function creerCarteTodo(todo) {
         ${infoColonne?.isdone ? `<div class="tampon-termine" style="color: ${W.col.STATUT.getColor(todo.STATUT) ?? BACKCOLOR};">${todo.STATUT}</div>` : ''}      
     `;
   
-    carte.addEventListener('click', () => togglePopupTodo(todo));
+    carte.addEventListener('click', () => {
+        grist.setCursorPos({rowId: todo.id});
+        if(!W.opt.hideedit) togglePopupTodo(todo);
+    });
     return carte;
 }
 
@@ -637,8 +642,9 @@ async function creerNouvelleTache(colonneId) {
 
         const res = await W.createRecords({fields: data});
         if (res.id && res.id > 0) {
-            const rec = await W.fetchSelectedRecord(res.id); 
-            togglePopupTodo(rec);
+            const rec = await W.fetchSelectedRecord(res.id);
+            grist.setCursorPos({rowId: res.id});
+            if(!W.opt.hideedit) togglePopupTodo(rec);
         }
     } catch (erreur) {
             console.error(T('Error on creation:'), erreur);
