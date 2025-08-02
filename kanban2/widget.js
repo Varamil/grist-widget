@@ -131,7 +131,7 @@ window.addEventListener('load', async (event) => {
              */
             {name:'STATUT', title:'Status', description:'Defines the Kanban column', type:'Choice', strictType:true},
             {name:'DESCRIPTION', title:'Task', description:'Main card content', type:'Any'}, 
-            {name:'DEADLINE', title:'Deadline', description:'Can also be use as priority', type:'Date'},             
+            {name:'DEADLINE', title:'Deadline', description:'Can also be use as priority', type:'Date', optional:true},             
             {name:'REFERENCE_PROJET', title:'Reference', description:'Reference associated with the task', type:'Any', optional:true},
             {name:'TYPE', title:'Type', description:'Type associated with the task', type:'Any', optional:true},              
             {name:'RESPONSABLE', title:'In charge', description:'Who is in charge', type:'Any', optional:true}, 
@@ -221,32 +221,34 @@ async function afficherKanban(recs) {
                         const colonneArrivee = evt.to.dataset.statut;
                         // Déplacé dans la même colonne
                         if (colonneArrivee === evt.from.dataset.statut) {
-                            let deadline = evt.item.dataset.deadline || '9999-12-31';
+                            if (W.map.DEADLINE) { //if not mapped, no odering within a column
+                                let deadline = evt.item.dataset.deadline || '9999-12-31';
 
-                            if (evt.oldIndex !== evt.newIndex && (new Date(deadline)) >= DEADLINE_PRIORITE) {
-                                let start = DEADLINE_PRIORITE.getFullYear();              
-                                let data = [];
-                                document.querySelectorAll('.contenu-colonne').forEach(colonne => { 
-                                    if (colonne.getAttribute('data-statut') === colonneArrivee) {
-                                        colonne.querySelectorAll('.carte').forEach(async carte => { 
-                                            deadline = carte.getAttribute('data-deadline') || '9999-12-31';
-                                            if ((new Date(deadline)) >= DEADLINE_PRIORITE) {
-                                                deadline = `${start}-01-01`;
-                                                carte.setAttribute('data-deadline', deadline);
-                                                start += 1;
-                                            
-                                                data.push(W.formatRecord(carte.getAttribute('data-todo-id'), {DEADLINE: deadline}));
-                                            }
-                                        });
+                                if (evt.oldIndex !== evt.newIndex && (new Date(deadline)) >= DEADLINE_PRIORITE) {
+                                    let start = DEADLINE_PRIORITE.getFullYear();              
+                                    let data = [];
+                                    document.querySelectorAll('.contenu-colonne').forEach(colonne => { 
+                                        if (colonne.getAttribute('data-statut') === colonneArrivee) {
+                                            colonne.querySelectorAll('.carte').forEach(async carte => { 
+                                                deadline = carte.getAttribute('data-deadline') || '9999-12-31';
+                                                if ((new Date(deadline)) >= DEADLINE_PRIORITE) {
+                                                    deadline = `${start}-01-01`;
+                                                    carte.setAttribute('data-deadline', deadline);
+                                                    start += 1;
+                                                
+                                                    data.push(W.formatRecord(carte.getAttribute('data-todo-id'), {DEADLINE: deadline}));
+                                                }
+                                            });
+                                        }
+                                    }); 
+                                    
+                                    try {
+                                        await W.updateRecords(data);
+                                    } catch (erreur) {
+                                        console.error(T('Error during status update:'), erreur);
                                     }
-                                }); 
-                                
-                                try {
-                                    await W.updateRecords(data);
-                                } catch (erreur) {
-                                    console.error(T('Error during status update:'), erreur);
-                                }
-                            }                
+                                }   
+                            }                                         
                         } else {
                             try {
                                 await mettreAJourChamp(evt.item.dataset.todoId, 'STATUT', colonneArrivee);
@@ -406,31 +408,28 @@ function trierTodo(conteneur) {
     const colonne = conteneur.dataset.isdone;
     
     cartes.sort((a, b) => {
-        if (colonne) {
-            // Pour les colonnes Fait et Annulé, tri par date de dernière mise à jour
-            const dateA = a.getAttribute('data-last-update') || '1970-01-01';
-            const dateB = b.getAttribute('data-last-update') || '1970-01-01';
-            const delta = new Date(dateB) - new Date(dateA);
-            if (delta === 0) {
-                const idA = parseInt(a.getAttribute('data-todo-id')) || 0;
-                const idB = parseInt(b.getAttribute('data-todo-id')) || 0;
-                return idA - idB;
+        let delta = 0;
+        if (W.map.DEADLINE) {
+            if (colonne) {
+                // Pour les colonnes Fait et Annulé, tri par date de dernière mise à jour
+                const dateA = a.getAttribute('data-last-update') || '1970-01-01';
+                const dateB = b.getAttribute('data-last-update') || '1970-01-01';
+                delta = new Date(dateB) - new Date(dateA); // Plus récent en premier            
+            } else {
+                // Pour les autres colonnes, tri par deadline
+                const dateA = a.getAttribute('data-deadline') || '9999-12-31';
+                const dateB = b.getAttribute('data-deadline') || '9999-12-31';
+                delta = new Date(dateA) - new Date(dateB); // Plus urgent en premier
             }
-            else 
-                return delta; // Plus récent en premier
-        } else {
-            // Pour les autres colonnes, tri par deadline
-            const dateA = a.getAttribute('data-deadline') || '9999-12-31';
-            const dateB = b.getAttribute('data-deadline') || '9999-12-31';
-            const delta = new Date(dateA) - new Date(dateB);
-            if (delta === 0) {
-                const idA = parseInt(a.getAttribute('data-todo-id')) || 0;
-                const idB = parseInt(b.getAttribute('data-todo-id')) || 0;
-                return idA - idB;
-            }
-            else 
-                return delta; // Plus urgent en premier
+        }        
+
+        if (delta === 0) {
+            const idA = parseInt(a.getAttribute('data-todo-id')) || 0;
+            const idB = parseInt(b.getAttribute('data-todo-id')) || 0;
+            return idA - idB;
         }
+        else 
+            return delta; 
     });
     
     cartes.forEach(carte => conteneur.appendChild(carte));
@@ -476,14 +475,16 @@ function togglePopupTodo(todo) {
 
     let count = 1;
     let form = '<div class="field-row">';
-    form += `
-        <div class="field">
-          <label class="field-label">${W.map.DEADLINE}</label>
-          <input type="date" class="field-input" 
-                 value="${formatDateForInput(todo.DEADLINE)}"
-                 onchange="mettreAJourChamp(${todo.id}, 'DEADLINE', this.value, event)">
-        </div>
-    `;
+    if (W.map.DEADLINE) {
+        form += `
+            <div class="field">
+            <label class="field-label">${W.map.DEADLINE}</label>
+            <input type="date" class="field-input" 
+                    value="${formatDateForInput(todo.DEADLINE)}"
+                    onchange="mettreAJourChamp(${todo.id}, 'DEADLINE', this.value, event)">
+            </div>
+        `;
+    }    
 
     if (W.map.REFERENCE_PROJET) {
         form += insererChamp(todo.id, todo.REFERENCE_PROJET, W.valuesList.ref, W.map.REFERENCE_PROJET, 'REFERENCE_PROJET', W.col.REFERENCE_PROJET.getIsFormula()); 
