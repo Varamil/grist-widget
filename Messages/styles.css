@@ -1,9 +1,23 @@
 
+:root {
+  --background-color: #f4f7fa;
+  --background-element: white;
+  --text-color: black;
+}
+
+@media (prefers-color-scheme: dark) { 
+  :root {
+    --background-color: #262633;
+    --background-element: #32323F;
+    --text-color: white;
+  }
+}
+
 body {
     font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Liberation Sans,
     Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
     font-size: 14px;
-    background-color: #f4f7fa;
+    background-color: var(--background-color);
   }
   
   .chat-container {
@@ -16,7 +30,7 @@ body {
   }
   
   .card {
-    background-color: white;
+    background-color: var(--background-element);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     margin-bottom: 16px;    
@@ -24,7 +38,7 @@ body {
   
   .card-header {
     background-color: #16B378;
-    color: white;
+    color: var(--background-element);
     padding: 10px;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
@@ -79,7 +93,7 @@ body {
   .add-msg {
     align-self: flex-end; /* Aligne le bouton à droite */
     background-color: #16B378;
-    color: white;
+    color: var(--background-element);
     border: none;
     padding: 10px 20px;
     cursor: pointer;
@@ -89,6 +103,10 @@ body {
   
   .add-msg:hover{
     background-color:#009058; 
+  }
+
+  .card-message {
+    color: var(--text-color);
   }
 
   /* Quill */
@@ -125,4 +143,8 @@ body {
   .ql-bubble * {
     background-color: #F8F8F8;
     padding: 5px;
+  }
+
+  .ql-editor {
+    color: var(--text-color);
   }

@@ -157,7 +157,7 @@ function DisplayMessage(author, date, message) {
         <span class="author">${author}</span>
         <span class="date">${date.toLocaleString(culture)}</span>
       </div>
-      <div class="card-content">${message}</div>
+      <div class="card-content"><div class="card-message">${message}</div></div>
     `;
   
     document.getElementById('msg-container').append(card);
