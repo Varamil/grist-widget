@@ -2,7 +2,31 @@
 :root {
     --border-radius: 2px;            /* Coins des post-it */
     --background-color: #f5f6f8;   /* Fond général */
+    --background-kanban: linear-gradient(to bottom, #e9ecef, #f8f9fa); /* Fond du conteneur */
+    --background-colonne: rgba(255, 255, 255, 0.9);   /* Fond général */
+    --background-bt-hover: #fff;
+    --background-popup: #f8f9fa;
+    --background-row: white;
+    --background-field: white;
+    --background-carte:#FFFFD1;
     --default-black: #2d3748;      /* Couleur noire de référence */
+    --text-field-color: #4a5568;
+    --text-color: black;
+  }
+  
+  @media (prefers-color-scheme: dark) { 
+    :root {
+      --background-color: #262633;
+      --background-kanban: linear-gradient(to bottom, #262633, #33333f);
+      --background-colonne: rgba(51, 51, 63, 0.9); 
+      --background-bt-hover: #262633;
+      --background-popup: #262633;
+      --background-row: #33333f;
+      --background-field: #262633;
+      --background-carte:#B7B777;
+      --text-field-color: #e2e8f0;
+      --text-color: #e2e8f0;
+    }
   }
 
   /* ===== RESET ET BASE ===== */
@@ -26,7 +50,7 @@
     padding: 1rem;
     height: 100vh;
     overflow-x: auto;
-    background: linear-gradient(to bottom, #e9ecef, #f8f9fa);
+    background: var(--background-kanban);
   }
 
   /* Structure des colonnes avec scroll vertical */
@@ -34,7 +58,7 @@
     flex: 1;
     min-width: 300px;
     max-width: 400px;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--background-colonne);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     display: flex;
@@ -80,7 +104,7 @@
     position: sticky;
     top: 0;
     z-index: 10;
-    color: white;
+    /*color: white;*/
     border-radius: 8px 8px 0 0;
     font-size: 0.9rem;
     letter-spacing: 0.02em;
@@ -101,7 +125,7 @@
 
   /* ===== CARTES POST-IT ===== */
   .carte {
-    background: #FFFFD1;
+    background: var(--background-carte);
     border-radius: var(--border-radius);
     margin-bottom: 1rem;
     padding: 1.5rem;
@@ -234,7 +258,7 @@
     pointer-events: none;
     z-index: 2;
     text-transform: uppercase;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--background-colonne);
     white-space: nowrap;
     border: 2px solid currentColor;
   }
@@ -267,7 +291,7 @@
   .bouton-ajouter {
     margin: 0.75rem;
     padding: 0.75rem;
-    background: rgba(255,255,255,0.9);
+    background: var(--background-colonne);
     border: 2px dashed #ddd;
     border-radius: 4px;
     cursor: pointer;
@@ -280,7 +304,7 @@
   }
 
   .bouton-ajouter:hover {
-    background: #fff;
+    background: var(--background-bt-hover);
     border-color: #999;
   }
 
@@ -297,7 +321,6 @@
     width: 100%;
     max-width: 600px;
     height: 100vh;
-    background: white;
     box-shadow: -2px 0 15px rgba(0,0,0,0.1);
     transition: right 0.3s ease;
     z-index: 1000;
@@ -314,7 +337,6 @@
   /* En-tête du popup */
   .popup-header {
     padding: 1.5rem;
-    color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -346,7 +368,6 @@
   .popup-header {
     padding: 1rem 1.5rem;
     min-height: 5rem;    /* Hauteur minimale pour garantir l'espace */
-    color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -358,12 +379,12 @@
     flex: 1;
     padding: 1.5rem;
     overflow-y: auto;
-    background: #f8f9fa;
+    background: var(--background-popup);
   }
 
   /* Styles des champs du formulaire */
   .field {
-    background: white;
+    background: var(--background-row);
     padding: 1rem;
     margin-bottom: 1rem;
     border-radius: 8px;
@@ -384,7 +405,7 @@
   .field-label {
     display: flex;
     font-size: 0.85rem;
-    color: #4a5568;
+    color: var(--text-field-color);
     margin-bottom: 0.5rem;
     font-weight: 500;
   }
@@ -395,11 +416,12 @@
   .field-textarea {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--background-color); /*#e2e8f0;*/
     border-radius: 6px;
     font-size: 0.9rem;
     transition: all 0.2s;
-    background: white;
+    background: var(--background-field);
+    color: var(--text-color);
   }
 
   .field-input[type="checkbox"] {
@@ -408,7 +430,7 @@
 
   .field-label-checkbox {
     font-size: 0.85rem;
-    color: #4a5568;
+    color: var(--text-field-color);
     margin-bottom: 0.5rem;
     margin-left: 0.2rem;
     font-weight: 500;
@@ -426,7 +448,6 @@
   .bouton-fermer {
     background: none;
     border: none;
-    color: white;
     font-size: 1.5rem;
     cursor: pointer;
     opacity: 0.8;
@@ -462,7 +483,6 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    color: white;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
@@ -484,10 +504,10 @@
   .info-creation {
     margin-top: 2rem;
     padding: 1rem;
-    background: white;
+    background: var(--background-row);
     border-radius: 8px;
     font-size: 0.85rem;
-    color: #666;
+    color: var(--text-field-color);
     text-align: center;
   }
 

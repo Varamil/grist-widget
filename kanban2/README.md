@@ -23,7 +23,6 @@
 1. Prepare your table to be compatible with the widget:
     * A *Status* column that must be of the *Choice* type, with each element corresponding to a column. Customize the color and order of the choices to adjust the Kanban display.
     * A *Task* column containing the main text of the card.
-    * A *Dead line* column of type *Date*, used to organize cards in a column. Either by indicating a date, or by reorganizing them.
     * The other columns are optional.
 2. Add a new *Custom* view to your page, choosing as source the table on which the Kanban is to be based.
 3. Choose the *Customized URL* widget and paste the following URL into the field: https://varamil.github.io/grist-widget/kanban2/min/index.html then click on *Add widget*.
@@ -39,6 +38,7 @@
 ## Configuration 
 ### Table columns
 In addition to the mandatory columns, the following columns can be assigned:
+* *Dead line*: type of *Date*, used to organize cards in a column. Either by indicating a date, or by reorganizing them.
 * *Reference*: associates a reference with the task, which is then displayed specifically on the card, in the top-right corner.
 * *Type*: associates a type with the task. Appears on the card as a label at top-left corner.
 * *Responsible*: who is responsible for the task. Appears as a label at bottom right.
@@ -106,7 +106,6 @@ Varamil - [GitHub](https://github.com/Varamil) - who took care of Grist integrat
 1. Préparer votre tableau pour être compatible avec le widget :
     * Une colonne *Statut* qui doit être de type *Choix unique* et dont chaque élément correspondra à une colonne. Personnalisez la couleur et l'ordre des choix pour ajuster l'affichage du Kanban.
     * Une colonne *Tâche* qui contiendra le texte principal de la carte.
-    * Une colonne *Date limite* de type *Date*, elle sert à organiser les cartes dans une colonne. Soit en indiquant une date, soit en les réorganisant.
     * Les autres colonnes sont optionnelles
 2. Ajouter une nouvelle vue de type *Personnalisée* à votre page en choisissant comme source la table sur laquelle doit se baser le Kanban
 3. Choisir le widget *URL personnalisé* et coller dans le champ l'URL suivante :  https://varamil.github.io/grist-widget/kanban2/min/index.html puis cliquer sur *Ajouter un widget*
@@ -122,6 +121,7 @@ Varamil - [GitHub](https://github.com/Varamil) - who took care of Grist integrat
 ## Configuration 
 ### Les colonnes du tableau
 En plus des colonnes obligatoires les colonnes suivantes peuvent être affectées :
+* *Date limite* : de type *Date*, elle sert à organiser les cartes dans une colonne. Soit en indiquant une date, soit en les réorganisant.
 * *Référence* : associe une référence à la tâche, elle est ensuite affichée de manière spécifique sur la carte, en haut à droite.
 * *Type* : associe un type à la tâche. Apparait sur la carte sous forme d'une étiquette à haut à gauche.
 * *Responsable* : qui doit s'occuper de la tâche. Est représenté par une étiquette en bas à droite.

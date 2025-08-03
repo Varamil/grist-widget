@@ -470,6 +470,8 @@ function togglePopupTodo(todo) {
     const content = popup.querySelector('.popup-content');
     const popupheader = popup.querySelector('.popup-header');
     popupheader.style = `background-color: ${W.col.STATUT.getColor(todo.STATUT) ?? BACKCOLOR};color:${W.col.STATUT.getTextColor(todo.STATUT) ?? TEXTCOLOR}`;
+    const popupclose = popup.querySelector('.bouton-fermer');
+    popupclose.style =  `color:${W.col.STATUT.getTextColor(todo.STATUT) ?? TEXTCOLOR}`;
     
     popupTitle.textContent = todo.DESCRIPTION || T('New task');
 
