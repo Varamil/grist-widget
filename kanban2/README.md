@@ -61,6 +61,7 @@ In Grist's right panel, when you click on *Open configuration*, the widget displ
     * *Tilt*: if checked, cards are randomly rotated, giving a “post-it” look to the cards, but the cards then appear slightly blurred, so some may prefer to disable this option to have straight cards.
     * *Compact*: if checked, uses a compact display, spaces are reduced, the add button is placed in the column title and not at the top of the cards.
     * *Read only*: if checked, the kanban is read-only.
+    * *Hide editing form* : If checked, the form that appears when you click on a card will no longer be displayed. This is useful if you want to develop your own form in another related widget.
 * *Localization*: offers the user the option of making their own translation of the widget (for languages not offered by default). To create a new translation, first click on the *Extract* button, which will list all the texts to be translated. Then, by clicking on the chevron “>”, define the translation for each element. By saving the options, your translation will be taken into account. Feel free to share your translations by creating an *issue* on this Github. Click on the *Export* button to copy your translations to the clipboard, and then simply paste the content into your *issue*.
 
 ## Use
@@ -144,6 +145,7 @@ Dans le volet de droite de Grist, quand on clique sur *Ouvrir la configuration*,
     * *Cartes pivotées* : si coché, les cartes sont aléatoirement pivotées, rendant un aspet "post-it" aux cartes, mais les cartes apparaissent alors légèrement floutées, certains préfèreront désactiver cette option pour avoir des carte droite.
     * *Compact* : si coché, utilise un affichage compact, les espaces sont réduits, le bouton d'ajout est placé dans le titre de la colonne et non en haut des cartes.
     * *Lecture seule* : si coché, le Kanban est alors en lecture seule.
+    * *Cacher le formulaire d'édition* : si coché le formulaire qui s'affiche quand on clique sur une carte ne s'affiche plus. C'est utile si on veut développer son propre formulaire dans un autre widget lié.
 * *Localisation* : offre à l'utilisateur la possibilité de faire sa propre traduction du widget (pour les langues qui ne sont pas proposées par défaut). Pour créer une nouvelle traduction, il faut dans un premier temps cliquer sur le bouton *Extraire* qui va liste tous les textes à traduire. Puis en cliquant sur le chevron ">", définir la traduction de chaque élément. En enregistrant les options, votre traduction sera alors prise en compte. N'hésitez pas à partager vos traductions en créant une *issue* sur ce Github. Cliquez sur le bouton *Exporter* pour copier vos traduction dans le presse-papier, et vous n'aurez qu'à coller le contenu dans votre *issue*.
 
 ## Utilisation
