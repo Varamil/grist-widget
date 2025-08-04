@@ -94,7 +94,7 @@ window.addEventListener('load', async (event) => {
             WidgetSDK.newItem('compact', false, 'Compact',  'If checked, use a compact rendering.', 'Display'),
             WidgetSDK.newItem('readonly', false, 'Read only', 'If checked, kanban is ready only.', 'Display'),
             WidgetSDK.newItem('hideedit', false, 'Hide editing form', 'If checked, hide the editing form when click on a card.', 'Display'),
-            WidgetSDK.newItem('gristeditcard', false, 'Use Grist Edit Card', 'If checked, opens the grist record card on double click.', 'Display'),
+            WidgetSDK.newItem('gristeditcard', false, 'Grist Record Card', 'If checked, opens the grist record card on double click.', 'Display'),
         ], 
         '#config-view', // DOM element or ID where insert options interface
         '#main-view', // DOM element or ID where the widget is encapsuled, used to hide it when option are shown
@@ -385,6 +385,7 @@ function creerCarteTodo(todo) {
     carte.addEventListener('dblclick', () => {
         grist.setCursorPos({rowId: todo.id});
         if(W.opt.gristeditcard) grist.commandApi.run('viewAsCard');
+        else if(!W.opt.hideedit) togglePopupTodo(todo);
     });
     return carte;
 }
