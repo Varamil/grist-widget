@@ -38,6 +38,7 @@
 ## Configuration 
 ### Table columns
 In addition to the mandatory columns, the following columns can be assigned:
+* *Task Display* : let you control how the task description is displayed. For example, can be a formula column that format the raw text in *Task* column.
 * *Dead line*: type of *Date*, used to organize cards in a column. Either by indicating a date, or by reorganizing them.
 * *Reference*: associates a reference with the task, which is then displayed specifically on the card, in the top-right corner.
 * *Type*: associates a type with the task. Appears on the card as a label at top-left corner.
@@ -122,6 +123,7 @@ Varamil - [GitHub](https://github.com/Varamil) - who took care of Grist integrat
 ## Configuration 
 ### Les colonnes du tableau
 En plus des colonnes obligatoires les colonnes suivantes peuvent être affectées :
+* *Affichage de la tâche* : permet de contrôler comment la description de la tâche est affichée dans la carte. Par exemple, peut être une colonne formule qui va formater le texte brute contenu dans la colonne *Tâche*. 
 * *Date limite* : de type *Date*, elle sert à organiser les cartes dans une colonne. Soit en indiquant une date, soit en les réorganisant.
 * *Référence* : associe une référence à la tâche, elle est ensuite affichée de manière spécifique sur la carte, en haut à droite.
 * *Type* : associe un type à la tâche. Apparait sur la carte sous forme d'une étiquette à haut à gauche.
