@@ -131,7 +131,8 @@ window.addEventListener('load', async (event) => {
              * be automatically managed by the SDK.
              */
             {name:'STATUT', title:'Status', description:'Defines the Kanban column', type:'Choice', strictType:true},
-            {name:'DESCRIPTION', title:'Task', description:'Main card content', type:'Any'}, 
+            {name:'DESCRIPTION', title:'Task', description:'Task name', type:'Any'}, 
+            {name:'DESCRIPTION_DISPLAY', title:'Task Display', description:'Displayed card content (e.g. a formula column adding html)', type:'Any', optional:true}, 
             {name:'DEADLINE', title:'Deadline', description:'Can also be use as priority', type:'Date', optional:true},             
             {name:'REFERENCE_PROJET', title:'Reference', description:'Reference associated with the task', type:'Any', optional:true},
             {name:'TYPE', title:'Type', description:'Type associated with the task', type:'Any', optional:true},              
@@ -358,7 +359,7 @@ function creerCarteTodo(todo) {
     }
 
     const type = todo.TYPE || '';
-    const description = todo.DESCRIPTION || T('No description');
+    const description = todo.DESCRIPTION_DISPLAY || todo.DESCRIPTION || T('No description');
     const deadline = todo.DEADLINE ? formatDate(todo.DEADLINE) : '';
     const responsable = todo.RESPONSABLE || '';
     const projetRef = todo.REFERENCE_PROJET;
