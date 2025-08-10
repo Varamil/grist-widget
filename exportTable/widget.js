@@ -163,10 +163,7 @@ async function selectionTable(src) {
 
 async function selectionColumn(src) {
   columnID = src.value;
-
-  //column = columnID ? columns[columnID] : undefined; // TODO needed ?
   actionValues.column = columnID;
-
   main();
 }
 
@@ -308,3 +305,4 @@ window.importer = importer;
 window.switchColumns = switchColumns;
 window.switchProp = switchProp;
 window.selectionTable = selectionTable;
+window.selectionColumn = selectionColumn;
