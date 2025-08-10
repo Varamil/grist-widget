@@ -51,31 +51,31 @@ class u {
    * @returns Decoded value
    */
   async parse(t, e = null, s = null) {
-    const n = this.type.split(":");
-    if (n[0] === "RefList") {
+    const a = this.type.split(":");
+    if (a[0] === "RefList") {
       if (t && t.length > 0 && (t[0] === "L" && (t = t.splice(0, 1)), t.length > 0 && typeof t[0] == "number")) {
-        const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol);
-        return t.map((o) => a?.id?.indexOf(o)).map((o) => a[r.colId][o]);
+        const n = e ?? await grist.docApi.fetchTable(a[1]), l = s ?? await this.getMeta(this.visibleCol);
+        return t.map((o) => n?.id?.indexOf(o)).map((o) => n[l.colId][o]);
       }
-    } else if (n[0] === "Ref") {
+    } else if (a[0] === "Ref") {
       if (Array.isArray(t))
         if (t[2] > 0)
           if (this.visibleCol > 0) {
-            const a = e ?? await grist.docApi.fetchTable(t[1]), r = s ?? await this.getMeta(this.visibleCol), l = a?.id?.indexOf(t[2]);
-            return await this.parse(a[r.colId][l]);
+            const n = e ?? await grist.docApi.fetchTable(t[1]), l = s ?? await this.getMeta(this.visibleCol), r = n?.id?.indexOf(t[2]);
+            return await this.parse(n[l.colId][r]);
           } else return t[2];
         else return;
       else if (typeof t == "object")
         if (t.rowId > 0)
           if (this.visibleCol > 0) {
-            const a = e ?? await grist.docApi.fetchTable(t.tableId), r = s ?? await this.getMeta(this.visibleCol), l = a?.id?.indexOf(t.rowId);
-            return await this.parse(a[r.colId][l]);
+            const n = e ?? await grist.docApi.fetchTable(t.tableId), l = s ?? await this.getMeta(this.visibleCol), r = n?.id?.indexOf(t.rowId);
+            return await this.parse(n[l.colId][r]);
           } else return t.rowId;
         else return;
-    } else if (n[0] === "Date") {
+    } else if (a[0] === "Date") {
       if (Array.isArray(t))
         return t[1] > 0 ? new Date(t[1] * 1e3) : void 0;
-    } else if (n[0] === "DateTime" && Array.isArray(t))
+    } else if (a[0] === "DateTime" && Array.isArray(t))
       return t[1] > 0 ? new Date(t[1] * 1e3) : void 0;
     return t;
   }
@@ -84,20 +84,20 @@ class u {
    * @returns Reference id(s)
   */
   async parseId(t, e = null, s = null) {
-    const n = this.type.split(":");
-    if (n[0] === "RefList") {
+    const a = this.type.split(":");
+    if (a[0] === "RefList") {
       if (t && t.length > 0 && (t[0] === "L" && (t = t.splice(0, 1)), t.length > 0 && typeof t[0] != "number")) {
-        const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol);
-        return t.map((o) => a[r.colId]?.indexOf(o)).map((o) => a.id[o]);
+        const n = e ?? await grist.docApi.fetchTable(a[1]), l = s ?? await this.getMeta(this.visibleCol);
+        return t.map((o) => n[l.colId]?.indexOf(o)).map((o) => n.id[o]);
       }
-    } else if (n[0] === "Ref") {
+    } else if (a[0] === "Ref") {
       if (Array.isArray(t))
         return t[2];
       if (typeof t == "object")
         return t.rowId;
       {
-        const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol), l = a[r.colId].indexOf(t);
-        return a.id[l];
+        const n = e ?? await grist.docApi.fetchTable(a[1]), l = s ?? await this.getMeta(this.visibleCol), r = n[l.colId].indexOf(t);
+        return n.id[r];
       }
     }
     return t;
@@ -108,15 +108,15 @@ class u {
   */
   async encode(t, e = null, s = null) {
     if (t == null) return t;
-    const n = this.type.split(":");
-    if (n[0] === "RefList") {
+    const a = this.type.split(":");
+    if (a[0] === "RefList") {
       if (Array.isArray(t) && t.length > 0 && typeof t[0] != "number") {
-        const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol);
-        return t.map((o) => a[r.colId]?.indexOf(o)).map((o) => a.id[o]);
+        const n = e ?? await grist.docApi.fetchTable(a[1]), l = s ?? await this.getMeta(this.visibleCol);
+        return t.map((o) => n[l.colId]?.indexOf(o)).map((o) => n.id[o]);
       }
-    } else if (n[0] === "Ref" && typeof t[0] != "number") {
-      const a = e ?? await grist.docApi.fetchTable(n[1]), r = s ?? await this.getMeta(this.visibleCol), l = a[r.colId].indexOf(t);
-      return a.id[l];
+    } else if (a[0] === "Ref" && typeof t[0] != "number") {
+      const n = e ?? await grist.docApi.fetchTable(a[1]), l = s ?? await this.getMeta(this.visibleCol), r = n[l.colId].indexOf(t);
+      return n.id[r];
     }
     return t;
   }
@@ -130,11 +130,11 @@ class u {
 class f {
   /** Fetch columns meta data for all tables */
   static async fetchMetas() {
-    const t = await grist.docApi.fetchTable("_grist_Tables_column"), e = Object.keys(t), n = t.parentId.map((l, o) => o).map((l) => {
-      let o = Object.fromEntries(e.map((c) => [c, t[c][l]]));
+    const t = await grist.docApi.fetchTable("_grist_Tables_column"), e = Object.keys(t), a = t.parentId.map((r, o) => o).map((r) => {
+      let o = Object.fromEntries(e.map((c) => [c, t[c][r]]));
       return o.widgetOptions = f.safeParse(o.widgetOptions), o;
-    }), a = await grist.docApi.fetchTable("_grist_Tables"), r = Object.fromEntries(a.tableId.map((l, o) => [l, a.id[o]]));
-    return { col: n, tab: r };
+    }), n = await grist.docApi.fetchTable("_grist_Tables"), l = Object.fromEntries(n.tableId.map((r, o) => [r, n.id[o]]));
+    return { col: a, tab: l };
   }
   static getTableMeta(t, e) {
     return t.col.filter((s) => s.parentId === t.tab[e]);
@@ -180,7 +180,7 @@ class f {
   async IsColFormula(t) {
     return this._colPromise.then(
       (e) => {
-        const s = e.find((n) => n.colId === t);
+        const s = e.find((a) => a.colId === t);
         return s?.isFormula && (s?.formula?.length ?? 0) !== 0;
       }
     );
@@ -198,10 +198,13 @@ class f {
   /** Get current table columns meta data
    * @returns Object with each entries as column Id
    */
-  async getMeta() {
-    return this._col || (this._col = this._colPromise.then(
-      (t) => Object.fromEntries(t.map((e) => [e.colId, new u(e, this._metaPromise.then((s) => s))]))
-    )), this._col;
+  async getMeta(t = null) {
+    return t ? this._metaPromise.then((e) => {
+      const s = f.getTableMeta(e, t);
+      return Object.fromEntries(s.map((a) => [a.colId, new u(a, this._metaPromise.then((n) => n))]));
+    }) : (this._col || (this._col = this._colPromise.then(
+      (e) => Object.fromEntries(e.map((s) => [s.colId, new u(s, this._metaPromise.then((a) => a))]))
+    )), this._col);
   }
   /** Get given column meta data
    * @param {string} colId - Column Grist id
@@ -209,7 +212,7 @@ class f {
   async getColMeta(t) {
     return this._colPromise.then(
       (e) => {
-        const s = e.find((n) => n.colId === t);
+        const s = e.find((a) => a.colId === t);
         return s ? new u(s, this._metaPromise.value) : null;
       }
     );
@@ -234,7 +237,7 @@ class f {
 }
 class d {
   constructor() {
-    console.log("WidgetSDK: 1.1.0.58");
+    console.log("WidgetSDK: 1.2.0.59");
     const t = new URLSearchParams(window.location.search);
     this.cultureFull = t.has("culture") ? t.get("culture") : "en-US", this.culture = this.cultureFull.split("-")[0], this.currency = t.has("currency") ? t.get("currency") : "USD", this.timeZone = t.has("timeZone") ? t.get("timeZone") : "", this._gristloaded = !1, this._optloaded = !1, this._ismapped = !1, this.initDone = !1, this.urlSDK = "https://varamil.github.io/grist-widget/widgetSDK", grist.on("message", async (e) => {
       e.fromReady && (this._gristloaded = e.fromReady);
@@ -260,7 +263,7 @@ class d {
         if (this.meta) {
           for (; !this.meta.isLoaded(); )
             await d.sleep(50);
-          this.col = grist.mapColumnNames(await this.meta.getMeta());
+          this.col = this.mapColumnNames(await this.meta.getMeta());
         }
         if (this.opt)
           for (; !this._optloaded; )
@@ -306,11 +309,11 @@ class d {
         t = t.substring(1);
         let e = t.split(".");
         if (e.length === 1) {
-          let s = await grist.docApi.fetchTable(e[0]), n = Object.keys(s || {}).filter((a) => a !== "id" && a !== "manualSort");
-          return n.length > 0 ? [""].concat(s[n[0]].filter((a) => a.length > 0).sort()) : [];
+          let s = await grist.docApi.fetchTable(e[0]), a = Object.keys(s || {}).filter((n) => n !== "id" && n !== "manualSort");
+          return a.length > 0 ? [""].concat(s[a[0]].filter((n) => n.length > 0).sort()) : [];
         } else if (e.length > 1) {
           let s = await grist.docApi.fetchTable(e[0]);
-          return s = s[e[1]], s ? [""].concat(s.filter((n) => n.length > 0).sort()) : [];
+          return s = s[e[1]], s ? [""].concat(s.filter((a) => a.length > 0).sort()) : [];
         } else
           return [t];
       } else
@@ -338,8 +341,8 @@ class d {
   assignDefined(t, ...e) {
     if (t)
       for (const s of e)
-        for (const [n, a] of Object.entries(s))
-          a && (t[n] = a);
+        for (const [a, n] of Object.entries(s))
+          n && (t[a] = n);
     return t;
   }
   /** Check if an object has defined properties (i.e. null, undefined, ''... are ignored) */
@@ -360,33 +363,37 @@ class d {
   async loadTranslations(t = [], e = "en", s = null) {
     if (this.translatedFiles = t, this.translatedFiles.push(this.urlSDK + "/min/widgetSDK.umd.js"), !s || typeof s == "string") {
       if (s = s || "i18n/" + this.culture + ".json", e !== this.culture && this.urlExists(s)) {
-        let n = await fetch(s);
-        if (n.ok) {
-          const a = await n.text();
-          this.I18N = JSON.parse(a);
+        let a = await fetch(s);
+        if (a.ok) {
+          const n = await a.text();
+          this.I18N = JSON.parse(n);
         }
       }
     } else typeof s == "object" ? this.I18N = s : console.error("Loading translation error");
     if (e !== this.culture && this.urlExists(this.urlSDK + "/i18n/" + this.culture + ".json")) {
-      let n = await fetch(this.urlSDK + "/i18n/" + this.culture + ".json");
-      if (n.ok) {
-        const a = await n.text();
-        this.assignDefined(this.I18N, JSON.parse(a));
+      let a = await fetch(this.urlSDK + "/i18n/" + this.culture + ".json");
+      if (a.ok) {
+        const n = await a.text();
+        this.assignDefined(this.I18N, JSON.parse(n));
       }
     }
     return this.I18N || (this.I18N = {}), this.t.bind(this);
   }
   /** Provide translated text 
-   * @param {string} text - Original text
+   * @param {string|Array<string>} text - Original text
    * @param {object} [args=null] - Dynamic text to replace 
   */
   t(t, e = null) {
-    let s = t.replaceAll(`
+    if (Array.isArray(t))
+      return t.map((s) => this.t(s, e));
+    {
+      let s = t.replaceAll(`
 `, "\\n").replaceAll("  ", " ");
-    return s = this.I18N[s] || t, e && Object.entries(e).forEach(([n, a]) => {
-      s = s.replaceAll("%" + n, a);
-    }), s.replaceAll("\\n", `
+      return s = this.I18N[s] || t, e && Object.entries(e).forEach(([a, n]) => {
+        s = s.replaceAll("%" + a, n);
+      }), s.replaceAll("\\n", `
 `);
+    }
   }
   /** Load listed files and look for translation function 
    * @param {Array<string>} files - List of files to load and analyze
@@ -394,16 +401,16 @@ class d {
   */
   async extractTranslations(t, e = "t") {
     let s = {};
-    return await Promise.all(t.map(async (n) => {
-      let a = await fetch(n);
-      if (a.ok) {
-        a = await a.text();
-        let r;
-        ["'", '"', "`"].forEach((l) => {
-          r = this.grep(a, `(?<=[^a-zA-Z0-9_]${e}[(])${l}(.*?)(?<!\\\\)${l}(?=[),])`), r && (r = r.map((o) => [o.replace(/^['"`]|['"`]$/g, ""), ""]), s = { ...s, ...Object.fromEntries(r) });
+    return await Promise.all(t.map(async (a) => {
+      let n = await fetch(a);
+      if (n.ok) {
+        n = await n.text();
+        let l;
+        ["'", '"', "`"].forEach((r) => {
+          l = this.grep(n, `(?<=[^a-zA-Z0-9_]${e}[(])${r}(.*?)(?<!\\\\)${r}(?=[),])`), l && (l = l.map((o) => [o.replace(/^['"`]|['"`]$/g, ""), ""]), s = { ...s, ...Object.fromEntries(l) });
         });
       }
-    })), this._parameters && this._parameters.forEach((n) => s = { ...s, ...this.getOptionStrings(n) }), this.I18Ngrist && (s = { ...s, ...this.I18Ngrist }), s;
+    })), this._parameters && this._parameters.forEach((a) => s = { ...s, ...this.getOptionStrings(a) }), this.I18Ngrist && (s = { ...s, ...this.I18Ngrist }), s;
   }
   /** Get all options strings (for translation purpose)
    * @param {Object} opt - Option to get strings 
@@ -418,8 +425,8 @@ class d {
   // Columns Meta Data
   //==========================================================================================
   /** Initialize column meta data fetcher */
-  initMetaData() {
-    return this.meta = new f(), this.meta;
+  initMetaData(t = !1) {
+    return this.meta = new f(), t && (this._ismapped = !0), this.meta;
   }
   /** Save mappings and map records
    * @param {*} records - raw records provided by grist.onRecords
@@ -427,40 +434,40 @@ class d {
    * @returns mapped records
    */
   async mapData(t, e, s = !1) {
-    return this.dataMapped = s, new Promise(async (n) => {
-      if (e && (this.map = e), await this.mapOptions(), this.meta && s) {
-        let a = grist.mapColumnNames(t), r = {};
-        Array.isArray(a) ? await Promise.all(Object.entries(this.col).map(([l, o]) => new Promise(async (c) => {
+    return this.dataMapped = s, new Promise(async (a) => {
+      if (e && (this.map = e), await this.mapOptions(), this.meta && s && this.col) {
+        let n = this.mapColumnNames(t), l = {};
+        Array.isArray(n) ? await Promise.all(Object.entries(this.col).map(([r, o]) => new Promise(async (c) => {
           o && (Array.isArray(o) ? await Promise.all(o.map(async (h) => {
-            await this.#n(r, a, l, h);
-          })) : await this.#n(r, a, l, o)), c(!0);
-        }))) : await Promise.all(Object.entries(this.col).map(async ([l, o]) => {
+            await this.#r(l, n, r, h);
+          })) : await this.#r(l, n, r, o)), c(!0);
+        }))) : await Promise.all(Object.entries(this.col).map(async ([r, o]) => {
           o && (Array.isArray(o) ? await Promise.all(o.map(async (c) => {
-            await this.#r(r, a, l, c);
-          })) : await this.#r(r, a, l, o));
-        })), this._ismapped = !0, n(a);
+            await this.#l(l, n, r, c);
+          })) : await this.#l(l, n, r, o));
+        })), this._ismapped = !0, a(n);
       }
-      this._ismapped = !0, n(grist.mapColumnNames(t, e));
+      this._ismapped = !0, a(this.mapColumnNames(t, e));
     });
   }
-  async #n(t, e, s, n) {
-    const a = n.type.split(":");
-    if ((a[0] === "RefList" || a[0] === "Ref") && n.visibleCol > 0) {
-      t[a[1]] || (t[a[1]] = await grist.docApi.fetchTable(a[1]));
-      const r = await n.getMeta(n.visibleCol);
-      e = e.map(async (l) => (l[s] = await n.parse(l[s], t[a[1]], r), l[s + "_id"] = await n.parseId(l[s], t[a[1]], r), l));
+  async #r(t, e, s, a) {
+    const n = a.type.split(":");
+    if ((n[0] === "RefList" || n[0] === "Ref") && a.visibleCol > 0) {
+      t[n[1]] || (t[n[1]] = await grist.docApi.fetchTable(n[1]));
+      const l = await a.getMeta(a.visibleCol);
+      e = e.map(async (r) => (r[s] = await a.parse(r[s], t[n[1]], l), r[s + "_id"] = await a.parseId(r[s], t[n[1]], l), r));
     } else
-      e = e.map(async (r) => (r[s] = await n.parse(r[s]), r));
+      e = e.map(async (l) => (l[s] = await a.parse(l[s]), l));
     e = await Promise.all(e);
   }
-  async #r(t, e, s, n) {
-    const a = n.type.split(":");
-    if ((a[0] === "RefList" || a[0] === "Ref") && n.visibleCol > 0) {
-      t[a[1]] || (t[a[1]] = await grist.docApi.fetchTable(a[1]));
-      const r = await n.getMeta(n.visibleCol);
-      e[s + "_id"] = e[s].map(async (l) => await n.parseId(l, t[a[1]], r)), e[s] = e[s].map(async (l) => await n.parse(l, t[a[1]], r)), e[s + "_id"] = await Promise.all(e[s + "_id"]);
+  async #l(t, e, s, a) {
+    const n = a.type.split(":");
+    if ((n[0] === "RefList" || n[0] === "Ref") && a.visibleCol > 0) {
+      t[n[1]] || (t[n[1]] = await grist.docApi.fetchTable(n[1]));
+      const l = await a.getMeta(a.visibleCol);
+      e[s + "_id"] = e[s].map(async (r) => await a.parseId(r, t[n[1]], l)), e[s] = e[s].map(async (r) => await a.parse(r, t[n[1]], l)), e[s + "_id"] = await Promise.all(e[s + "_id"]);
     } else
-      e[s] = e[s].map(async (r) => await n.parse(r));
+      e[s] = e[s].map(async (l) => await a.parse(l));
     e[s] = await Promise.all(e[s]);
   }
   /** Encode data to prepare them before sending to Grist. Manage properly references 
@@ -469,34 +476,34 @@ class d {
   */
   async encodeData(t) {
     return new Promise(async (e) => {
-      if (this.meta) {
+      if (this.meta && this.col) {
         let s = {};
         if (Array.isArray(t))
-          await Promise.all(Object.entries(this.col).map(([n, a]) => new Promise(async (r) => {
-            a && (Array.isArray(a) || (a = [a]), await Promise.all(a.map(async (l) => {
-              const o = l.type.split(":");
-              if ((o[0] === "RefList" || o[0] === "Ref") && l.visibleCol > 0) {
+          await Promise.all(Object.entries(this.col).map(([a, n]) => new Promise(async (l) => {
+            n && (Array.isArray(n) || (n = [n]), await Promise.all(n.map(async (r) => {
+              const o = r.type.split(":");
+              if ((o[0] === "RefList" || o[0] === "Ref") && r.visibleCol > 0) {
                 s[o[1]] || (s[o[1]] = await grist.docApi.fetchTable(o[1]));
-                const c = await l.getMeta(l.visibleCol);
-                t = t.map(async (h) => (h.fields && (this.is(h.fields[n]) ? h.fields[n] = await l.encode(h.fields[n], s[o[1]], c) : this.is(h[n]) && (h[n] = await l.encode(h[n], s[o[1]], c))), h));
+                const c = await r.getMeta(r.visibleCol);
+                t = t.map(async (h) => (h.fields && (this.is(h.fields[a]) ? h.fields[a] = await r.encode(h.fields[a], s[o[1]], c) : this.is(h[a]) && (h[a] = await r.encode(h[a], s[o[1]], c))), h));
               } else
-                t = t.map(async (c) => (c.fields && (this.is(c.fields[n]) ? c.fields[n] = await l.encode(c.fields[n]) : this.is(c[n]) && (c[n] = await l.encode(c[n]))), c));
+                t = t.map(async (c) => (c.fields && (this.is(c.fields[a]) ? c.fields[a] = await r.encode(c.fields[a]) : this.is(c[a]) && (c[a] = await r.encode(c[a]))), c));
               t = await Promise.all(t);
-            }))), r(!0);
+            }))), l(!0);
           })));
         else {
-          let n = t.fields ?? t;
-          await Promise.all(Object.entries(this.col).map(async ([a, r]) => {
-            r && this.is(n[a]) && (Array.isArray(r) || (r = [r]), await Promise.all(r.map(async (l) => {
-              const o = l.type.split(":");
-              if ((o[0] === "RefList" || o[0] === "Ref") && l.visibleCol > 0) {
+          let a = t.fields ?? t;
+          await Promise.all(Object.entries(this.col).map(async ([n, l]) => {
+            l && this.is(a[n]) && (Array.isArray(l) || (l = [l]), await Promise.all(l.map(async (r) => {
+              const o = r.type.split(":");
+              if ((o[0] === "RefList" || o[0] === "Ref") && r.visibleCol > 0) {
                 s[o[1]] || (s[o[1]] = await grist.docApi.fetchTable(o[1]));
-                const c = await l.getMeta(l.visibleCol);
-                n[a] = await l.encode(n[a], s[o[1]], c);
+                const c = await r.getMeta(r.visibleCol);
+                a[n] = await r.encode(a[n], s[o[1]], c);
               } else
-                n[a] = await l.encode(n[a]);
+                a[n] = await r.encode(a[n]);
             })));
-          })), t.fields && (t.fields = n), e(t);
+          })), t.fields && (t.fields = a), e(t);
         }
       }
       e(t);
@@ -511,14 +518,14 @@ class d {
    * @param {(string|HTMLElement)} [mainViewID='#main-view'] 
    * @param {object} [events={}] 
   */
-  configureOptions(t, e = "#config-view", s = "#main-view", n = {}) {
+  configureOptions(t, e = "#config-view", s = "#main-view", a = {}) {
     if (typeof e == "string") {
-      let a = document.querySelector(e);
-      if (!a)
+      let n = document.querySelector(e);
+      if (!n)
         throw new ReferenceError(
           `CSS selector "${e}" could not be found in DOM`
         );
-      e = a;
+      e = n;
     }
     if (e instanceof HTMLElement)
       this._config = e;
@@ -527,21 +534,21 @@ class d {
         "Widget Config only supports usage of a string CSS selector or HTML DOM element element for the 'configID' parameter"
       );
     if (typeof s == "string") {
-      let a = document.querySelector(s);
-      if (!a)
+      let n = document.querySelector(s);
+      if (!n)
         throw new ReferenceError(
           `CSS selector "${s}" could not be found in DOM`
         );
-      s = a;
+      s = n;
     }
     if (s instanceof HTMLElement ? this._mainview = s : this._mainview = null, !t)
       throw new TypeError(
         "Parameters argument for Widget Config is not defined "
       );
-    Array.isArray(t) || (t = [t]), this._parameters = t, this.#h(), this.#l(), this._config.classList.contains("grist-config") || this._config.classList.add("grist-config"), this.events = n, grist.onOptions((function(a, r) {
-      this.loadOptions(a);
-    }).bind(this)), grist.on("message", async (a) => {
-      !this._optloaded && a.fromReady && this.loadOptions(await grist.widgetApi.getOptions());
+    Array.isArray(t) || (t = [t]), this._parameters = t, this.parseOptions(this._parameters), this.#o(), this._config.classList.contains("grist-config") || this._config.classList.add("grist-config"), this.events = a, grist.onOptions((function(n, l) {
+      this.loadOptions(n);
+    }).bind(this)), grist.on("message", async (n) => {
+      !this._optloaded && n.fromReady && this.loadOptions(await grist.widgetApi.getOptions());
     });
   }
   /** Provide a simple setting option 
@@ -551,8 +558,8 @@ class d {
    * @param {string} [subtitle=undefined] - Short description for the option
    * @param {string} [group=''] - Group name to attach the option
   */
-  static newItem(t, e, s, n = void 0, a = "", r = {}) {
-    return { id: t, default: e, title: s, subtitle: n, group: a, ...r };
+  static newItem(t, e, s, a = void 0, n = "", l = {}) {
+    return { id: t, default: e, title: s, subtitle: a, group: n, ...l };
   }
   /** Define handler for options changed trigger */
   onOptChange(t) {
@@ -562,15 +569,15 @@ class d {
   onOptLoad(t) {
     typeof t == "function" && (this.events.onLoad = t);
   }
-  #h() {
-    this._parameters.forEach((t) => {
-      this.is(t.template) ? Array.isArray(t.template) ? (t.type = "templateform", t.collapse = !0, t.inbloc = !0, t.default = {}, t.template.forEach((e) => {
-        this.#i(e), t.default[e.id] = e.default;
-      })) : (t.type = "template", t.collapse = !0, t.inbloc = !0, this.#i(t.template), t.default = t.template.default) : this.#i(t);
+  parseOptions(t) {
+    t.forEach((e) => {
+      this.is(e.template) ? Array.isArray(e.template) ? (e.type = "templateform", e.collapse = !0, e.inbloc = !0, e.default = {}, e.template.forEach((s) => {
+        this.#a(s), e.default[s.id] = s.default;
+      })) : (e.type = "template", e.collapse = !0, e.inbloc = !0, this.#a(e.template), e.default = e.template.default) : this.#a(e);
     });
   }
-  #i(t) {
-    this.is(t.type) || (t.columnId ? t.type = "dropdown" : typeof t.default == "boolean" ? t.type = "boolean" : typeof t.default == "number" ? t.type = this.is(t.values) ? "dropdown" : "number" : typeof t.default == "object" ? t.type = "object" : t.type = this.is(t.values) ? "dropdown" : "string"), t.inbloc = t.type === "longstring" || t.type === "object" || t.type === "template" || t.type === "templateform", t.collapse = this.is(t.description) && t.description.trim().length > 0 || t.inbloc;
+  #a(t) {
+    this.is(t.type) || (t.columnId ? t.type = "dropdown" : typeof t.default == "boolean" ? t.type = "boolean" : typeof t.default == "number" ? t.type = this.is(t.values) ? "dropdown" : "number" : typeof t.default == "object" ? t.label && t.event ? t.type = "button" : t.type = "object" : t.type = this.is(t.values) ? "dropdown" : "string"), t.inbloc = t.type === "longstring" || t.type === "object" || t.type === "template" || t.type === "templateform", t.collapse = this.is(t.description) && t.description.trim().length > 0 || t.inbloc;
   }
   /** Load options from Grist into the object
    * @param {object} options - Grist object provided by grist.onOptions or grist.widgetApi.getOptions()
@@ -604,7 +611,7 @@ class d {
     try {
       this._parameters.forEach((e) => {
         const s = this._config.querySelector("#" + e.id);
-        s && (this.opt[e.id] = this.#s(e, s, this.opt[e.id]));
+        s && (this.opt[e.id] = this.#i(e, s, this.opt[e.id]));
       }), await grist.widgetApi.setOption("options", this.opt);
       const t = this.getUserTranslations();
       this.isObjectEmpty(t) || (this.I18Nuser = t, this.assignDefined(this.I18N, t), await grist.widgetApi.setOption("localization", t)), this.showConfig(!1), this.triggerEvent("OptChange", [this.opt]);
@@ -612,35 +619,37 @@ class d {
       console.error("Error occurs on saving options:", t);
     }
   }
-  #l() {
+  async readOptionValues(t, e, s) {
+    return s || (s = {}), t.forEach((a) => {
+      const n = e.querySelector("#" + a.id);
+      n && (s[a.id] = this.#i(a, n, s[a.id]));
+    }), s;
+  }
+  #o() {
     this.opt = {}, this._parameters.forEach((t) => {
       this.opt[t.id] = t.type === "template" || t.type === "templateform" ? [] : t.default;
     });
   }
   /** Reset all options to default values */
   async resetOptions() {
-    this.#l(), await this.mapOptions(), await grist.widgetApi.setOption("options", this.opt), await grist.widgetApi.setOption("localization", {}), this.showConfig(!1), this.triggerEvent("OptChange", [this.opt]);
+    this.#o(), await this.mapOptions(), await grist.widgetApi.setOption("options", this.opt), await grist.widgetApi.setOption("localization", {}), this.showConfig(!1), this.triggerEvent("OptChange", [this.opt]);
   }
   /** Manage the display of the config form */
   async showConfig(t = !0) {
     if (t) {
       await this.isMapped(), this._mainview && (this._mainview.style = "display: none"), this._config.style = "";
       let e = `<div class="config-header"><button id="apply-button" class="config-button">${this.t("Apply")}</button><button id="close-button" class="config-button">${this.t("Close")}</button></div>`;
-      Object.entries(this.#d(this._parameters, "group")).forEach(([s, n]) => {
-        e += `<div class="config-section"><div class="config-section-title">${this.t(s)}</div>`, n.forEach((a) => {
-          e += this.#t(a, this.opt[a.id], -1, a.id);
-        }), e += "</div>";
-      }), this.I18N && (e += `<div class="config-section"><div class="config-section-title">${this.t("Localization")}</div>`, e += `<div class="config-row"><div class="config-row-header"><div class="config-title"><div class="collapse"></div>${this.t("Extract strings")}</div>`, e += `<div class="config-subtitle">${this.t("Click on the button to parse widget files and list all strings to translate.")}</div>`, e += `<div class="config-value"><button id="extract-loc" class="config-button dyn">${this.t("Extract")}</button></div></div> `, e += '<div class="bloc" style="max-height: 0px;"><div id="config-loc">', e += this.#c(), e += "</div></div></div></div>"), this._config.innerHTML = e + `<div class="config-header"><button id="reset-button" class="config-button">${this.t("Reset")}</button></div>`, this._config.querySelectorAll("div.config-switch")?.forEach((s) => {
-        s.addEventListener("click", (function(n) {
-          this.toggleswitch(n);
+      e += this.getOptionsHtml(this._parameters, this.opt, this.valuesList), this.I18N && (e += `<div class="config-section"><div class="config-section-title">${this.t("Localization")}</div>`, e += `<div class="config-row"><div class="config-row-header"><div class="config-title"><div class="collapse"></div>${this.t("Extract strings")}</div>`, e += `<div class="config-subtitle">${this.t("Click on the button to parse widget files and list all strings to translate.")}</div>`, e += `<div class="config-value"><button id="extract-loc" class="config-button dyn">${this.t("Extract")}</button></div></div> `, e += '<div class="bloc" style="max-height: 0px;"><div id="config-loc">', e += this.#h(), e += "</div></div></div></div>"), this._config.innerHTML = e + `<div class="config-header"><button id="reset-button" class="config-button">${this.t("Reset")}</button></div>`, this._config.querySelectorAll("div.config-switch")?.forEach((s) => {
+        s.addEventListener("click", (function(a) {
+          this.toggleswitch(a);
         }).bind(this));
       }), this._config.querySelectorAll("div.collapse")?.forEach((s) => {
-        s.parentElement.parentElement.addEventListener("click", (function(n) {
-          this.togglecollapse(n);
+        s.parentElement.parentElement.addEventListener("click", (function(a) {
+          this.togglecollapse(a);
         }).bind(this));
       }), this._config.querySelectorAll("#add-button")?.forEach((s) => {
-        s.addEventListener("click", (function(n) {
-          this.addItem(n);
+        s.addEventListener("click", (function(a) {
+          this.addItem(a);
         }).bind(this));
       }), this._config.querySelector("#apply-button")?.addEventListener("click", (function() {
         this.saveOptions();
@@ -653,88 +662,120 @@ class d {
       }).bind(this)), this._config.querySelector("#export-loc")?.addEventListener("click", (function() {
         this.exportLocStrings();
       }).bind(this)), setTimeout(() => {
-        document.querySelectorAll(".auto-expand").forEach((n) => {
-          n.style.height = "", n.style.height = n.scrollHeight + "px";
+        document.querySelectorAll(".auto-expand").forEach((a) => {
+          a.style.height = "", a.style.height = a.scrollHeight + "px";
         });
       }, 0);
     } else
       this._mainview && (this._mainview.style = ""), this._config.style = "display: none";
   }
+  getOptionsHtml(t, e, s = {}) {
+    let a = "";
+    return Object.entries(this.#d(t, "group")).forEach(([n, l]) => {
+      a += `<div class="config-section"><div class="config-section-title">${this.t(n)}</div>`, l.forEach((r) => {
+        a += this.#e(r, e[r.id], s, -1, r.id);
+      }), a += "</div>";
+    }), a;
+  }
+  setOptionsEvent(t) {
+    t.querySelectorAll("div.config-switch")?.forEach((e) => {
+      e.addEventListener("click", (function(s) {
+        this.toggleswitch(s);
+      }).bind(this));
+    }), t.querySelectorAll("div.collapse")?.forEach((e) => {
+      e.parentElement.parentElement.addEventListener("click", (function(s) {
+        this.togglecollapse(s);
+      }).bind(this));
+    }), t.querySelectorAll("#add-button")?.forEach((e) => {
+      e.addEventListener("click", (function(s) {
+        this.addItem(s);
+      }).bind(this));
+    }), setTimeout(() => {
+      document.querySelectorAll(".auto-expand").forEach((s) => {
+        s.style.height = "", s.style.height = s.scrollHeight + "px";
+      });
+    }, 0);
+  }
   #d = function(t, e) {
-    return t.reduce(function(s, n) {
-      return (s[n[e]] ??= []).push(n), s;
+    return t.reduce(function(s, a) {
+      return (s[a[e]] ??= []).push(a), s;
     }, {});
   };
-  #t(t, e, s = -1, n = "") {
-    let a = "";
+  #e(t, e, s, a = -1, n = "", l = !1) {
+    let r = "";
     if (!t.hidden) {
-      const r = s >= 0 ? this.valuesList[t.id] ? this.valuesList[t.id][s] : this.t(t.title) + " #" + (s + 1) : this.t(t.title);
-      a += '<div class="config-row"><div class="config-row-header"><div class="config-title', a += `${t.collapse ? '"><div class="collapse"></div>' : ' nocollapse">'}${r}</div>`, a += `<div class="config-subtitle">${this.t(t.subtitle)}</div>`, a += (t.inbloc ? "" : `<div class="config-value">${this.#o(t, e, s, n)}</div>`) + (s >= 0 ? '<div class="delete"></div>' : "") + "</div>", t.collapse && (a += '<div class="bloc" style="max-height: 0px;">' + (this.is(t.description) ? `<div class="details">${this.t(t.description).replaceAll(`
-`, "<br>").replaceAll("\\n", "<br>")}</div>` : ""), t.type === "template" ? (a += `<div id="${t.id}" class="config-dyn">`, e?.forEach((l, o) => {
-        a += this.#t(t.template, l, o, n + "_" + o);
-      }), a += "</div>", a += this.valuesList[t.id] ? "" : `<div class="config-header"><button id="add-button" data-id="${t.id}" class="config-button dyn">+</button></div>`) : t.type === "templateform" ? (a += `<div id="${t.id}" class="config-dyn">`, e?.forEach((l, o) => {
-        l && (a += `<div class="config-section"><div class="config-section-title">${this.valuesList[t.id][o]}</div>`, Object.entries(l).forEach(([c, h]) => {
-          a += this.#t(t.template.find((p) => p.id === c), h, -1, n + "_" + o + "_" + c);
-        }), a += "</div>");
-      }), a += "</div>", a += this.valuesList[t.id] ? "" : `<div class="config-header"><button id="add-button" data-id="${t.id}" class="config-button dyn">+</button></div>`) : t.inbloc && (a += this.#o(t, e, s, n)), a += `${t.type !== "templateform" ? '<div class="bloc-bottom">' : ""}</div></div>`), a += "</div>";
+      const o = a >= 0 ? s[t.id] ? s[t.id][a] : this.t(t.title) + " #" + (a + 1) : this.t(t.title);
+      r += '<div class="config-row"><div class="config-row-header"><div class="config-title', r += `${t.collapse ? '"><div class="collapse"></div>' : ' nocollapse">'}${o}</div>`, r += `<div class="config-subtitle">${this.t(t.subtitle)}</div>`, r += (t.inbloc ? "" : `<div class="config-value">${this.#c(t, e, s, a, n)}</div>`) + (a >= 0 && !l ? '<div class="delete"></div>' : "") + "</div>", t.collapse && (r += '<div class="bloc" style="max-height: 0px;">' + (this.is(t.description) ? `<div class="details">${this.t(t.description).replaceAll(`
+`, "<br>").replaceAll("\\n", "<br>")}</div>` : ""), t.type === "template" ? (r += `<div id="${t.id}" class="config-dyn">`, e?.forEach((c, h) => {
+        r += this.#e(t.template, c, s, h, n + "_" + h, s[t.id]);
+      }), r += "</div>", r += s[t.id] ? "" : `<div class="config-header"><button id="add-button" data-id="${t.id}" class="config-button dyn">+</button></div>`) : t.type === "templateform" ? (r += `<div id="${t.id}" class="config-dyn">`, e?.forEach((c, h) => {
+        c && (r += `<div class="config-section"><div class="config-section-title">${s[t.id][h]}</div>`, Object.entries(c).forEach(([p, m]) => {
+          r += this.#e(t.template.find((g) => g.id === p), m, s, -1, n + "_" + h + "_" + p, s[t.id]);
+        }), r += "</div>");
+      }), r += "</div>", r += s[t.id] ? "" : `<div class="config-header"><button id="add-button" data-id="${t.id}" class="config-button dyn">+</button></div>`) : t.inbloc && (r += this.#c(t, e, s, a, n)), r += `${t.type !== "templateform" ? '<div class="bloc-bottom">' : ""}</div></div>`), r += "</div>";
     }
-    return a;
+    return r;
   }
-  #o(t, e, s = -1, n = "") {
-    const a = this.#f(t, e), r = `id="${n}" ${s >= 0 ? `data-idx="${s}" ` : ""}`;
+  #c(t, e, s, a = -1, n = "") {
+    const l = this.#f(t, e), r = `id="${n}" ${a >= 0 ? `data-idx="${a}" ` : ""}`;
     switch (t.type) {
-      //TODO add : button, 
       case "boolean":
-        return `<div ${r}class="config-switch switch_transition ${a ? "switch_on" : ""}">
+        return `<div ${r}class="config-switch switch_transition ${l ? "switch_on" : ""}" ${this.#t(t.event)}>
 <div class="switch_slider"></div><div class="switch_circle"></div></div>`;
       case "number":
-        return `<input ${r}type="number" class="config-input" value="${a}">`;
+        return `<input ${r}type="number" class="config-input" value="${l}" ${this.#t(t.event)}>`;
       case "longstring":
-        return `<textarea ${r}class="config-textarea auto-expand" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${a}</textarea>`;
+        return `<textarea ${r}class="config-textarea auto-expand" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" ${this.#t(t.event)}>${l}</textarea>`;
       case "object":
-        return `<textarea ${r}class="config-textarea auto-expand" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${JSON.stringify(a, null, 2)}</textarea>`;
+        return `<textarea ${r}class="config-textarea auto-expand" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" ${this.#t(t.event)}>${JSON.stringify(l, null, 2)}</textarea>`;
       case "dropdown":
-        if (this.valuesList[t.id]) {
-          let l = `<select ${r}class="field-select">`;
-          return this.valuesList[t.id].forEach((o) => {
-            l += `<option value="${o}" ${o === a ? "selected" : ""}>${o}</option>`;
-          }), l + "</select>";
-        }
-      //else default                
+        let o = `<select ${r}class="field-select" ${this.#t(t.event)}>`;
+        return s[t.id] && s[t.id].forEach((c) => {
+          o += `<option value="${c}" ${c === l ? "selected" : ""}>${c}</option>`;
+        }), o + "</select>";
+      case "button":
+        return `<button id="action-button" class="config-button" ${this.#t(t.event)}>${this.t(t.label ?? "Execute")}</button>`;
       default:
-        return `<input ${r}class="config-input" value="${a}">`;
+        return `<input ${r}class="config-input" value="${l}" ${this.#t(t.event)}>`;
     }
   }
-  #s(t, e, s) {
+  #t(t) {
+    if (!t) return "";
+    let e = "";
+    return Object.entries(t).forEach(([s, a]) => {
+      e += `${s}="${a}"`;
+    }), e;
+  }
+  #i(t, e, s) {
     switch (t.type) {
       case "boolean":
-        return this.#e(t, e.classList?.contains("switch_on"));
+        return this.#s(t, e.classList?.contains("switch_on"));
       case "number":
-        return this.#e(t, parseFloat(e.value));
+        return this.#s(t, parseFloat(e.value));
       case "object":
-        return this.#e(t, JSON.parse(e.value));
+        return this.#s(t, JSON.parse(e.value));
       case "template":
-        var n = [];
-        return s.forEach((a, r) => {
-          let l = e.querySelector("#" + e.id + "_" + r);
-          l ? n.push(this.#s(t.template, l)) : n.push(void 0);
-        }), n;
+        var a = [];
+        return s.forEach((n, l) => {
+          let r = e.querySelector("#" + e.id + "_" + l);
+          r ? a.push(this.#i(t.template, r)) : a.push(void 0);
+        }), a;
       case "templateform":
-        return s.forEach((a, r) => {
-          Object.keys(a).forEach((l) => {
-            let o = e.querySelector("#" + e.id + "_" + r + "_" + l);
-            o ? a[l] = this.#s(t.template.find((c) => c.id === l), o) : a[l] = void 0;
+        return s.forEach((n, l) => {
+          Object.keys(n).forEach((r) => {
+            let o = e.querySelector("#" + e.id + "_" + l + "_" + r);
+            o ? n[r] = this.#i(t.template.find((c) => c.id === r), o) : n[r] = void 0;
           });
         }), s;
       default:
-        return this.#e(t, e.value);
+        return this.#s(t, e.value);
     }
   }
-  #c() {
+  #h() {
     let t = "", e = this.I18Nuser ? Object.entries(this.I18Nuser) : [];
-    return e = e.length > 0 ? e : Object.entries(this.I18N), e.length > 0 ? (e.sort(), e.forEach(([s, n]) => {
+    return e = e.length > 0 ? e : Object.entries(this.I18N), e.length > 0 ? (e.sort(), e.forEach(([s, a]) => {
       t += `<div class="config-row"><div class="config-row-header"><div class="config-vo">${s.replaceAll(`
-`, "\\n")}</div>`, t += `<div class="config-value large"><input class="config-input" value="${n.replaceAll(`
+`, "\\n")}</div>`, t += `<div class="config-value large"><input class="config-input" value="${a.replaceAll(`
 `, "\\n").replaceAll('"', "&quot;")}" data-key="${s.replaceAll(`
 `, "\\n").replaceAll('"', "&quot;")}"></div></div></div>`;
     }), t += `<div class="config-header"><button id="export-loc" class="config-button dyn">${this.t("Export")}</button></div>`) : t += `<div class="details">${this.t("No string to translate, please extract them before.")}</div>`, t;
@@ -742,7 +783,7 @@ class d {
   getValueListOption(t, e) {
     return this.opt[t][this.valuesList[t].indexOf(e)];
   }
-  #e(t, e) {
+  #s(t, e) {
     return this.is(t.parse) ? t.parse(e) : e;
   }
   #f(t, e) {
@@ -757,29 +798,29 @@ class d {
     e.classList.contains("open") ? (e.classList.remove("open"), s.style = "max-height: 0px;") : (e.classList.add("open"), s.style = "max-height: unset;");
   }
   addItem(t) {
-    const e = t.currentTarget, s = e.parentElement.parentElement.querySelector("div.config-dyn"), n = e.getAttribute("data-id"), a = this._parameters.find((r) => r.id === n);
-    if (a.type === "template") {
-      const r = document.createElement("div");
-      r.innerHTML = this.#t(a.template, a.default, this.opt[a.id].length, a.id + "_" + (this.opt[a.id].length + 1)), s.appendChild(r), s.querySelector("div.collapse:last-of-type")?.parentElement.parentElement.addEventListener("click", (function(l) {
-        this.togglecollapse(l);
-      }).bind(this)), this.opt[a.id].push(a.default);
-    } else if (a.type === "templateform") {
-      const r = document.createElement("div");
-      let l = `<div class="config-section"><div class="config-section-title">${this.t(a.title) + " #" + (this.opt[a.id].length + 1)}</div>`;
-      Object.entries(a.template).forEach(([o, c]) => {
-        l += this.#t(c, a.default[o], -1, n + "_" + i + "_" + o);
-      }), r.innerHTML = l + "</div>", s.appendChild(r), r.querySelectorAll("div.collapse")?.forEach((o) => {
+    const e = t.currentTarget, s = e.parentElement.parentElement.querySelector("div.config-dyn"), a = e.getAttribute("data-id"), n = this._parameters.find((l) => l.id === a);
+    if (n.type === "template") {
+      const l = document.createElement("div");
+      l.innerHTML = this.#e(n.template, n.default, this.opt[n.id].length, n.id + "_" + (this.opt[n.id].length + 1)), s.appendChild(l), s.querySelector("div.collapse:last-of-type")?.parentElement.parentElement.addEventListener("click", (function(r) {
+        this.togglecollapse(r);
+      }).bind(this)), this.opt[n.id].push(n.default);
+    } else if (n.type === "templateform") {
+      const l = document.createElement("div");
+      let r = `<div class="config-section"><div class="config-section-title">${this.t(n.title) + " #" + (this.opt[n.id].length + 1)}</div>`;
+      Object.entries(n.template).forEach(([o, c]) => {
+        r += this.#e(c, n.default[o], -1, a + "_" + i + "_" + o);
+      }), l.innerHTML = r + "</div>", s.appendChild(l), l.querySelectorAll("div.collapse")?.forEach((o) => {
         o.parentElement.parentElement.addEventListener("click", (function(c) {
           this.togglecollapse(c);
         }).bind(this));
-      }), this.opt[a.id].push(a.default);
+      }), this.opt[n.id].push(n.default);
     }
   }
   /** Find string in the scripts and generate a form for the user to let translate them */
   async extractLocStrings() {
     this.I18Nuser = this.assignDefined(await this.extractTranslations(this.translatedFiles), this.I18Nuser);
     const t = this._config.querySelector("#config-loc");
-    t && (t.innerHTML = this.#c(), this._config.querySelector("#export-loc")?.addEventListener("click", (function() {
+    t && (t.innerHTML = this.#h(), this._config.querySelector("#export-loc")?.addEventListener("click", (function() {
       this.exportLocStrings();
     }).bind(this)));
   }
@@ -804,7 +845,7 @@ Thanks a lot for your time !`));
   // Grist helper
   //==========================================================================================
   /** Encapsulate grist.ready to ensure correct initialization and translation
-   * @param {Object} config - Usual object provided to grist.read
+   * @param {Object} config - Usual object provided to grist.ready
    */
   ready(t) {
     t && (t.columns && (this.I18Ngrist = {}, t.columns.map((e) => (e.title && (this.I18Ngrist[e.title] = "", e.title = this.t(e.title)), e.description && (this.I18Ngrist[e.description] = "", e.description = this.t(e.description)), e))), t.onEditOptions && (this.onEditOptionsUser = t.onEditOptions), t.onEditOptions = this.onEditOptions.bind(this)), grist.ready(t);
@@ -820,7 +861,7 @@ Thanks a lot for your time !`));
     return { id: parseInt(t), fields: e };
   }
   /** Get Grist current table reference */
-  #a() {
+  #n() {
     return this.table || (this.table = grist.getTable()), !!this.table;
   }
   /** Update the current Grist table with given data 
@@ -829,7 +870,7 @@ Thanks a lot for your time !`));
    * @returns the answer of the update or null
   */
   async updateRecords(t, e) {
-    return e = e ?? this.dataMapped, this.#a() ? (e && (t = await this.encodeData(t)), t = Array.isArray(t) ? t.map((s) => this.mapColumnNamesBack(s)) : this.mapColumnNamesBack(t), this.applyModificationOnGrist(async () => this.table.update(t))) : null;
+    return e = e ?? this.dataMapped, this.#n() ? (e && (t = await this.encodeData(t)), t = Array.isArray(t) ? t.map((s) => this.mapColumnNamesBack(s)) : this.mapColumnNamesBack(t), this.applyModificationOnGrist(async () => this.table.update(t))) : null;
   }
   /** Create a new record in the current Grist table
    * @param {object|[object]} rec - Object with prop as column id and value as new value
@@ -837,14 +878,14 @@ Thanks a lot for your time !`));
    * @returns the answer of the create or null
    */
   async createRecords(t, e) {
-    return e = e ?? this.dataMapped, this.#a() ? (e && (t = await this.encodeData(t)), t = Array.isArray(t) ? t.map((s) => this.mapColumnNamesBack(s)) : this.mapColumnNamesBack(t), this.applyModificationOnGrist(async () => this.table.create(t))) : null;
+    return e = e ?? this.dataMapped, this.#n() ? (e && (t = await this.encodeData(t)), t = Array.isArray(t) ? t.map((s) => this.mapColumnNamesBack(s)) : this.mapColumnNamesBack(t), this.applyModificationOnGrist(async () => this.table.create(t))) : null;
   }
   /** Delete given record(s) in the current Grist table
    * @param {number|Array<number>} id - id(s) to remove from the table
    * @returns the answer of the delete
    */
   async destroyRecords(t) {
-    return this.#a() ? this.applyModificationOnGrist(async () => Array.isArray(t) ? await this.table.destroy(t.map((e) => parseInt(e))) : await this.table.destroy(t)) : null;
+    return this.#n() ? this.applyModificationOnGrist(async () => Array.isArray(t) ? await this.table.destroy(t.map((e) => parseInt(e))) : await this.table.destroy(t)) : null;
   }
   /** When applying modification on Grist table, ensure that data mapping
    * is correctly performed
@@ -859,14 +900,18 @@ Thanks a lot for your time !`));
   mapColumnNamesBack(t) {
     return t.fields = Object.fromEntries(Object.entries(t.fields).map((e) => [this.map[e[0]] ?? e[0], e[1]])), t;
   }
+  /** Maps columns from grist to widget name, but keeping all non mapped column (instead of grist.mapColumnNames) */
+  mapColumnNames(t, e = null) {
+    return e || (e = this.map), e ? Array.isArray(t) ? t.map((s) => this.mapColumnNames(s, e)) : (e = Object.fromEntries(Object.entries(e).map((s) => e[s[1]] ? [s[1], s[0]] : [s[0], s[1]])), Object.fromEntries(Object.entries(t).map((s) => [e[s[0]] ?? s[0], s[1]]))) : t;
+  }
   /** Encapsulate grist.OnRecords to ensure the correct timing between the options and mapping loading 
    * and the execution of the main function
    * @param {function} main - Function to call when loading is ended. 
    * @param {Object} args - Grist object option for grist.onRecords
    */
   onRecords(t, e) {
-    grist.onRecords(async (s, n) => {
-      this._ismapped = !1, await this.isInit(), t(await this.mapData(s, n, e.mapRef));
+    grist.onRecords(async (s, a) => {
+      this._ismapped = !1, await this.isInit(), t(await this.mapData(s, a, e.mapRef));
     }, e);
   }
   /** Encapsulate grist.OnRecord to ensure the correct timing between the options and mapping loading 
@@ -875,13 +920,21 @@ Thanks a lot for your time !`));
    * @param {Object} args - Grist object option for grist.onRecord
    */
   onRecord(t, e) {
-    grist.onRecord(async (s, n) => {
-      this._ismapped = !1, await this.isInit(), t(await this.mapData(s, n, e.mapRef));
+    grist.onRecord(async (s, a) => {
+      this._ismapped = !1, await this.isInit(), t(await this.mapData(s, a, e.mapRef));
     }, e);
+  }
+  /** Subscribe to table mapping change
+   * @param {function} main - Function to call when the mapping has been changed 
+   */
+  onMappingChange(t) {
+    grist.on("message", async (e) => {
+      e.mappingsChange && t();
+    });
   }
   async fetchSelectedRecord(t) {
     let e = await grist.fetchSelectedRecord(t);
-    const s = grist.mapColumnNames(e);
+    const s = this.mapColumnNames(e);
     return this.dataMapped && await this.isMapped(), s;
   }
 }

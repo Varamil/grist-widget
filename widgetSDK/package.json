@@ -2,7 +2,7 @@
     "name": "@varamil/widget-sdk",
     "description": "Widget SDK to simplfy Grist widget development",
     "homePage": "https://github.com/gristlabs/grist-widget",
-    "version": "1.0",
+    "version": "1.2.0.59",
     "grist": {
       "name": "Widget SDK",
       "url": "https://github.com/Varamil/grist-widget/tree/main/widgetSDK",

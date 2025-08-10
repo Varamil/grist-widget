@@ -20,7 +20,6 @@ export default class ColMetaFetcher {
 
         const tables = await grist.docApi.fetchTable('_grist_Tables');
         const tableRef = Object.fromEntries(tables.tableId.map((id, i) => [id, tables.id[i]]));        
-
         return {col:types, tab:tableRef};
     }
 
@@ -118,13 +117,20 @@ export default class ColMetaFetcher {
     /** Get current table columns meta data
      * @returns Object with each entries as column Id
      */
-    async getMeta() {
+    async getMeta(tableID=null) {
+      if(tableID) {
+        return this._metaPromise.then(res => {
+          const m = ColMetaFetcher.getTableMeta(res, tableID);
+          return Object.fromEntries(m.map(t => [t.colId, new ColMeta(t, this._metaPromise.then(v => v))]))
+        });
+      } else {
         if(!this._col) {
             this._col =  this._colPromise.then(
                 types => Object.fromEntries(types.map(t => [t.colId, new ColMeta(t, this._metaPromise.then(v => v))]))
             );
         }        
-        return this._col;
+      }        
+      return this._col;
     }
 
     /** Get given column meta data

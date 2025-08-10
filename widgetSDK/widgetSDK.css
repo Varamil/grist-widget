@@ -20,7 +20,7 @@
 
 .grist-config .config-section {
     padding: 24px 20px;
-    
+    box-sizing: border-box;
     width: 100%;
     margin: 16px auto;
     border: 1px solid var(--grist-theme-widget-border);
