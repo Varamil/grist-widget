@@ -1,0 +1,46 @@
+{
+    "name": "## widget ##",
+    "version": "0.0.1",
+    "description": "## Add short description of your widget ##",
+    "main": "widget.js",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build-dev": "vite build --watch",
+        "build": "vite build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+## Url to your git repository ##"
+    },
+    "files": [
+        "widget.js",
+        "widget.css",
+        "README.md"
+    ],
+    "exports": {
+        ".": {
+            "style": "../min/widget.css",
+            "require": "../min/widget.umd.js",
+            "import": "../min/widget.es.js"            
+        }
+    },
+    "keywords": [
+        "widget",
+        "Grist",
+        "## Put some other keywords related to your widget ##"
+    ],
+    "author": "## Author ##",
+    "license": "## License ##",
+    "bugs": {
+        "url": "## Url to your issue tracker (probably Github or Grist forum thread)##"
+    },
+    "homepage": "## Url to your widget home page (probably Github or Grist forum thread) ##",
+    "devDependencies": {
+        "vite": "^7.0.2",
+        "vite-plugin-static-copy": "^3.1.0"
+    },
+    "sideEffects": [
+        "*.css"
+    ]
+}
