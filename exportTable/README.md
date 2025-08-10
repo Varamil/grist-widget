@@ -86,7 +86,7 @@ Ceci étant dit, il n'y a pas d'inquiétude particulière à avoir, simplement, 
 * Les actions peuvent être opérées dans un même document ou dans des documents différents
 
 Exemples de cas d'utilisation :
-* Copier/coller des colonnes entre un document de test et un document de production une vois la structure validée.
+* Copier/coller des colonnes entre un document de test et un document de production une fois la structure validée.
 * Copier/coller les choix d'une colonne de type *Choix* (textes et couleurs).
 
 ## Installation
