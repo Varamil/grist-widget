@@ -23,7 +23,7 @@ Examples of use cases:
 * Copy/paste the choices from a *Choice* type column (texts and colors).
 
 ## Installation
-1. Add a new *Custom* page by selecting any table as the source (it will not be used, but Grist requires you to select a table).
+1. Add a new *Custom* page by selecting any table as the source (it will not be used, but Grist requires you to select a table). However, it is preferable to associate a table that is only accessible to administrators in order to hide the page from other users.
 2. Select the *Custom URL* widget and paste the following URL into the field:  https://varamil.github.io/grist-widget/exportTable/min/index.html then click on *Add widget*
 3. In the right panel when the widget is selected, grant access rights to the widget.
 4. The widget can now be used.
@@ -81,7 +81,7 @@ Ceci étant dit, il n'y a pas d'inquiétude particulière à avoir, simplement, 
 
 ## Fonctionnalités
 * Copier des colonnes depuis une table et les coller dans une autre
-* Copier les propriétés d'une colonne et le coller dans une autre colonne (par forcément dans la même table)
+* Copier les propriétés d'une colonne et les coller dans une autre colonne (pas forcément dans la même table)
 * Les colonnes et les propriétés à copier peuvent être sélectionnées finement
 * Les actions peuvent être opérées dans un même document ou dans des documents différents
 
@@ -90,7 +90,7 @@ Exemples de cas d'utilisation :
 * Copier/coller les choix d'une colonne de type *Choix* (textes et couleurs).
 
 ## Installation
-1. Ajouter une nouvelle page de *Personnalisée* en choisissant comme source n'importe quelle table (elle ne sera pas utilisée, mais Grist force le choix d'une table)
+1. Ajouter une nouvelle page de *Personnalisée* en choisissant comme source n'importe quelle table (elle ne sera pas utilisée, mais Grist force le choix d'une table). Néanmoins il est préférable d'associer une table accessible uniquement aux administrateurs pour pouvoir cacher la page aux autre utilisateurs.
 2. Choisir le widget *URL personnalisé* et coller dans le champ l'URL suivante :  https://varamil.github.io/grist-widget/exportTable/min/index.html puis cliquer sur *Ajouter un widget*
 3. Dans le volet de droite quand le widget est sélectionné, accorder les droits d'accès au widget.
 4. Le widget peut maintenant être utilisé.
