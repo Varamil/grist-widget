@@ -1173,7 +1173,7 @@ export default class WidgetSDK {
             //return grist.mapColumnNames(rec);
             return rec.map(v => this.mapColumnNames(v, map));
         } else {
-            map = Object.fromEntries(Object.entries(map).map((kv) => map[kv[1]] ? [kv[1], kv[0]] : [kv[0], kv[1]]));
+            map = Object.fromEntries(Object.entries(map).map((kv) => kv[1] ? [kv[1], kv[0]] : [kv[0], kv[1]]));
             return Object.fromEntries(Object.entries(rec).map((kv) => [map[kv[0]] ?? kv[0], kv[1]]));
         }        
     }
