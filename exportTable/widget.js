@@ -201,9 +201,9 @@ async function exporter() {
     if(actionValues.columns[i]) {
       const c = columns[id];
       data.push([c.colId, Object.fromEntries(properties.map(k => {
-        if(k === 'widgetOptions') return [k, JSON.stringify(c[k])]; // important to have a string and not an object, else the document will be corrupted.
+        if(k === 'widgetOptions' && c[k]) return [k, JSON.stringify(c[k])]; // important to have a string and not an object, else the document will be corrupted.
         return [k, c[k]];
-      }))]);
+      }).filter(d => d[1]?true:false))]);
     }
   });
 
@@ -219,7 +219,6 @@ async function importer() {
   const d = await navigator.clipboard.readText();
   if (d) {
     const data = JSON.parse(d);
-    console.log("Debug import", [d, data]);
     if (Array.isArray(data) && data.length > 0 && Array.isArray(data[0]) && data[0].length === 2) {
       // format looks OK
       const col = filterColumns(columns);
@@ -227,6 +226,9 @@ async function importer() {
       //generate user actions
       let actions = [];
       data.forEach(a => {
+        if(a[1]) {
+          a[1] = Object.fromEntries(Object.entries(a[1]).filter(d => d[1]?true:false)); //clean not defined properties
+        }
         if(a[1] && a[1].widgetOptions && typeof a[1].widgetOptions === 'object') { // double check
           a[1].widgetOptions = JSON.stringify(a[1].widgetOptions);
         }
@@ -242,7 +244,6 @@ async function importer() {
 
       // Import in Grist
       if (actions.length > 0) {
-        console.log("Debug action", actions);
         await grist.docApi.applyUserActions(actions);
         alert(T('Structure imported successfully (be careful, new columns are hidden by default).'))
 
@@ -260,8 +261,8 @@ async function copyProp() {
   let column = columns[columnID];
 
   // Get data
-  let data = properties.slice(1).filter((p, i) => actionValues.properties[i]).map(k => [k, column[k]])
-  console.log("Debug col", [column, data]);
+  let data = properties.slice(1).filter((p, i) => actionValues.properties[i]).map(k => [k, column[k]]).filter(d => d[1]?true:false);
+  
   if (data.length > 0) {
     data = Object.fromEntries(data);
     if (data.widgetOptions) data.widgetOptions = JSON.stringify(data.widgetOptions); // important to have a string and not an object, else the document will be corrupted.
@@ -276,11 +277,13 @@ async function pasteProp() {
     const data = JSON.parse(d);
     if(data && typeof data === 'object' && data.exportColumn) {
       if(Object.keys(data.exportColumn).length > 0) {
-        console.log("Debug paste", data.exportColumn);
+        // clean not defined properties
+        data.exportColumn = Object.fromEntries(Object.entries(data.exportColumn).filter(d => d[1]?true:false));
+
         if (data.exportColumn.widgetOptions && typeof data.exportColumn.widgetOptions === 'object' ) { // double check
           data.exportColumn.widgetOptions = JSON.stringify(data.exportColumn.widgetOptions);
         }
-        console.log("Debug paste", data.exportColumn);
+
         await grist.docApi.applyUserActions([['ModifyColumn', tableID, columnID, data.exportColumn]]);
         alert(T('Properties pasted successfully.'))
       } else alert(T('No data to paste.'));
