@@ -309,3 +309,6 @@ window.switchColumns = switchColumns;
 window.switchProp = switchProp;
 window.selectionTable = selectionTable;
 window.selectionColumn = selectionColumn;
+window.copyProp = copyProp;
+window.pasteProp = pasteProp;
+
