@@ -902,10 +902,10 @@ Thanks a lot for your time !`));
   }
   /** Maps columns from grist to widget name, but keeping all non mapped column (instead of grist.mapColumnNames) */
   mapColumnNames(t, e = null) {
-    return e || (e = this.map), e ? Array.isArray(t) ? t.map((s) => this.mapColumnNames(s, e)) : Object.fromEntries(Object.entries(e).map((s) => {
+    return e || (e = this.map), e ? (e.id = "id", Array.isArray(t) ? t.map((s) => this.mapColumnNames(s, e)) : Object.fromEntries(Object.entries(e).map((s) => {
       const a = s[1];
       return a && Array.isArray(a) ? [s[0], a.map((n) => t[n])] : [s[0], a && t[a]];
-    })) : t;
+    }))) : t;
   }
   /** Encapsulate grist.OnRecords to ensure the correct timing between the options and mapping loading 
    * and the execution of the main function

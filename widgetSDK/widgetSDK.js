@@ -1170,6 +1170,7 @@ export default class WidgetSDK {
     mapColumnNames(rec, map = null) {      
         if(!map) map = this.map;
         if(!map) return rec;
+        map.id = 'id';
         if(Array.isArray(rec)) {
             //return grist.mapColumnNames(rec);
             return rec.map(v => this.mapColumnNames(v, map));
