@@ -1,4 +1,4 @@
-*(français plus bas)*
+[*(français plus bas)*](#french)
 
 # Kanban
 *Kanban2* is a widget to display a Kanban board.
@@ -85,7 +85,7 @@ Varamil - [GitHub](https://github.com/Varamil) - who took care of Grist integrat
 
 
 
-# Français
+# <a name="french"></a>Français
 *Kanban2* est un widget pour afficher un tableau sous forme de Kanban. 
 
 *(il remplace la précédente version disponible également sur ce serveur)*

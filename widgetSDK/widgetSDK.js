@@ -29,7 +29,7 @@ import './widgetSDK.css';
 /**  */
 export default class WidgetSDK {
     constructor() {
-        console.log("WidgetSDK: 1.2.0.59");
+        console.log("WidgetSDK: 1.2.0.60");
         const urlParams = new URLSearchParams(window.location.search);
         this.cultureFull = urlParams.has('culture')?urlParams.get('culture'):'en-US';
         this.culture = this.cultureFull.split('-')[0];
@@ -341,6 +341,7 @@ export default class WidgetSDK {
             await this.mapOptions();            
             if (this.meta && mapdata && this.col) {                
                 let r = this.mapColumnNames(rec); //this.mapColumnNames(rec);
+
                 let fetch = {};
                 if (Array.isArray(r)) {
                     //format:rows => r = Array                    
@@ -1166,15 +1167,20 @@ export default class WidgetSDK {
     }
 
     /** Maps columns from grist to widget name, but keeping all non mapped column (instead of grist.mapColumnNames) */
-    mapColumnNames(rec, map = null) {
+    mapColumnNames(rec, map = null) {      
         if(!map) map = this.map;
         if(!map) return rec;
         if(Array.isArray(rec)) {
             //return grist.mapColumnNames(rec);
             return rec.map(v => this.mapColumnNames(v, map));
         } else {
-            map = Object.fromEntries(Object.entries(map).map((kv) => kv[1] ? [kv[1], kv[0]] : [kv[0], kv[1]]));
-            return Object.fromEntries(Object.entries(rec).map((kv) => [map[kv[0]] ?? kv[0], kv[1]]));
+            return Object.fromEntries(Object.entries(map).map((kv) => {
+                const v = kv[1];
+                if (v && Array.isArray(v)) {
+                    return [kv[0], v.map(sv => rec[sv])];
+                }
+                return [kv[0], v ? rec[v] : v];
+            }));
         }        
     }
 

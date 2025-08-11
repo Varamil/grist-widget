@@ -364,6 +364,7 @@ function creerCarteTodo(todo) {
     const responsable = todo.RESPONSABLE || '';
     const projetRef = todo.REFERENCE_PROJET;
     const tags = todo.TAGS || [];
+
     let taglist= '';
     tags.forEach(t => taglist += t?`<div class="more-tag">${t}</div>`:'');
     const infoColonne = W.getValueListOption('columns', todo.STATUT); //.find((colonne) => {return colonne.id === todo.STATUT});
@@ -513,7 +514,7 @@ function togglePopupTodo(todo) {
     if (count % 2 === 0) form += `</div><div class="field-row">`;
     if (W.map.TAGS) {
         W.map.TAGS.forEach((t, i) => {
-            form += insererChamp(todo.id, todo.TAGS[i], TAGSLIST[i], t, t, W.col[t].getIsFormula()); // TODO get column title
+            form += insererChamp(todo.id, todo.TAGS[i], TAGSLIST[i], t, t, W.col.TAGS[i].getIsFormula());
             count += 1;
             if (count % 2 === 0) form += `</div><div class="field-row">`;
         });

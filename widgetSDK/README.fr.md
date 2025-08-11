@@ -1,13 +1,13 @@
 ** En cours de rédaction, sujet à de fort changement **
 
-*WidgetSDK* n'est pas un widget pour Grist mais une bibliothèque qui permet de simplifier le développement de nouveaux widgets Grist. L'objectif est de minimiser les copier/coller de code entre les widgets et de simplifier l'accès à des fonctionnalités avancées.
+*WidgetSDK* n'est pas un widget pour Grist mais une bibliothèque qui permet de simplifier le développement de nouveaux widgets pour Grist. L'objectif est de minimiser les copier/coller de code entre les widgets et de simplifier l'accès à des fonctionnalités avancées.
 
 # Fonctionnalités
-* Gestion simplifiée de l'encodage des données (notamment des références) en lecture et en écriture
-* Accès simple au méta données des colonnes des tableaux (de quel type, quelle est la liste des choix, les options associées...)
-* Fournir une interface utilisateur pour la configuration du widget, configurable avec un simple objet
-* Gestion des timings de chargement pour s'assurer du bon ordonnancement des dépendances, i.e. qu'une donnée est bien disponible au moment où on en a besoin
-* Localisation par défaut des widgets avec une possibilité, directement dans le widget, de proposer sa propre traduction
+* Gestion simplifiée de l'encodage des données (notamment des références) en lecture et en écriture.
+* Accès simple au métadonnées des colonnes des tableaux (de quel type, quelle est la liste des choix, les options associées...).
+* Fournir une interface utilisateur pour la configuration du widget, configurable avec un simple objet.
+* Gestion des timings de chargement pour s'assurer du bon ordonnancement des dépendances, i.e. qu'une donnée est bien disponible au moment où on en a besoin.
+* Localisation par défaut des widgets avec une possibilité, directement dans le widget, de proposer sa propre traduction.
 
 # Avantages
 * Un code plus clair et facile à lire côté widget
@@ -50,7 +50,7 @@ Il est conseillé d'`await` la fonction, pour s'assurer que la localisation est 
 
 Ensuite, la fonction `loadTranslations` peut prendre 3 arguments:
 1. *stripts* (`Array<string>`) : tableau qui contient la liste des scripts à analyser pour extraire les textes à traduire. Le moment venu le widget viendra charger ces fichiers à la recherche de fonctions `T('texte à traduire')`.
-2. *langue* (`string`) : *optionnel*, langue par défaut des textes employés par le widget. Si cette langue est celle de l'utilisateur, alors les textes ne seront pas traduit, sinon la bibliothèque essaiera de charger le fichier de langue. La valeur doit être au format ISO à deux lettres.
+2. *langue* (`string`) : *optionnel*, langue par défaut des textes employés par le widget. Si cette langue est celle de l'utilisateur, alors les textes ne seront pas traduit, sinon la bibliothèque essaiera de charger le fichier de langue. La valeur doit être au format ISO à deux lettres. Par défaut, défini à `en`.
 3. *json* (`string|Object`) : *optionnel*, permet fournir directement soit le chemin vers le fichier de langue à utiliser, soit directement l'objet qui contient les traductions.
 
 ### Utiliser la localisation 
@@ -58,9 +58,9 @@ Ensuite dans le widget, pour chaque texte qui sera affiché à l'utilisateur, il
 
 Pour un texte simple « *par exemple* » il suffit d'utiliser simplement `T('par exemple')` dans votre code. À noter que les trois types de guillemets sont pris en charge (`'`, `"` et `` ` ``).
 
-À noter que pour `W.configureOptions()` et `W.ready()` il ne faut pas utiliser la fonction `T` dans les textes qui sont passés à ces fonctions. En effet, comme ces fonctions utilisent des objets bien définis, la bibliothèque sait quels sont les éléments à traduire. 
+Noter également que pour `W.configureOptions()` et `W.ready()` il ne faut pas utiliser la fonction `T` dans les textes qui sont passés à ces fonctions. En effet, comme ces fonctions utilisent des objets bien définis, la bibliothèque sait quels sont les éléments à traduire. 
 
-Si jamais le texte à traduire doit contenir des valeurs dynamiques, vous pouvez utiliser dans le texte des mots commençant par `%` indiquer leur valeur dans le second argument de la fonction `T`.
+Si jamais le texte à traduire doit contenir des valeurs dynamiques, vous pouvez utiliser dans le texte des mots commençant par `%` pour indiquer leur valeur dans le second argument de la fonction `T`.
 
 Ainsi, vous pouvez utiliser `T('Bonjour %nom !', {nom:MaVariableNom})`, où `%nom` va être emplacée par la valeur de `MaVariableNom`. 
 
@@ -73,23 +73,28 @@ Au niveau des fichiers et de leur contenu, ce sont de simple JSON où chaque cl�
 
 Il faut biensûr intégrer les `%` pour l'intégration des valeur dynamiques. 
 
-## Les méta données des colonnes
+## Les métadonnées des colonnes
 Il suffi d'appeler la fonction `W.initMetaData()` pour initier la collecte des information auprès de Grist.
 
 Ensuite, dans l'objet `W`, les propriétées suivantes sont disponibles:
-* *meta* : contient toutes les méta données brutes de colonnes de tous les tableaux du document Grist, sert principalement quand il y a des réfrences entre tableaux. 
-* *col* : contient toutes les méta données des colonnes du tableau auquel le widget est rattaché. C'est une sorte de filtre sur `meta`, et chaque colonne est accessible via son *id* (`W.col.MaColonne` pour accéder aux méta données de la colonne dont l'id Grist est *MaColonne*).
+* *meta* : contient toutes les métadonnées brutes de colonnes de tous les tableaux du document Grist, sert principalement quand il y a des réfrences entre tableaux. 
+* *col* : contient toutes les métadonnées des colonnes du tableau auquel le widget est rattaché. C'est une sorte de filtre sur `meta`, et chaque colonne est accessible via son *id* (`W.col.MaColonne` pour accéder aux métadonnées de la colonne dont l'id Grist est *MaColonne*).
+* *map* : contient la correspondance entre les noms définis dans `ready` et ceux de déinis dans la table. Correspond à l'objet `mappings` fourni par les fonctions `onRecord` et `onRecords`. Permet d'y accéder facilement. Se référer à la documentation Grist pour l'utilisation de cet objet.
 
-À noter que `meta` est disponible dès l'initialisation, alors que `col` n'est défini qu'une fois l'API Grist chargée.
+À noter que `meta` existe dès l'initialisation (même si les métadonnées ne sont pas encore disponibles), alors que `col` n'est défini qu'une fois l'API Grist chargée.
 
 ### `W.meta`
-La fonction la plus utile est `async getColMeta(colId)` qui permet d'obtenir un objet de type `ColMeta` qui permet d'accéder facilement aux méta données de la colonne dont l'id est *colId*. Se repporter au paragraphe suivant pour plus de détail sur l'object retourné.
+C'est un objet à utiliser plutôt si vous avez besoin d'informations relatives à d'autres tables que celle ratachée à votre widget. Sinon il vaut mieux utiliser `W.col` qui sera plus adapté (se repporter au paragraphe suivant pour plus de détails).
 
-L'autre fonction qui peut être utilise est `isLoaded()` qui retourne un booléen indiquant si les méta données ont fini d'être chargées. 
+La fonction la plus utile est `async getColMeta(colId)` qui permet d'obtenir un objet de type `ColMeta` qui permet d'accéder facilement aux métadonnées de la colonne dont l'id est *colId*. Se repporter au paragraphe suivant pour plus de détail sur l'object retourné.
+
+Un peu plus général, la fonction `async getMeta(tableID=null)` permet de soit récupérer toutes métadonnées de la table en cours (si `tableID` n'est pas fourni), ou de la table spécifiée. Retourne un object du même type que `W.col`, se repporter au paragraphe suivant pour plus de détail.
+
+L'autre fonction qui peut être utile est `isLoaded()` qui retourne un booléen indiquant si les métadonnées ont fini d'être chargées. 
 
 ### `W.col`
 
-C'est un objet dont chaque propriété est un objet de type `ColMeta` correspondant à chacune des colonnes du tableau associées au widget. Les propriétés sont nommées selon les id des colonnes. Ainsi `W.col.MaColonne` permet d'accéder aux méta données de la colonne dont l'id Grist est *MaColonne* (sans le $).
+C'est un objet dont chaque propriété est un objet de type `ColMeta` correspondant à chacune des colonnes du tableau associées au widget. Les propriétés sont nommées selon les id des colonnes. Ainsi `W.col.MaColonne` permet d'accéder aux métadonnées de la colonne dont l'id Grist est *MaColonne* (sans le $).
 
 Notez également que pour les colonnes de type *Référence* ou *Référence multiples*, la propriété `W.col.MaColonne_id` est également disponible et permet d'accéder au ids des références là où `W.col.MaColonne` contient les valeurs.
 
@@ -146,22 +151,24 @@ suffie à définir une option :
 
 ***Remarque*** : ne pas utiliser la fonction `T` pour *title*, *subtitle* et *group*, la bibliothèque sait que ce sont des textes à traduire, donc elle le gère automatiquement.  
 
-Mais pour des cas plus complexes, un élément du tableau peut être un objet avec les propriétées suivantes:
+Pour des cas plus complexes, un élément du tableau peut être un objet avec les propriétées suivantes:
 * *id* : obligatoire, l'identifiant de l'option, c'est ce qui servira à accéder à sa valeur. Doit être une chaîne alpha numérique unique parmis toutes les options.
 * *default* : recommandé, la valeur qui sera associée à l'option par défaut. Est utilisée pour définir le *type* si celui n'est pas explicitement fourni.
 * *title*: recommandé, un titre (court) qui sera affiché en face de l'option.
 * *subtitle* : recommandé, une description (brève) qui sera affichée en face de l'option.
 * *description* : optionnel, une description (longue) que l'utilisateur pourra afficher pour avoir plus de détails sur l'utilisation de l'option par le widget
 * *group* : recommandé, un titre pour le groupe auquel sera rattaché l'option. Doit être commun à plusieurs options.
+* *label* : optionnel, pour les options de type bouton, texte à afficher dans celui-ci.
 * *hidden* : si vrai, l'option ne sera pas affichée dans le formulaire utilisateur, mais sera accessible comme n'importe quelle option. Utile pour stocker des valeurs dans Grist.
-* *type*: optionnel pour les cas simples, recommandé pour les cas plus complexe. Défini comment l'option est présentée à l'utilisateur. Si possible le type est automatiquement déduit de *default*, mais il y a de nombreux cas où ce n'est pas possible. Les valeurs possibles sont : `boolean`, `number`, `string`, `longstring`, `dropdown`, `object`, `template`, `templateform`. Voir plus loin pour le détail de chaque type.
+* *type*: optionnel pour les cas simples, recommandé pour les cas plus complexe. Défini comment l'option est présentée à l'utilisateur. Si possible le type est automatiquement déduit de *default*, mais il y a de nombreux cas où ce n'est pas possible. Les valeurs possibles sont : `boolean`, `number`, `string`, `longstring`, `dropdown`, `button`, `object`, `template`, `templateform`. Voir plus loin pour le détail de chaque type.
 * *values* : optionnel, pour les types `dropdown`, défini la liste à afficher. Peut être un tableau ou une référence vers une colonne d'un tableau Grist (au format `$TableId.ColonneId`).
 * *columnId*: optionnel, id de colonne tel qu'il apparait dans `grist.ready`. Permet de lier l'option à la valeur d'une colonne défini dynamiquement par l'utilisateur (contrairement à *values* qui est plus statique). Si le *type* n'est pas défini, il est alors automatiquement défini à `dropdown`.
 * *format* : optionnel, fonction à utiliser pour convertir la valeur de l'option en un format plus facilement exploitable par la bibliothèque (par exemple un objet complexe).
 * *parse* : optionnel, fonction inverse de *format*, pour reconvertir la valeur retournée par le formulaire utilisateur en une valeur du type initial.
+* *event*: optionnel, permet d'associer un évènement à l'option. Doit contenir un objet dont chaque propriété correspond à un évènement, la clé étant au format HTML (ex: `onClick` pour un clic), et la valeur le *JavaScript* à exécuter suite à l'évènement.  
 * *template* : optionnel, objet ou tableau d'objets du même type que les options standards. Défini un modèle pour une liste dynamique d'options. Si *values* ou *columnId* sont défini, permet alors d'associer une ou plusieurs options à chacune des valeurs. Sinon, permet à l'utilisateur d'ajouter dynamiquement autant d'élément qu'il le souhaite, avec pour chacun l'ensemble des options définies dans le modèle associées.
 
-***Remarque*** : ne pas utiliser la fonction `T` pour *title*, *subtitle*, *description* et *group*, la bibliothèque sait que ce sont des textes à traduire, donc elle le gère automatiquement.  
+***Remarque*** : ne pas utiliser la fonction `T` pour *title*, *subtitle*, *description*, *group* et *label*, la bibliothèque sait que ce sont des textes à traduire, donc elle le gère automatiquement.  
 
 ### Les types d'options
 Les configuration peuvent être du type sivant:
@@ -170,9 +177,21 @@ Les configuration peuvent être du type sivant:
 * `string` : affiche l'option comme un champ texte sur la même ligne que le titre,  
 * `longstring` : comme `string`, mais un *textaera* est utilsé et l'option doit être dépliée pour accéder au champ,  
 * `dropdown` : si le nombre d'éléments de la liste est inférieur à 10, affiche l'option comme un menu déroulant, sinon, affiche l'option comme un champ texte avec de l'autocomplétion,  
+* `button` : permet d'afficher un bouton pour que l'utilisateur exécute une action. 
 * `object` : affiche l'option comme `longstring` mais en convertissant au préalable l'objet en JSON,  
 * `template` : défini un template pour des options dynamiques,  
 * `templateform` : défini un template de plusieurs options différente.
+
+### Les types par défaut
+Si *type* n'est pas défini, la bibliothèque essaye de déterminer le type le plus approprié en fonction des autres données :
+* `dropdown` : selon
+    * si *columnId* est défini, 
+    * si *values* est défini
+* `boolean` : si la valeur par défaut est de type *boolean*,
+* `number`  : si la valeur par défaut est de type *number*,
+* `button` : si un *label* et un *event* sont déinis,
+* `object` : si *default* est de type *object*,
+* `string` : dans les autres cas.
 
 ### Accéder à une option
 Une fois les options configurées, elles sont accessibles dans le code via `W.opt.OptionID` où *OptionID* est l'id tel qu'il a été défini durant la configuration. 
@@ -197,3 +216,4 @@ Voici la liste des fonctions directement accessibles dans `W`:
 * `async createRecords(rec, encode)` : comme `updateRecords` mais pour l'ajout de nouvelle données.
 * `async destroyRecords(id)` : simplifie la suppression de lines dans le tableau. `id` est soit un id soit un tableau d'id des lignes à supprimer.
 * `async fetchSelectedRecord(id)` : permet de récupérer les données assiciées à une ligne à partir de son `id`. Gère automatiquement le décodage des données.
+* `onMappingChange` : permet d'exécuter la fonction spécifiée quand les métadonnées des colonnes de la table changes (pour ainsi refléter ces changement dans votre widget sans attendre que l'utilisateur rafraîchisse la page).

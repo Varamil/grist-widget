@@ -2,7 +2,7 @@
     "name": "@celinedelval/widget-kanban",
     "description": "Kanban",
     "homePage": "https://github.com/gristlabs/grist-widget",
-    "version": "5.1",
+    "version": "5.2",
     "grist": {
       "name": "Kanban",
       "url": "https://varamil.github.io/grist-widget/kanban2/min/index.html",
