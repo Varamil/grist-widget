@@ -1,4 +1,5 @@
 {
+    "(optional) Paste metadata here.": "(optionnel) Coller les métadonnées ici.",
     "Column":"Colonne",
     "Column properties":"Propriétés de la colonne",
     "Columns":"Colonnes",
@@ -6,6 +7,7 @@
     "Copy metadata to the clipboard.":"Copier les métadonnées dans le presse-papier.",
     "Copy properties to the clipboard.":"Copier les propriétés dans le presse-papier.",
     "Data has been copied into the clipboard.": "Les données ont été copiées dans le presse-papier.",
+    "Data to paste": "Données à coller",
     "Description":"Description",
     "Formula":"Formule",
     "If checked, copy the column metadata.":"Si coché, les métadonnées de cette colonne seront copiées.",
@@ -16,6 +18,8 @@
     "No data present in the clipboard.": "Aucune donnée n'est présente dans le presse-papier.",
     "No data to copy.": "Aucune donnée à copier.",
     "No data to paste.": "Aucune donnée à coller.",
+    "On some browser (like Chrome), the access from the clipboard is denied, so you need to paste manually its content in the text area below (using ctrl+V) and then click on the \"Paste\" button.": 
+      "Sur certain navigateurs (comme Chrome), l'accès au presse-papier est interdit, donc vous devez coller manuellement son contenu dans la zone de texte ci-dessous (avec ctrl+V), puis cliquer sur le boutont \"Coller\".",
     "Options":"Options",
     "Paste":"Coller",
     "Paste metadata from the clipboard.":"Coller les métadonnées depuis le presse-papier.",
@@ -38,5 +42,7 @@
     "The data in the clipboard is not in the correct format.": "Les données dans le presse-papier ne sont pas au format attendu.",
     "The widget is therefore provided as it is, and the author cannot be held responsible for any problems that the widget may cause.":"Le widget est donc fourni tel quel, et l'auteur ne pourra être tenu responsable des problèmes que le widget pourrait engendrer.",
     "This widget affects the structure of tables, so even though it has been tested in various situations, it is possible that the document may become corrupted after applying the changes.":"Ce widget touche à la structure des tables, donc même s'il a été testé dans différentes situations, il est possible que le document soit corrompu après application des modifications.",
-    "Type":"Type"
+    "Type":"Type",
+    "Your browser denies access to clipboard, so you need to paste manually first its content into the previous section \"Data to paste\".": 
+    "Votre navigteur interdit l'accès au presse-papier, vous devez coller manuellement en premier son contenu dans la section précédente \"Données à coller\"."
   }

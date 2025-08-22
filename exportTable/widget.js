@@ -20,9 +20,11 @@ let templateActionTable = [
       template:WidgetSDK.newItem('column_export', true, 'Copy', 'If checked, copy the column metadata.'),
     }
   ),
-  WidgetSDK.newItem('export', null, 'Copy',  'Copy metadata to the clipboard.', 'Table structure', {event:{onClick:"exporter()"}, label:"Copy"}),
-  WidgetSDK.newItem('import', null, 'Paste',  'Paste metadata from the clipboard.', 'Table structure', {event:{onClick:"importer()"}, label:"Paste"}),
-  WidgetSDK.newItem('column', null, 'Target column',  'Select which column to manage.', 'Column', {type:'dropdown',event:{onchange:"selectionColumn(this)"}}),
+  WidgetSDK.newItem('export', null, 'Copy', 'Copy metadata to the clipboard.', 'Table structure', {event:{onClick:"exporter()"}, label:"Copy"}),
+  WidgetSDK.newItem('import_clipboard', '', 'Data to paste', '(optional) Paste metadata here.', 'Table structure', {type:'longstring', 
+    description:'On some browser (like Chrome), the access from the clipboard is denied, so you need to paste manually its content in the text area below (using ctrl+V) and then click on the "Paste" button.'}),
+  WidgetSDK.newItem('import', null, 'Paste', 'Paste metadata from the clipboard.', 'Table structure', {event:{onClick:"importer()"}, label:"Paste"}),  
+  WidgetSDK.newItem('column', null, 'Target column', 'Select which column to manage.', 'Column', {type:'dropdown',event:{onchange:"selectionColumn(this)"}}),
 ];
 let templateActionColumn = [
   WidgetSDK.newItem('propaon', true, 'Selection',  'Select all properties or nothing.', 'Column properties', {event:{onClick:"switchProp()"}}),
@@ -32,6 +34,8 @@ let templateActionColumn = [
     }
   ),
   WidgetSDK.newItem('copy', null, 'Copy',  'Copy properties to the clipboard.', 'Column properties', {event:{onClick:"copyProp()"}, label:"Copy"}),
+  WidgetSDK.newItem('paste_clipboard', '', 'Data to paste', '(optional) Paste metadata here.', 'Column properties', {type:'longstring', 
+    description:'On some browser (like Chrome), the access from the clipboard is denied, so you need to paste manually its content in the text area below (using ctrl+V) and then click on the "Paste" button.'}),
   WidgetSDK.newItem('paste', null, 'Paste',  'Paste properties from the clipboard.', 'Column properties', {event:{onClick:"pasteProp()"}, label:"Paste"}),
 ];
 let actionValues = {}; // Form values
@@ -41,6 +45,8 @@ let columnID; // selected column ID
 // Supported columns properties
 const properties = ['colId', 'type', 'widgetOptions', 'isFormula', 'formula', 'label', 'description', 'recalcWhen'];
 const propertiesName = ['Type', 'Options', 'Is formula', 'Formula', 'Label', 'Description', 'Recalc trigger']; // without the colId 
+
+
 
 
 // ========== INITILIZATION ==========
@@ -121,6 +127,7 @@ async function main() {
       if (!actionValues.columns) {
         actionValues.colaon = true;
         actionValues.columns = c.map(k => true);
+        actionValues.import_clipboard = actionValues.import_clipboard ?? '';
       }
 
       // Generate form
@@ -216,42 +223,57 @@ async function exporter() {
 
 async function importer() {
   // Get clipboard content
-  const d = await navigator.clipboard.readText();
+  let d;
+  try {
+    d = await navigator.clipboard.readText();
+  } catch (e) {
+    d = document.getElementById('paste_clipboard').value;
+    
+    if (!d) {
+      alert(T('Your browser denies access to clipboard, so you need to paste manually first its content into the previous section "Data to paste".'));
+      return;
+    }    
+  }  
+    
   if (d) {
-    const data = JSON.parse(d);
-    if (Array.isArray(data) && data.length > 0 && Array.isArray(data[0]) && data[0].length === 2) {
-      // format looks OK
-      const col = filterColumns(columns);
-
-      //generate user actions
-      let actions = [];
-      data.forEach(a => {
-        if(a[1]) {
-          a[1] = Object.fromEntries(Object.entries(a[1]).filter(d => d[1]?true:false)); //clean not defined properties
-        }
-        if(a[1] && a[1].widgetOptions && typeof a[1].widgetOptions === 'object') { // double check
-          a[1].widgetOptions = JSON.stringify(a[1].widgetOptions);
-        }
-
-        if (col.includes(a[0])) {
-          //Update
-          actions.push(['ModifyColumn', tableID, a[0], a[1]]);
-        } else {
-          //Add
-          actions.push(['AddColumn', tableID, a[0], a[1]]);
-        }
-      });
-
-      // Import in Grist
-      if (actions.length > 0) {
-        await grist.docApi.applyUserActions(actions);
-        alert(T('Structure imported successfully (be careful, new columns are hidden by default).'))
-
-        // refresh the form to display new columns
-        main();
-      } else alert(T('No data to paste.'));
-    } else alert(T('The data in the clipboard is not in the correct format.'));
-  } else alert(T('No data present in the clipboard.'));
+    try {
+      const data = JSON.parse(d);
+      if (Array.isArray(data) && data.length > 0 && Array.isArray(data[0]) && data[0].length === 2) {
+        // format looks OK
+        const col = filterColumns(columns);
+  
+        //generate user actions
+        let actions = [];
+        data.forEach(a => {
+          if(a[1]) {
+            a[1] = Object.fromEntries(Object.entries(a[1]).filter(d => d[1]?true:false)); //clean not defined properties
+          }
+          if(a[1] && a[1].widgetOptions && typeof a[1].widgetOptions === 'object') { // double check
+            a[1].widgetOptions = JSON.stringify(a[1].widgetOptions);
+          }
+  
+          if (col.includes(a[0])) {
+            //Update
+            actions.push(['ModifyColumn', tableID, a[0], a[1]]);
+          } else {
+            //Add
+            actions.push(['AddColumn', tableID, a[0], a[1]]);
+          }
+        });
+  
+        // Import in Grist
+        if (actions.length > 0) {
+          await grist.docApi.applyUserActions(actions);
+          alert(T('Structure imported successfully (be careful, new columns are hidden by default).'))
+  
+          // refresh the form to display new columns
+          main();
+        } else alert(T('No data to paste.'));
+      } else alert(T('The data in the clipboard is not in the correct format.'));    
+    } catch (e) {
+      alert(T('The data in the clipboard is not in the correct format.')); 
+    }
+  } else alert(T('No data present in the clipboard.'));   
 }
 
 async function copyProp() {
@@ -272,22 +294,37 @@ async function copyProp() {
 }
 
 async function pasteProp() {
-  const d = await navigator.clipboard.readText();
+  let d;
+  try {   
+    d = await navigator.clipboard.readText();
+  } catch (e) {
+    d = document.getElementById('import_clipboard').value;
+    
+    if (!d) {
+      alert(T('Your browser denies access to clipboard, so you need to paste manually first its content into the previous section "Data to paste".'));
+      return;
+    }    
+  } 
+
   if (d) {
-    const data = JSON.parse(d);
-    if(data && typeof data === 'object' && data.exportColumn) {
-      if(Object.keys(data.exportColumn).length > 0) {
-        // clean not defined properties
-        data.exportColumn = Object.fromEntries(Object.entries(data.exportColumn).filter(d => d[1]?true:false));
+    try {
+      const data = JSON.parse(d);
+      if(data && typeof data === 'object' && data.exportColumn) {
+        if(Object.keys(data.exportColumn).length > 0) {
+          // clean not defined properties
+          data.exportColumn = Object.fromEntries(Object.entries(data.exportColumn).filter(d => d[1]?true:false));
 
-        if (data.exportColumn.widgetOptions && typeof data.exportColumn.widgetOptions === 'object' ) { // double check
-          data.exportColumn.widgetOptions = JSON.stringify(data.exportColumn.widgetOptions);
-        }
+          if (data.exportColumn.widgetOptions && typeof data.exportColumn.widgetOptions === 'object' ) { // double check
+            data.exportColumn.widgetOptions = JSON.stringify(data.exportColumn.widgetOptions);
+          }
 
-        await grist.docApi.applyUserActions([['ModifyColumn', tableID, columnID, data.exportColumn]]);
-        alert(T('Properties pasted successfully.'))
-      } else alert(T('No data to paste.'));
-    } else alert(T('The data in the clipboard is not in the correct format.'));
+          await grist.docApi.applyUserActions([['ModifyColumn', tableID, columnID, data.exportColumn]]);
+          alert(T('Properties pasted successfully.'))
+        } else alert(T('No data to paste.'));
+      } else alert(T('The data in the clipboard is not in the correct format.'));
+    } catch (e) {
+      alert(T('The data in the clipboard is not in the correct format.')); 
+    }
   } else alert(T('No data present in the clipboard.'));
 }
 
@@ -310,5 +347,5 @@ window.switchProp = switchProp;
 window.selectionTable = selectionTable;
 window.selectionColumn = selectionColumn;
 window.copyProp = copyProp;
-window.pasteProp = pasteProp;
+window.pasteProp = pasteProp
 

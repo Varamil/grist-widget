@@ -35,7 +35,14 @@ Examples of use cases:
 2. (*optional*) In the *Columns* section, click on the line to display the columns of the selected table. You can then choose which ones to copy by checking them.
 3. Click on the *Copy* button, and the data will be copied to the clipboard (be careful not to copy anything else (including ctrl+c) before completing the following steps).
 4. (*optional*) If the target table is not the same, select the destination table in the *Target Table* section.
-5. Click on the *Paste* button, and the new columns will be added to the selected table. *Note: if the data to be pasted has been copied from outside the browser, clicking on the button may bring up a context menu with the "Paste" option. Simply click on it to confirm (these are security measures to prevent web pages from accessing your clipboard).*
+5. Click on the *Paste* button, and the new columns will be added to the selected table. 
+
+***⚠️ Clipboard issue***
+
+Due to security measures to prevent web pages from accessing your clipboard, you may experience some issue when pasting data:
+
+* On some browser (like Chrome), the access from the clipboard is denied, so you need to paste manually its content into the "Data to paste" section (using ctrl+V) and then click on the "Paste" button.
+* On some other (like Firefox), if the data to be pasted has been copied from outside the browser, clicking on the button may bring up a context menu with the "Paste" option. Simply click on it to confirm.
 
 ***Remarks:***
 
@@ -51,7 +58,15 @@ Examples of use cases:
 6. Click on the *Copy* button, and the data will be copied to the clipboard (be careful not to copy anything else (including ctrl+c) before completing the following steps).
 7. (*optional*) If the target table is not the same, select the destination table in the *Target Table* section.
 8. Select the column in which to paste the properties in the *Target Column* section.
-5. Click the *Paste* button, and the new properties will be applied to the selected column. *Note: if the data to be pasted has been copied from outside the browser, clicking on the button may bring up a context menu with the "Paste" option. Simply click on it to confirm (these are security measures to prevent web pages from accessing your clipboard).*
+5. Click the *Paste* button, and the new properties will be applied to the selected column. 
+
+***⚠️ Clipboard issue***
+
+Due to security measures to prevent web pages from accessing your clipboard, you may experience some issue when pasting data:
+
+* On some browser (like Chrome), the access from the clipboard is denied, so you need to paste manually its content into the "Data to paste" section (using ctrl+V) and then click on the "Paste" button.
+* On some other (like Firefox), if the data to be pasted has been copied from outside the browser, clicking on the button may bring up a context menu with the "Paste" option. Simply click on it to confirm.
+
 
 ## Limits
 
@@ -105,6 +120,15 @@ Exemples de cas d'utilisation :
 4. (*optionnel*) Si la table cible n'est pas la même, sélectionnez la table de destination dans la partie *Table cible*.
 5. Cliquez sur le bouton *Coller*, les nouvelles colonnes sont alors ajoutées à la table sélectionnée. *Remarque : si les données à coller ont été copiées depuis l'extérieur du navigateur, en cliquant sur le bouton, un menu contextuel avec l'option "Coller" peut apparaitre. Il suffit alors de cliquer dessus pour valider (ce sont des mesures de sécurités pour ne pas que les pages web accèdent à votre presse-papier).*
 
+***⚠️ Problèmes de presse-papier***
+
+À cause de mesures de sécurités pour ne pas que les pages web accèdent à votre presse-papier, il est possible que vous aillez des soucis lorsque vous collez des données :
+
+* Sur certain navigateurs (comme Chrome), l'accès au presse-papier est interdit, donc vous devez coller manuellement son contenu dans la section "Données à coller" (avec ctrl+V), puis cliquer sur le boutont "Coller".
+
+
+* Sur d'autres (comme Firefox), si les données à coller ont été copiées depuis l'extérieur du navigateur, en cliquant sur le bouton, un menu contextuel avec l'option "Coller" peut apparaitre. Il suffit alors de cliquer dessus pour valider.
+
 ***Remarques :***
 
 * Si une colonne avec le même identifiant existe déjà, alors elle sera mise à jour.
@@ -120,6 +144,15 @@ Exemples de cas d'utilisation :
 7. (*optionnel*) Si la table cible n'est pas la même, sélectionnez la table de destination dans la partie *Table cible*.
 8. Sélectionnez la colonne dans laquelle coller les propriétés dans la partie *Colonne cible*.
 5. Cliquez sur le bouton *Coller*, les nouvelles propriétés sont alors appliquées à la colonne sélectionnée. *Remarque : si les données à coller ont été copiées depuis l'extérieur du navigateur, en cliquant sur le bouton, un menu contextuel avec l'option "Coller" peut apparaitre. Il suffit alors de cliquer dessus pour valider (ce sont des mesures de sécurités pour ne pas que les pages web accèdent à votre presse-papier).*
+
+***⚠️ Problèmes de presse-papier***
+
+À cause de mesures de sécurités pour ne pas que les pages web accèdent à votre presse-papier, il est possible que vous aillez des soucis lorsque vous collez des données :
+
+* Sur certain navigateurs (comme Chrome), l'accès au presse-papier est interdit, donc vous devez coller manuellement son contenu dans la section "Données à coller" (avec ctrl+V), puis cliquer sur le boutont "Coller".
+
+
+* Sur d'autres (comme Firefox), si les données à coller ont été copiées depuis l'extérieur du navigateur, en cliquant sur le bouton, un menu contextuel avec l'option "Coller" peut apparaitre. Il suffit alors de cliquer dessus pour valider.
 
 ## Limitations
 Pour le moment, les dépendances pour les formules d'initialisation ne sont pas gérées (car les identifiants de la table de départ ne sont pas ceux de la table cible). Il faut donc faire cette copie à la main. 
