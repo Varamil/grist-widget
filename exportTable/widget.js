@@ -227,7 +227,7 @@ async function importer() {
   try {
     d = await navigator.clipboard.readText();
   } catch (e) {
-    d = document.getElementById('paste_clipboard').value;
+    d = document.getElementById('import_clipboard').value;
     
     if (!d) {
       alert(T('Your browser denies access to clipboard, so you need to paste manually first its content into the previous section "Data to paste".'));
@@ -298,7 +298,7 @@ async function pasteProp() {
   try {   
     d = await navigator.clipboard.readText();
   } catch (e) {
-    d = document.getElementById('import_clipboard').value;
+    d = document.getElementById('paste_clipboard').value;
     
     if (!d) {
       alert(T('Your browser denies access to clipboard, so you need to paste manually first its content into the previous section "Data to paste".'));
