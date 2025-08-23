@@ -10,7 +10,7 @@ It is always strongly recommended to use the *Work on a copy* feature provided b
 
 The widget is therefore provided as it is, and ***the author cannot be held responsible for any problems that the widget may cause***.
 
-That being said, there is no particular cause for concern. However, during my tests with the *grist.docApi.applyUserActions* function provided by Grist, I noticed that it was not sufficiently protected and that providing it with malformed data could corrupt the database. Normally, there is no longer any cause for concern, but a future update to Grist could pose a problem, for example.
+That being said, there is no particular cause for concern. However, during my tests with the *grist.docApi.applyUserActions* function provided by Grist, I noticed that it was not sufficiently protected and that providing it with malformed data could corrupt the database. Normally, there is no longer any cause for concern, but a future update of Grist could pose a problem, for example.
 
 ## Features
 * Copy columns from one table and paste them into another

@@ -13,7 +13,8 @@
     "If checked, copy the column metadata.":"Si coché, les métadonnées de cette colonne seront copiées.",
     "If checked, copy the property.":"Si coché, la propriété sera copiée.",
     "Is formula":"Est une formule",
-    "It is always strongly recommended to use the Work on a copy feature provided by Grist, and then, if everything went well, apply the changes to the main document.":"Il est toujours fortement recommandé d'utiliser la fonction *Travailler sur une copie* fournie par Grist, puis si tout s'est bien passé, appliquer les modifications au document principal.",
+    "That being said, precautions have been taken on the widget side, but it is always strongly recommended to use the Work on a copy feature provided by Grist, and then, if everything went well, apply the changes to the main document.":
+      "Cela étant dit, des précautions ont été prises côté widget, mais il est toujours fortement recommandé d'utiliser la fonction *Travailler sur une copie* fournie par Grist, puis si tout s'est bien passé, appliquer les modifications au document principal.",
     "Label":"Label",
     "No data present in the clipboard.": "Aucune donnée n'est présente dans le presse-papier.",
     "No data to copy.": "Aucune donnée à copier.",
@@ -41,8 +42,9 @@
     "Target table":"Table cible",
     "The data in the clipboard is not in the correct format.": "Les données dans le presse-papier ne sont pas au format attendu.",
     "The widget is therefore provided as it is, and the author cannot be held responsible for any problems that the widget may cause.":"Le widget est donc fourni tel quel, et l'auteur ne pourra être tenu responsable des problèmes que le widget pourrait engendrer.",
-    "This widget affects the structure of tables, so even though it has been tested in various situations, it is possible that the document may become corrupted after applying the changes.":"Ce widget touche à la structure des tables, donc même s'il a été testé dans différentes situations, il est possible que le document soit corrompu après application des modifications.",
+    "This widget affects the structure of tables, so even though it has been tested in various situations, during development, it became apparent that Grist was not sufficiently protected and that poorly formatted information could corrupt the document.":
+      "Ce widget touche à la structure des tables, donc même s'il a été testé dans différentes situations, il est apparu durant le développement que Grist n'était pas suffisamment protégé, et que des informations mal formatées pouvaient corrompre le document.",
     "Type":"Type",
     "Your browser denies access to clipboard, so you need to paste manually first its content into the previous section \"Data to paste\".": 
-    "Votre navigteur interdit l'accès au presse-papier, vous devez coller manuellement en premier son contenu dans la section précédente \"Données à coller\"."
+      "Votre navigteur interdit l'accès au presse-papier, vous devez coller manuellement en premier son contenu dans la section précédente \"Données à coller\"."
   }

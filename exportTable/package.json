@@ -1,0 +1,23 @@
+{
+  "name": "@varamil/widget-exporttable",
+  "description": "Export Table",
+  "homePage": "https://github.com/Varamil/grist-widget",
+  "version": "1.1",
+  "grist": {
+    "name": "Export Table",
+    "url": "https://varamil.github.io/grist-widget/exportTable/min/index.html",
+    "widgetId": "@varamil/widget-exporttable",
+    "published": true,
+    "accessLevel": "full",
+    "renderAfterReady": true,
+    "description": "Kanban",
+    "authors": [
+      {
+        "name": "Varamil",
+        "url": "https://github.com/Varamil/grist-widget"
+      }
+    ],
+    "isGristLabsMaintained": false
+  }
+}
+

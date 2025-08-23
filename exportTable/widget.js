@@ -128,6 +128,7 @@ async function main() {
         actionValues.colaon = true;
         actionValues.columns = c.map(k => true);
         actionValues.import_clipboard = actionValues.import_clipboard ?? '';
+        actionValues.paste_clipboard = actionValues.paste_clipboard ?? '';
       }
 
       // Generate form
@@ -145,8 +146,9 @@ async function main() {
       }
     }
 
-    html += `<div style="color:red"><p>${T('This widget affects the structure of tables, so even though it has been tested in various situations, it is possible that the document may become corrupted after applying the changes.')}</p>
-      <p>${T('It is always strongly recommended to use the Work on a copy feature provided by Grist, and then, if everything went well, apply the changes to the main document.')}</p>
+
+    html += `<div style="color:red"><p>${T('This widget affects the structure of tables, so even though it has been tested in various situations, during development, it became apparent that Grist was not sufficiently protected and that poorly formatted information could corrupt the document.')}</p>
+      <p>${T('That being said, precautions have been taken on the widget side, but it is always strongly recommended to use the Work on a copy feature provided by Grist, and then, if everything went well, apply the changes to the main document.')}</p>
       <p>${T('The widget is therefore provided as it is, and the author cannot be held responsible for any problems that the widget may cause.')}</p></div>`
     
 
