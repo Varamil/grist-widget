@@ -1,7 +1,7 @@
 *(français plus bas)*
 
 # Grist Simple Filer Widget
-A widget to display a simple chat interface storing all messages in a row without additionnal table.
+*Simple Filter* is a widget to quickly filter a table.
 
 ## Features
 * Easy to use and quick to access 

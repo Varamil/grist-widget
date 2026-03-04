@@ -17,7 +17,25 @@
       position: relative;
       height: 100%;
     }
-    #dropdown {
+    #search {
+      width: 100%;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 2px;
+      height: 100%;
+      background-color: var(--grist-theme-page-panels-main-panel-bg);
+      border: none;
+      color: var(--grist-theme-text);
+    }
+    .td100 {
+      width: 100%;
+      height: 100%;
+    }
+    .td50 {
+      width: 50%;
+      height: 100%;
+    }
+    .dropdown {
       width: 100%;
       box-sizing: border-box;
       margin: 0;
@@ -41,14 +59,30 @@
       overflow-y: auto;
       box-sizing: border-box;
     }
-    #dropdown:focus {
+    .dropdown:focus {
       outline: 2px solid var(--grist-theme-cursor);
+    }
+    .tag {      
+      background-color: lightgray;      
+      font-size: small;
+      border-radius: 4px;
+      border-color: transparent;
+    }
+    .hiddenItem {
+      display: none;
     }
   </style>
 </head>
 <body>
   <div id="container">
-    <select id="dropdown"></select>
+    <table id="search">
+      <tr>
+        <td id="td1" class="td100"><select id="dropdown1" class="dropdown"></select></td>
+        <td><button id="type" class="tag _grain803_ hiddenItem" onclick="tagclick()">AND</button></td>
+        <td id="td2" class="td50"><select id="dropdown2" class="dropdown hiddenItem"></select></td>
+        <td><button class="tag _grain803_" onclick="clearsearch()">X</button></td>
+      </tr>
+    </table>    
     <div id="error"></div>
   </div>
   <div id="config" style="display: none;">

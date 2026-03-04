@@ -30,6 +30,9 @@ Example available [here](https://docs.getgrist.com/5EghdYeZyAFD/drop-down-filter
 ## Configuration
 
 - **Options to select**: Choose the column to populate the drop-down menu
+- **2nd options to select**: (optional) Choose the column to populate a second drop-down menu
+
+With the case where two columns are set, a new button "AND" or "OR" appears on the widget. Simply click on it to switch the filtering logic applied.
 
 ## Requirements
 
@@ -73,6 +76,9 @@ Exemple dosponible [ici](https://docs.getgrist.com/5EghdYeZyAFD/drop-down-filter
 ## Configuration
 
 - **Options to select**: Choisissez la colonne à utiliser pour peupler le menu
+- **2nd Options to select**: (optionnel) Choisissez la colonne à utiliser pour peupler un second menu
+
+Dans le cas où deux colonnes sont sélectionnées, un bouton "AND" ou "OR" apparait dans le widget. Cliquer simplement dessus pour changer la logique du filtre.
 
 ## Prérequis
 

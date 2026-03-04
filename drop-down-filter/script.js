@@ -2,6 +2,8 @@ let currentoptions = [];
 let allRecords = [];
 let sessionID = "";  
 let column = "";
+let column2 = "";
+const typeAND = "AND", typeOR = 'OR';
 
 function showError(msg) {
   let el = document.getElementById('error');
@@ -13,24 +15,16 @@ function showError(msg) {
   }
 }
 
-function updateDropdown(options) {
+function updateDropdown(options, idx) {
   const uniqoptions = [""].concat(uniq(options).sort());
-  
-  // if (areArraysEqual(currentoptions, uniqoptions)) {
-  //   return;
-  // } else {
-  //   currentoptions = uniqoptions;
-  // }
 
-  const dropdown = document.getElementById('dropdown');
+  const dropdown = document.getElementById('dropdown' + idx);
+  dropdown.classList.remove('hiddenItem'); // show it
   let currentvalue = uniqoptions.includes(dropdown.value) ? dropdown.value: undefined;
   if (currentvalue === undefined && sessionID.length > 0) {
      //if session ID defined, use it to auto select the dropdown value
-    const selection = sessionStorage.getItem(sessionID + "_Dropdownfilter_Item");
+    const selection = sessionStorage.getItem(sessionID + "_Dropdownfilter_Item" + ((idx > 1) ? idx : ''));
     if (selection.length > 0) {
-      // const dropdown = document.getElementById('dropdown');
-      // dropdown.value = selection;
-      // dropdown.dispatchEvent(new Event('change'));
       currentvalue = selection;
     }
   }
@@ -62,7 +56,8 @@ function saveOption() {
 
 function initGrist() {
   grist.ready({
-    columns: [{ name: "OptionsToSelect", title: 'Options to select', type: 'Any' }],
+    columns: [{ name: "OptionsToSelect", title: 'Options to select', type: 'Any' },
+              { name: "OptionsToSelect2", title: '2nd options to select', type: 'Any', optional:true }],
     requiredAccess: 'read table',
     allowSelectBy: true,
     onEditOptions() {
@@ -81,8 +76,9 @@ function initGrist() {
   });
 
   grist.onRecords(function (records, mappings) {
+    console.log('dropdown', records);
     if (!records || records.length === 0) {
-      showError("No records received");
+      //showError("No records received");
       updateDropdown([]);
       grist.setSelectedRows(null);
       return;
@@ -90,33 +86,100 @@ function initGrist() {
     
     allRecords = records;
     column = mappings.OptionsToSelect;
+    column2 = mappings.OptionsToSelect2;
     const mapped = grist.mapColumnNames(records);
 
     showError("");
-    const options = mapped.map(record => record.OptionsToSelect).filter(option => option !== null && option !== undefined);
+    options = mapped.map(record => record.OptionsToSelect).filter(option => option !== null && option !== undefined);
     
     if (options.length === 0) {
       showError("No valid options found");
     }
-    updateDropdown(options);
-    
-   
+    updateDropdown(options, 1);    
+    console.log('dropdown 1 options', options);
+
+    const td1 = document.getElementById("td1");
+    console.log('dropdown 2 colum', column2);
+    if (column2 === null || column2?.length === 0) {
+      //display
+      td1.classList = "td100";
+      document.getElementById('dropdown2').classList.add('hiddenItem');
+      document.getElementById('type').classList.add('hiddenItem');
+    } else {
+      options = mapped.map(record => record.OptionsToSelect2).filter(option => option !== null && option !== undefined);
+      updateDropdown(options, 2);    
+      console.log('dropdown 2 options', options);
+
+      // display
+      td1.classList = "td50";
+      document.getElementById('type').classList.remove('hiddenItem');
+    }
+
   });
 
-  document.getElementById('dropdown').addEventListener('change', function(event) {  
-    selectRows(event.target.value);
-    
+  grist.onRecord(function (record, mappings) {
+    console.log('dropdown rec', record);
+  });
+
+  grist.onNewRecord(function () {
+    console.log('dropdown new');
+  });
+
+  document.getElementById('dropdown1').addEventListener('change', function(event) {  
+    selectRows(event.target.value, document.getElementById('dropdown2').value, document.getElementById("type").innerHTML);    
+  });
+
+  document.getElementById('dropdown2').addEventListener('change', function(event) {  
+    selectRows(document.getElementById('dropdown1').value, event.target.value, document.getElementById("type").innerHTML);    
   });
 }
 
- function selectRows(value) {
-  if (value.length === 0) {
+
+function selectRows(value1, value2, type) {
+  console.log('dropdown value', value1, value2);
+
+  if (value1?.length === 0 && value2?.length === 0) {
+    console.log('dropdown selRecord full');
     grist.setSelectedRows(null);
   } else {
-    const rows = allRecords.filter((item) => item[column] === value).map(({id})=> id);
-    if (sessionID.length > 0) sessionStorage.setItem(sessionID + "_Dropdownfilter_Item", value);
+    let rows;
+    if (value2?.length === 0) {
+      rows = allRecords.filter((item) => String(item[column]) === value1).map(({id})=> id);
+      if (sessionID.length > 0) sessionStorage.setItem(sessionID + "_Dropdownfilter_Item1", value1);
+    } else if (value1?.length === 0) {
+      rows = allRecords.filter((item) => String(item[column2]) === value2).map(({id})=> id);
+      if (sessionID.length > 0) sessionStorage.setItem(sessionID + "_Dropdownfilter_Item2", value2);
+    } else {
+      if (type === typeOR) {
+        rows = allRecords.filter((item) => String(item[column]) === value1 || String(item[column2]) === value2).map(({id})=> id);
+      } else {
+        rows = allRecords.filter((item) => String(item[column]) === value1 && String(item[column2]) === value2).map(({id})=> id);
+      }
+      
+      if (sessionID.length > 0) sessionStorage.setItem(sessionID + "_Dropdownfilter_Item1", value1);
+      if (sessionID.length > 0) sessionStorage.setItem(sessionID + "_Dropdownfilter_Item2", value2);
+    }
+
+    console.log('dropdown res', rows);
     grist.setSelectedRows(rows);
-  }  
+  }
+}
+
+function clearsearch() {
+  console.log("clear");
+  document.getElementById("dropdown1").value = "";
+  document.getElementById("dropdown2").value = "";
+  selectRows('','', typeAND);
+}
+
+function tagclick() {
+  const type = document.getElementById("type");
+  if (type.innerHTML === typeOR) {
+    type.innerHTML = typeAND;
+  } else {
+    type.innerHTML = typeOR;
+  }
+  selectRows(document.getElementById('dropdown1').value, document.getElementById('dropdown2').value, document.getElementById("type").innerHTML);
 }
 
 function uniq(a) {
@@ -125,15 +188,5 @@ function uniq(a) {
       return (seen.hasOwnProperty(item) || item.length <= 0 )? false : (seen[item] = true);
   });
 }
-
-// function areArraysEqual(arr1, arr2) {
-//   if (arr1.length !== arr2.length) return false;
-//   for (let i = 0; i < arr1.length; i++) {
-//       if (arr1[i] !== arr2[i]) {
-//           return false;
-//       }
-//   }
-//   return true;
-// }
 
 document.addEventListener('DOMContentLoaded', initGrist);
