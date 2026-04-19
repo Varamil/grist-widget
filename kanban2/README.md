@@ -54,7 +54,8 @@ In Grist's right panel, when you click on *Open configuration*, the widget displ
 * *Columns > Behavior*: allows you to configure the behavior and display of each Kanban column. Click on the chevron ">" to access the sub-options.
     * *Add button* : if checked, displays a button to add a card to this column.
     * *Done*: if checked, cards in this column are considered finished (a stamp appears on the card).
-    * *Confetti*: if checked, confetti appears when a card enters this column.
+    * *Use confetti*: if checked, confetti appears when a card enters this column.
+    * *Hide*: if checked, the column is hidden.
 * *Card options*: configure the behavior of the 3 main fields (reference, type and in charge) in the card editing form. By default, the widget checks whether the associated Grist column is of type *Choice* or *Reference*, and if so, offers the user a list based on these data. If this is not the case, or if you wish to propose a different list, you can :
     * List the values to be proposed in the field on the right, separating each value with a “;”.
     * Indicate a reference to a column or table (in which case the 1st column of the table is used). The reference must be in `$TableId` or `$TableId.ColumnId` format, where the table and column ids correspond to those used in Grist.
@@ -77,6 +78,16 @@ In general, you can:
 
 ## Requirements
 A Grist table with read and/or write access.
+
+## Build minified widget version
+To build the minified version of the widget:
+* Install `pnpm`
+* Using the console, navigate into the widget subfolder `pnpm` (should be in the same folder as this readme)
+* Execute the command `pnpm install`
+
+Now your environnement should be ready. Each time you'll need to build the minified version, do:
+*  Execute the command `pnpm run build`
+*  Use file intot the subfolder `min`
 
 ## Authors
 Céline Delval - [Original post](https://forum.grist.libre.sh/t/custom-widget-kanban/506/17) - original author who laid the groundwork for the widget,
@@ -140,6 +151,7 @@ Dans le volet de droite de Grist, quand on clique sur *Ouvrir la configuration*,
     * *Bouton d'ajout* : si coché, affiche un bouton pour ajouter une carte à cette colonne.
     * *Fait* : si coché, les cartes dans cette colonne sont considérées comme terminées (un tampon apparait sur la carte).
     * *Confetti* : si coché, des confettis apparaissent quand une carte entre dans cette colonne.
+    * *Masquer* : si coché, la colone est masquée.
 * *Options des cartes* : permet de configurer le comportement des 3 champs principaux (référence, type et responsable) dans le formulaire d'édition d'une carte. Par défaut le widget regarde si la colonne Grist associée est de type *Choix* ou de type *Référence*, et dans ce cas, il propose à l'utilisateur une liste basée sur ces données. Si ce n'est pas le cas ou si vous souhaitez proposer une autre liste vous pouvez :
     * Lister les valeurs à proposer dans le champ à droite, en séparant chaque valeur par un ";"
     * Indiquer une référence vers une colonne ou une table (et alors la 1ère colonne de la table est utilisée). La référence doit être au format `$TableId` ou `$TableId.ColonneId`, où les id de table et de colonne correspondent à celles qui sont utilisées dans Grist.
@@ -163,6 +175,16 @@ De manière général, vous pouvez:
 
 ## Exigences
 Une table Grist avec un accès en lecture et/ou écriture.
+
+## Génération de la version minifiée du widget
+Pour générer la version minifiée du widget :
+* Installer `pnpm`
+* Via la console, aller dans le sous-dossier `pnpm` du widget (normalement dans le même dossier que ce readme)
+* Exécuter la commande `pnpm install`
+
+Normalement votre environnement est prêt. Maintenant, à chaque fois que vous aurez besoin de générer la version minifiée, simplement :
+*  Exécuter la commande `pnpm run build`
+*  Utiliser les fichiers présent dans le sous-dossier `min`
 
 ## Auteurs
 Céline Delval - [Post originel](https://forum.grist.libre.sh/t/custom-widget-kanban/506/17) - auteure initiale qui a posée les bases du widget,

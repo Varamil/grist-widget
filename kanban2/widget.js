@@ -79,6 +79,7 @@ window.addEventListener('load', async (event) => {
                         WidgetSDK.newItem('addbutton', true, 'Can add card', 'If checked, display a button to add card to the column.'),
                         WidgetSDK.newItem('isdone',false,'Is done','If checked, cards in the columns are considered as over.'),
                         WidgetSDK.newItem('useconfetti',false,'Use confetti','If checked, confetti apprear when a card enter in the column.'),
+                        WidgetSDK.newItem('hidecolumn',false,'Hide','If checked, the column is hidden.'),
                     ]
                 }
             ),
@@ -197,7 +198,8 @@ async function afficherKanban(recs) {
     }
     //W.opt.colonnes
     colonnes.forEach((col, idx) => {
-        conteneurKanban.appendChild(creerColonneKanban(col, idx));
+        newcol = creerColonneKanban(col, idx);
+        if (newcol != null) conteneurKanban.appendChild(newcol);
     });
 
     // Distribution des tâches dans les colonnes
@@ -291,6 +293,10 @@ async function optionsChanged(opts) {
 /* Création d'une colonne */
 function creerColonneKanban(colonne, idx) {
     const opt = W.opt.columns[idx];
+
+    // Should be hidden ?
+    if (opt.hidecolumn) return null;
+
     const colonneElement = document.createElement('div');
     colonneElement.className = `colonne-kanban${(!opt.addbutton && !W.opt.compact)? ' colonne-nobouton':''}`; //colonne
     colonneElement.id = colonne;

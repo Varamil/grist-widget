@@ -1,4 +1,5 @@
 {
+  "Add a new task": "Ajouter une nouvelle tâche",
   "Additional fields to display": "Champs additionnels à afficher",
   "Additional notes": "Notes complémentaires",
   "Behavior": "Comportement",
@@ -19,6 +20,7 @@
   "Display": "Affichage",
   "Displayed card content (e.g. a formula column adding html)":"Contenu final affiché dans la carte (ex: une colonne formule qui ajoute du html)",
   "Grist Record Card": "Vue fiche Grist",
+  "Hide": "Masquer",
   "Hide editing form": "Cacher le formulaire d'édition",
   "If checked, cards are randomly tilted.": "Si coché, les cartes sont aléatoirement pivotées.",
   "If checked, cards in the columns are considered as over.": "Si coché, les cartes dans cette colonne sont considérées comme terminées.",
@@ -27,6 +29,7 @@
   "If checked, hide the editing form when click on a card.": "Si coché, n'affiche plus le formulaire d'édition quand on clique sur une carte.",
   "If checked, kanban is ready only.": "Si coché, le Kanban est en lecture seule.",
   "If checked, opens the grist record card on double click.": "Si coché, ouvre la vue fiche de la carte sur un double clic.",
+  "If checked, the column is hidden.": "si coché, la colone est masquée.",
   "If checked, use a compact rendering.": "Si coché, utilise un affichage compacte.",
   "If empty, the widget use the column properties (based on choices or references) to make the list. Else, you can either:\\n• Provides a list, separated by \";\"\\n• Provides a reference to a table or a column starting with a \"$\" ($TableID or $TableID.ColumnID)": "Si vide, le widget utilise les propriétés de la colonne (en se basant sur les choix ou les références) pour créer la liste. Sinon, vous pouvez au choix :\n• Fournir une liste, séparée par des \";\"\n• Fournir une référence vers une table ou une colonne en commençant par un \"$\" ($TableID ou $TableID.ColumnID)",
   "In charge": "Responsable",
