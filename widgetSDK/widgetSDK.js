@@ -29,7 +29,7 @@ import './widgetSDK.css';
 /**  */
 export default class WidgetSDK {
     constructor() {
-        console.log("WidgetSDK: 1.2.0.60");
+        console.log("WidgetSDK: 1.2.0.62");
         const urlParams = new URLSearchParams(window.location.search);
         this.cultureFull = urlParams.has('culture')?urlParams.get('culture'):'en-US';
         this.culture = this.cultureFull.split('-')[0];
@@ -199,6 +199,11 @@ export default class WidgetSDK {
             if (value.hasOwnProperty(prop) && prop) return false;
         }
         return true;
+    }
+
+    /** Escape double quotes ("). Commonly used before injection into html attribute  */
+    escapeQuotes(txt) {
+        return txt?.replaceAll(/[\\]*"/g, '&quot;');
     }
 
 
@@ -888,7 +893,7 @@ export default class WidgetSDK {
 
            
             case 'longstring':
-                return `<textarea ${id}class="config-textarea auto-expand" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" ${this.#getEvent(opt.event)}>${val}</textarea>`;
+                return `<textarea ${id}class="config-textarea auto-expand ${opt.code?'code':''}" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" ${this.#getEvent(opt.event)}>${val}</textarea>`;
 
             case 'object':
                 return `<textarea ${id}class="config-textarea auto-expand" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" ${this.#getEvent(opt.event)}>${JSON.stringify(val, null, 2)}</textarea>`;
@@ -897,7 +902,7 @@ export default class WidgetSDK {
             case 'dropdown': //keep it before default
                 let html = `<select ${id}class="field-select" ${this.#getEvent(opt.event)}>`;
                 if(valuesList[opt.id]) {                    
-                    valuesList[opt.id].forEach(v => {html += `<option value="${v}" ${v === val ? 'selected':''}>${v}</option>`}); //TODO if in template with values ?                    
+                    valuesList[opt.id].forEach(v => {html += `<option value="${this.escapeQuotes(v)}" ${v === val ? 'selected':''}>${v}</option>`}); //TODO if in template with values ?                    
                 } //else default                
                 return html + '</select>';
 
@@ -905,7 +910,7 @@ export default class WidgetSDK {
                 return `<button id="action-button" class="config-button" ${this.#getEvent(opt.event)}>${this.t(opt.label??'Execute')}</button>`;
                 
             default: //string
-                return `<input ${id}class="config-input" value="${val}" ${this.#getEvent(opt.event)}>`;
+                return `<input ${id}class="config-input ${opt.code?'code':''}" value="${this.escapeQuotes(val)}" ${this.#getEvent(opt.event)}>`;
         }
     }
 
@@ -935,16 +940,17 @@ export default class WidgetSDK {
                 });
                 return r; 
             case 'templateform':
-                //var r = [];
+                var r = [];
                 v.forEach((sv, i) => {
-                    //let ri = [];
+                    let ri = {};
                     Object.keys(sv).forEach(tk => {
                         let e = elmt.querySelector('#' + elmt.id + '_' + i + '_' + tk);
-                        if (e) sv[tk] = this.#getOptValue(opt.template.find(t => t.id === tk), e);
-                        else sv[tk] = undefined;
-                    });     
+                        if (e) ri[tk] = this.#getOptValue(opt.template.find(t => t.id === tk), e);
+                        else ri[tk] = undefined;                        
+                    }); 
+                    r.push(ri);
                 });
-                return v;
+                return r;
             default:  //number, dropdown, string, longstring
                 return this.#parseValue(opt, elmt.value);
         }
