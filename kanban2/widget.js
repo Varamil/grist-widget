@@ -197,6 +197,7 @@ async function afficherKanban(recs) {
         return;
     }
     //W.opt.colonnes
+    let newcol;
     colonnes.forEach((col, idx) => {
         newcol = creerColonneKanban(col, idx);
         if (newcol != null) conteneurKanban.appendChild(newcol);
