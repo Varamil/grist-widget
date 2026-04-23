@@ -1,3 +1,4 @@
+const wversion = "4.0.0";
 var search_col = [];
 var target = "shown";
 var placeholder = "";
@@ -5,16 +6,18 @@ var helpmsg = "";
 var displayall = true;
 var defsearchtype = 0;
 var cursearchtype = 0;
+var lastsearch = "";
 var savesession = false;
 var sessionID = "";
 var sessionUUID = "";
 var defval = "";
+var prefilter = "";
 const searchtypes = ["+", "&", "&&"];
-// const searchtypesnames = ["OU", "ET", "ET col"];
+//const searchtypesnames = ["OU", "ET", "ET col"];
 const searchtypesnames = ["OR", "AND", "AND col"];
 
 const defplaceholder = "Search (? + Enter to get help)" ;
-// const defplaceholder = "Recherche (? + Entrer pour obtenir de l'aide)" ;
+//const defplaceholder = "Recherche (? + Entrer pour obtenir de l'aide)" ;
 
 
 // const defhelp = `Aide
@@ -23,8 +26,10 @@ const defplaceholder = "Search (? + Enter to get help)" ;
 // • Commencer une recherche par '&&' ⇒ tous les mots doivent être présent dans une même colonne
 // • '!' avant un mot ⇒ le mot ne doit pas être présent
 // • '=', '<' ou '>' avant un mot (et après le '!' s'il y a) ⇒ la cellule doit être exactement égale, commencer par ou terminer par le mot. Avec le '=', remplacer les espaces par '\\s', sinon le mot sera découpé
-// • '"..."' ⇒ considère tous ce qu'il y a entre guillemets comme un mot (incluant les espaces)
+// • '=', '<', '>', '>=' ou '<=' avant un nombre (et après le '!' s'il y a) ⇒ la valeur de la cellule doit valider la comparaison. Pour forcer une comparaison textuelle utiliser '==', '<<' et '>>'.
+// • "..." ⇒ considère tous ce qu'il y a entre guillemets comme un mot (incluant les espaces)
 // • ' avant un mot ⇒ le mot doit être présent de manière indépendante ('eau' ne vérifie pas 'gâteaux')
+// • '' comme recherche ⇒ cherche les cellules vides (peut être combiné avec ! et/ou @)
 // • Terminer un mot par '@IdCol1,IdCol2' ⇒ le mot doit être présent dans la liste des colonnes indiquée (séparées par des virgules). Si un mot recherché contient '@', alors ajouter un '@' à la fin pour ignorer
 // • Utiliser '@IdCol1,IdCol2' comme mot ⇒ les autres mots ne seront cherchés que dans ces colonnes
 // • '/' avant un mot ⇒ utiliser une regex. Utiliser '\\s' pour les espaces, sinon la regex sera découpée
@@ -36,8 +41,10 @@ Performs an OR search of the words listed (separated by spaces) in the various c
 • Start a search with '&&' ⇒ all words must be present in the same column
 • '!' before a word ⇒ the word must not be present
 • '=', '<' or '>' before a word (and after the '!' if present) ⇒ cell must be exactly equal to, begin with or end with the word. With the '=', replace spaces with '\\s', otherwise the word will be split
-'"..."' ⇒ considers everything between quotation marks as a word (including spaces)
-' before a word ⇒ the word need to be present independently ('ok' doesn't match 'books')
+• '=', '<', '>', '>=' or '<=' before a number (and after the '!' if present) ⇒ cell must validate the comparaison. To force text compare, use '==', '<<' and '>>' instead.
+• "..." ⇒ considers everything between quotation marks as a word (including spaces)
+• '' as search ⇒ look for empty cells (can be use with ! and/or @)
+• ' before a word ⇒ the word need to be present independently ('ok' doesn't match 'books')
 • End a word with '@IdCol1,IdCol2' ⇒ the word must be present in the list of columns indicated (separated by commas). If a searched word contains '@', then add an '@' at the end to ignore it
 • Use '@IdCol1,IdCol2' as word ⇒ other words will only be searched in these columns
 • '/' before a word ⇒ use a regex. Use '\\s' for spaces, otherwise the regex will be split.
@@ -58,6 +65,7 @@ grist.ready({requiredAccess: 'read table', allowSelectBy: true,
         document.getElementById("empty").checked = (displayall === true);
         document.getElementById("defsearchtype").value = defsearchtype;
         document.getElementById("defval").value = defval;
+        document.getElementById("prefilter").value = prefilter;
         document.getElementById("savesession").checked = (savesession === true);
         document.getElementById("sessionID").value = sessionID;
         document.getElementById("columns").value = search_col.join(",");
@@ -78,7 +86,10 @@ grist.onOptions((customOptions, _) => {
     savesession = (customOptions.savesession === undefined) ? false: customOptions.savesession;
     sessionID = customOptions.sessionID || "";
     defval = customOptions.defval || "";
+    prefilter = customOptions.prefilter || "";
     sessionUUID = customOptions.sessionUUID || generateUUID();
+
+    console.log("Simple Filter", wversion);
 
     //display
     closeConfig();
@@ -92,7 +103,7 @@ grist.onOptions((customOptions, _) => {
     if (fl.value.length === 0) fl.value = defval;
 
     cursearchtype = searchtypes.indexOf(parsetype(fl.value)[0]);
-    console.log(cursearchtype);
+    if (cursearchtype < 0) cursearchtype = defsearchtype;
     updateTag();
 
     ApplyFilter();
@@ -117,6 +128,9 @@ function saveOption() {
 
         defval = document.getElementById("defval").value;
         grist.widgetApi.setOption('defval', defval);
+
+        prefilter = document.getElementById("prefilter").value;
+        grist.widgetApi.setOption('prefilter', prefilter);
 
         savesession = document.getElementById("savesession").checked;
         grist.widgetApi.setOption('savesession', savesession);
@@ -155,7 +169,7 @@ function onLeave() {
 
 function onKey() {
     if (event.key === 'Enter') {
-        ApplyFilter();
+        ApplyFilter(true);
     } else {
         const s = event.target.value;
         if (s.startsWith("&&")) {cursearchtype = 2; updateTag();}
@@ -181,22 +195,27 @@ function updateTag() {
 }
 
 function clearsearch() {
-    console.log("clear");
     document.getElementById("filter").value = "";
     cursearchtype = defsearchtype;
     updateTag();
     ApplyFilter();
 }
 
-function ApplyFilter() {
+function ApplyFilter(forceRefresh = false) {
     try {
-        //get serche text
+        //get search text
         let search = document.getElementById("filter").value;
+        if (search == lastsearch && forceRefresh == false) {
+            // Ignore to avoid double execution
+            return;
+        } else {
+            lastsearch = search;
+        }
         if (savesession) sessionStorage.setItem((sessionID.length > 0)? sessionID + "_Simple_Filter": sessionUUID, search);
         
         //if empty, display all the table
         if (!search || search.trim().length === 0) {
-            grist.setSelectedRows(displayall? null: []);
+            grist.setSelectedRows(displayall? null: []);           
         } else {
             //help
             if (search.startsWith('?')) {
@@ -207,7 +226,7 @@ function ApplyFilter() {
 
             // fetch the table
             grist.fetchSelectedTable(format="columns", includeColumns=target).then((records) => {    
-                let scol, re, neg, tp, searches, type;
+                let scol, s, re, neg, tp, searches, type, parsed_searches;
 
                 // get columns names
                 let columns;
@@ -218,6 +237,12 @@ function ApplyFilter() {
                 }
 
                 [type, searches] = parseinput(search);
+                if (prefilter) {
+                    let defsearches;
+                    [_, defsearches] = parseinput(prefilter);
+                    searches = searches.concat(defsearches);
+                }
+                
 
                 // custom columns ? **************************************************************
                 if (search.includes("@")) {
@@ -225,7 +250,7 @@ function ApplyFilter() {
                     let finalsearches = [];
                     for (c of searches) {
                         if (c.startsWith('@')) {
-                            scol = [scol, c.substring(1)].join(",");
+                            scol = [scol, c.substring(1)].join(",").trim(",");
                         } else {
                             finalsearches.push(c);
                         }
@@ -240,25 +265,19 @@ function ApplyFilter() {
 
                     if (scol) {
                         scol = scol.substring(1).split(",");
-                    if (scol.length > 0) columns = scol;
+                        if (scol.length > 0) {
+                            columns = parsecolumns(scol, columns);
+                        }
                     }                
                 }     
 
-                /*if (search.startsWith('/')) {
-                    //regex search **************************************************************
-                    re = getregex(search);
 
-                    let match = records['id'].filter((id) => {
-                        for (c of columns) {
-                            if(regex.test(text?.toString())) return true;                  
-                        } 
+                // pre-parse searches ***********************************************************
+                parsed_searches = [];
+                for (s of searches) {
+                    parsed_searches.push(parsesearch(s, columns));
+                }
 
-                        return false;
-                    });
-            
-                    grist.setSelectedRows(match);
-                
-                } else */
                 if (type === "&&") {
                     //AND search, all in the same column **************************************************************
                     //let searches = parseinput(search, 2); //search.substring(2).split(" ");
@@ -267,8 +286,8 @@ function ApplyFilter() {
                     let match = records['id'].filter((idgrist, id) => {
                         for (c of columns) {
                             ok = true;
-                            for (s of searches) {
-                                [s, re, neg, tp, _] = parsesearch(s, columns);
+                            for (ps of parsed_searches) {
+                                [s, re, neg, tp, _] = ps; //parsesearch(ps, columns);
                                 if (neg) {
                                     if (matchtxt(records[c][id], s, re, tp)){ //(records[c][id-1]?.toString().toLowerCase().includes(s))
                                         ok = false;
@@ -281,13 +300,14 @@ function ApplyFilter() {
                                     }
                                 }                            
                             }
-                            if (ok) return true;                   
+                            if (ok) return true;         
                         } 
 
                         return false;
                     });
             
                     grist.setSelectedRows(match);
+                    if (match) grist.setCursorPos({rowId: match[0]});
                 } else if (type === "&") {
                     //AND search with matches in any column **************************************************************
                     //let searches = parseinput(search, 1); //search.substring(1).split(" ");                
@@ -295,9 +315,8 @@ function ApplyFilter() {
                     let match = records['id'].filter((idgrist, id) => {
                         let matches = [];
 
-                        for (si in searches) {
-                            let s = searches[si];
-                            [s, re, neg, tp, scol] = parsesearch(s, columns);
+                        for (si in parsed_searches) {
+                            [s, re, neg, tp, scol] = parsed_searches[si]; //parsesearch(s, columns);
                             if (neg) {
                                 matches.push(true)
 
@@ -322,17 +341,18 @@ function ApplyFilter() {
                     });
             
                     grist.setSelectedRows(match);
+                    if (match) grist.setCursorPos({rowId: match[0]});
                 } else {
                     //OR **************************************************************
                     //let searches = parseinput(search); //search.split(" ");
-
-                    let match = records['id'].filter((idgrist, id) => {
-                        for (s of searches) {
-                            [s, re, neg, tp, scol] = parsesearch(s, columns);
+                    
+                    let match = records['id'].filter((idgrist, id) => {                        
+                        for (ps of parsed_searches) {
+                            [s, re, neg, tp, scol] = ps; //parsesearch(s, columns);
                             if (neg) {
                                 let ok = true;
                                 for (c of scol) {
-                                    if (matchtxt(records[c][id], s, re, tp)) {
+                                    if (matchtxt(records[c][idgrist], s, re, tp)) {
                                         ok = false
                                         break;
                                     };
@@ -340,18 +360,18 @@ function ApplyFilter() {
                                 if (ok) return true; //the word is no where, so this part is true
                             } else {
                                 for (c of scol) {
-                                    if (matchtxt(records[c][id], s, re, tp)) return true;                                    
+                                    if (matchtxt(records[c][id], s, re, tp))return true;                            
                                 } 
                             }                                               
                         } 
                         return false;
                     });
-            
-                    grist.setSelectedRows(match);
+                    grist.setSelectedRows(match);                    
                 }            
             });
         }
-    } catch {
+    } catch (ex) {
+        console.error('sFilter', ex);
         grist.setSelectedRows([]);
     }   
 }
@@ -359,22 +379,40 @@ function ApplyFilter() {
 function matchtxt(text, value, regex, tp) {
     if (regex) {
         return regex.test(text?.toString())
-    } else  {
+    } else if(text !== null && text !== undefined) {
         switch (tp) {
             case '=':
-                return text?.toString().toLowerCase() === value;      
+                if (isNumeric(text)) return toFloat(text) === value;
+                else return false;
+            case '==':  
+                return text.toString().toLowerCase() === value;
             case '<':
-                return text?.toString().toLowerCase().startsWith(value);
+                if (isNumeric(text)) return toFloat(text) < value;
+                else return false;
+            case '<<':
+                return text.toString().toLowerCase().startsWith(value);
             case '>':
-                return text?.toString().toLowerCase().endsWith(value);
+                if (isNumeric(text)) return toFloat(text) > value;
+                else return false;
+            case '>>':
+                return text.toString().toLowerCase().endsWith(value);
+            case '<=':
+                if (isNumeric(text)) return toFloat(text) <= value;
+                else return false;
+            case '>=':
+                if (isNumeric(text)) return toFloat(text) >= value;
+                else return false;
+            case "''":                
+                return text.length === 0;
             default:
-                return text?.toString().toLowerCase().includes(value);
+                return text.toString().toLowerCase().includes(value);
         }        
-    }
+    } else if (tp === "''") return true;
+    return null;
 }
 
-function getregex(text) {
-    if (text.startsWith('/')) {
+function getregex(text) {    
+    if (typeof text === 'string' && text.startsWith('/')) {
         let r = text.split("/");
         const opt = r.pop();
         if (r.length > 2) {
@@ -393,14 +431,35 @@ function gettype(text) {
         neg = true;
         text = text.substring(1);
     }
+    text = text.toLowerCase();
+
+    switch (text.substring(0, 2)) {
+        case '<<':
+            return [text.substring(2), neg, '<<'];
+        case '>>':
+            return [text.substring(2), neg, '>>'];
+        case '<=':
+            if (isNumeric(text.substring(2))) return [toFloat(text.substring(2)), neg, '<='];
+            return [text.substring(2), neg, '<<'];
+        case '>=':
+            if (isNumeric(text.substring(2))) return [toFloat(text.substring(2)), neg, '>='];
+            return [text.substring(2), neg, '>>'];
+        case '==':
+            return [text.substring(2), neg, '=='];
+        case "''":
+            return ['', neg, "''"];
+    }
 
     switch (text.substring(0, 1)) {
         case '=':
-            return [text.substring(1), neg, '='];        
+            if (isNumeric(text.substring(1))) return [toFloat(text.substring(1)), neg, '=']; 
+            return [text.substring(1), neg, '=='];        
         case '<':
-            return [text.substring(1), neg, '<'];
+            if (isNumeric(text.substring(1))) return [toFloat(text.substring(1)), neg, '<']; 
+            return [text.substring(1), neg, '<<'];
         case '>':
-            return [text.substring(1), neg, '>'];
+            if (isNumeric(text.substring(1))) return [toFloat(text.substring(1)), neg, '>']; 
+            return [text.substring(1), neg, isNumeric(text.substring(1))? '>':'>>'];
         case "'":
             return ["/\\b" + text.substring(1).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&") + "\\b", neg, ""];
         default:
@@ -411,20 +470,36 @@ function gettype(text) {
 function parsesearch(text, columns) {
     let c = text.split("@");
     if (c.length > 1) {
-        const col = c.pop();;
+        const col = c.pop();
         c = gettype(c.join("@"));
-        return [c[0].toLowerCase(), getregex(c[0]), c[1], c[2], col.length > 0 ? col.split(",") : columns];
+        if (col.length > 0) {
+            let colmatch = parsecolumns(col.split(","), columns);
+            return [c[0], getregex(c[0]), c[1], c[2], colmatch];
+        } 
+        return [c[0], getregex(c[0]), c[1], c[2], columns];
     } else {
         c = gettype(text);
-        return [c[0].toLowerCase(), getregex(c[0]), c[1], c[2], columns];
+        return [c[0], getregex(c[0]), c[1], c[2], columns];
     }
+}
+
+function parsecolumns(input, columns) {
+    for (i = 0; i < input.length; i++) {
+        for (cref of columns) {
+            if (cref.toLowerCase() == input[i].toLowerCase() || cref.toLowerCase().includes(input[i].toLowerCase())) {
+                input[i] = cref;
+                break;
+            }
+        }
+    }
+    return input;
 }
 
 function parsetype(input) {
     if (input.startsWith('&&')) return ["&&", 2];
     else if (input.startsWith('&')) return ["&", 1];
     else if (input.startsWith('+')) return ["+", 0];
-    else if (input.startsWith('@')) return ["@", 1];
+    //else if (input.startsWith('@')) return ["@", 1];
     else return [searchtypes[defsearchtype], 0];
 }
 
@@ -482,4 +557,15 @@ function generateUUID() { // Public Domain/MIT
         }
         return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
+}
+
+function isNumeric(n) {
+    if (n || typeof n === 'number') return true
+    if (typeof n !== 'string') return false
+    return !isNaN(n) && !isNaN(parseFloat(n));
+}
+
+function toFloat(n) {
+    if (n) return parseFloat(n);
+    return 0
 }

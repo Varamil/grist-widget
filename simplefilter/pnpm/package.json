@@ -1,0 +1,46 @@
+{
+    "name": "simplefilter",
+    "version": "4.0.0",
+    "description": "Simple table filtering to display any row that matches the search.",
+    "main": "script.js",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build-dev": "vite build --watch",
+        "build": "vite build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+## Url to your git repository ##"
+    },
+    "files": [
+        "script.js",
+        "index.html",
+        "README.md"
+    ],
+    "exports": {
+        ".": {
+            "style": "../min/script.css",
+            "require": "../min/script.umd.js",
+            "import": "../min/script.es.js"            
+        }
+    },
+    "keywords": [
+        "widget",
+        "Grist",
+        "## Put some other keywords related to your widget ##"
+    ],
+    "author": "## Author ##",
+    "license": "## License ##",
+    "bugs": {
+        "url": "## Url to your issue tracker (probably Github or Grist forum thread)##"
+    },
+    "homepage": "## Url to your widget home page (probably Github or Grist forum thread) ##",
+    "devDependencies": {
+        "vite": "^7.0.2",
+        "vite-plugin-static-copy": "^3.1.0"
+    },
+    "sideEffects": [
+        "*.css"
+    ]
+}
